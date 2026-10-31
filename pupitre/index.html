@@ -1307,6 +1307,7 @@ Responde SOLO con JSON: {"open":[{"points":número,"feedback":"texto"}],"repasar
     if (r && Array.isArray(r.repasar)) m.repasar = r.repasar.slice(0, 6).map(String);
   } catch (e) { if (m.open.length) m.gradeNote = "No se pudo corregir el desarrollo con IA: la nota cuenta solo el test."; }
   const graded = m.open.filter(o => typeof o.points === "number");
+  if (m.open.length && graded.length !== m.open.length && !m.gradeNote) m.gradeNote = "No se pudo corregir el desarrollo con IA: la nota cuenta solo el test.";
   m.openAvg = m.open.length && graded.length === m.open.length ? graded.reduce((a, o) => a + o.points, 0) / graded.length : null;
   m.grade = m.openAvg == null ? m.mcq : m.mcq * .6 + m.openAvg * .4;
   m.status = "done"; t.mocks = (t.mocks || []).concat({ at: Date.now(), grade: m.grade }).slice(-20);
