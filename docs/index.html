@@ -549,10 +549,14 @@ async function geminiCall(input, opts = {}, json = false) {
   if (opts.images && opts.images.length) { const lastUser = [...contents].reverse().find(c => c.role === "user"); for (const b of opts.images) lastUser.parts.push({ inline_data: { mime_type: b.type || "image/jpeg", data: await blobToB64(b) } }); }
   const body = { contents, generationConfig: { temperature: json ? 0.4 : 0.7, ...(json ? { responseMimeType: "application/json" } : {}) } };
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent((cfg.model || "gemini-flash-latest").replace(/^models\//, ""))}:streamGenerateContent?alt=sse`;
+  const ctl = new AbortController(); let timedOut = false;
+  const to = setTimeout(() => { timedOut = true; ctl.abort(); }, 120000);
+  if (opts.signal) { if (opts.signal.aborted) ctl.abort(); else opts.signal.addEventListener("abort", () => ctl.abort()); }
+  const abortCode = () => timedOut ? "timeout" : "cancelled";
   let res;
-  try { res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": cfg.key }, body: JSON.stringify(body), signal: opts.signal }); }
-  catch (e) { if (e && e.name === "AbortError") throw { code: "cancelled" }; throw { code: "network" }; }
-  if (!res.ok) { let msg = ""; try { msg = (await res.json()).error.message || ""; } catch (e) {} throw { code: res.status === 429 ? "rate_limited" : (res.status === 401 || res.status === 403 || (res.status === 400 && /api key|API_KEY/i.test(msg))) ? "bad_key" : res.status === 404 ? "bad_model" : "upstream_error", message: msg }; }
+  try { res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": cfg.key }, body: JSON.stringify(body), signal: ctl.signal }); }
+  catch (e) { clearTimeout(to); if (e && e.name === "AbortError") throw { code: abortCode() }; throw { code: "network", message: String(e && e.message || e) }; }
+  if (!res.ok) { clearTimeout(to); let msg = ""; try { msg = (await res.json()).error.message || ""; } catch (e) {} throw { code: res.status === 429 ? "rate_limited" : (res.status === 401 || res.status === 403 || (res.status === 400 && /api key|API_KEY/i.test(msg))) ? "bad_key" : res.status === 404 ? "bad_model" : "upstream_error", message: msg }; }
   const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = "", text = "";
   try {
     for (;;) {
@@ -568,7 +572,13 @@ async function geminiCall(input, opts = {}, json = false) {
         if (delta) { text += delta; if (opts.onText) { try { opts.onText({ text, delta }); } catch (e) {} } }
       }
     }
-  } catch (e) { if (e && e.code) throw { ...e, text }; if (e && e.name === "AbortError") throw { code: "cancelled", text }; throw { code: "network", text }; }
+  } catch (e) { clearTimeout(to); if (e && e.code) throw { ...e, text }; if (e && e.name === "AbortError") throw { code: abortCode(), text }; throw { code: "network", text, message: String(e && e.message || e) }; }
+  clearTimeout(to);
+  if (!text) {
+    /* Plan B: algunos navegadores no leen bien el streaming; se pide la respuesta entera */
+    const r2 = await fetch(url.replace(":streamGenerateContent?alt=sse", ":generateContent"), { method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": cfg.key }, body: JSON.stringify(body), signal: opts.signal }).catch(() => null);
+    if (r2 && r2.ok) { const j = await r2.json().catch(() => ({})); const c = j.candidates && j.candidates[0]; text = ((c && c.content && c.content.parts) || []).map(p => p.thought ? "" : (p.text || "")).join(""); if (text && opts.onText) { try { opts.onText({ text, delta: text }); } catch (e) {} } if (!text && c && c.finishReason) throw { code: "empty_completion", message: "finishReason: " + c.finishReason }; }
+  }
   if (!text) throw { code: "empty_completion" };
   return { text, truncated: false };
 }
@@ -1086,8 +1096,8 @@ async function ocrDoc(d) {
 
 /* ---------- IA: helpers ---------- */
 function aiErr(e) {
-  const c = e && e.code;
-  return { not_granted: "Has denegado el acceso a la IA. Actívalo en los permisos del artefacto.", rate_limited: "Has llegado al límite gratis de Gemini por ahora. Espera un minuto (o hasta mañana si es el límite diario).", prompt_too_large: "Demasiado texto a la vez. Quita algún documento del contexto.", invalid_json: "La respuesta no salió en el formato esperado. Dale otra vez.", cancelled: "Parado.", refused: "La IA no ha querido responder a eso. Reformula la pregunta.", images_unavailable: "No se pudo enviar la imagen.", no_key: "Falta tu clave de Gemini: pégala en ⚙️ Ajustes.", bad_key: "La clave de Gemini no es válida. Revísala en ⚙️ Ajustes.", bad_model: "Ese modelo de Gemini no está disponible con tu clave. Pulsa «Probar clave» en ⚙️ Ajustes.", network: "Sin conexión a internet. Prueba otra vez cuando tengas señal.", empty_completion: "La IA no ha devuelto nada. Prueba otra vez." }[c] || "No se pudo contactar con la IA. Prueba de nuevo en un momento.";
+  const c = e && e.code; const extra = e && e.message && !["cancelled", "no_key"].includes(c) ? ` (${String(e.message).slice(0, 160)})` : "";
+  return ({ not_granted: "Has denegado el acceso a la IA. Actívalo en los permisos del artefacto.", rate_limited: "Has llegado al límite gratis de Gemini por ahora. Espera un minuto (o hasta mañana si es el límite diario).", prompt_too_large: "Demasiado texto a la vez. Quita algún documento del contexto.", invalid_json: "La respuesta no salió en el formato esperado. Dale otra vez.", cancelled: "Parado.", refused: "La IA no ha querido responder a eso. Reformula la pregunta.", images_unavailable: "No se pudo enviar la imagen.", no_key: "Falta tu clave de Gemini: pégala en ⚙️ Ajustes.", bad_key: "La clave de Gemini no es válida. Revísala en ⚙️ Ajustes.", bad_model: "Ese modelo de Gemini no está disponible con tu clave. Pulsa «Probar clave» en ⚙️ Ajustes.", network: "Sin conexión a internet. Prueba otra vez cuando tengas señal.", empty_completion: "La IA no ha devuelto nada. Prueba otra vez.", timeout: "Gemini ha tardado más de 2 minutos. Prueba otra vez o elige otro modelo en ⚙️ Ajustes → Probar clave.", upstream_error: "Gemini ha dado un error." }[c] || "No se pudo contactar con la IA. Prueba de nuevo en un momento.") + extra;
 }
 const thinkingHtml = (t = "Pensando…") => `<span class="thinking"><i></i><i></i><i></i> ${t}</span>`;
 const COURSE_CTX = () => `Contexto del alumno: ${state.profile.school || "1º de CFGS Administración y Finanzas"} (Jesuïtes Bellvitge, L'Hospitalet de Llobregat, Cataluña). Usa la normativa española vigente (PGC 2007, IVA, Estatuto de los Trabajadores, Ley 39/2015) y el currículo del ciclo. Responde en español; si el alumno escribe en catalán, responde en catalán con la terminología catalana.`;
@@ -1179,7 +1189,7 @@ async function sendChat(cid, text) {
   window.scrollTo(0, document.body.scrollHeight);
   const sb = $("#sendBtn"); if (sb) { sb.innerHTML = ic("stop"); sb.setAttribute("aria-label", "Parar"); sb.type = "button"; sb.onclick = () => aiCtl && aiCtl.abort(); }
   streaming = true; aiCtl = new AbortController();
-  let answer = "";
+  let answer = ""; const t0 = Date.now(); const tick2 = setInterval(() => { if (!answer) bubble.innerHTML = thinkingHtml(`Pensando… ${Math.round((Date.now() - t0) / 1000)} s`); }, 1000);
   try {
     const dc = await docsContext(c.ctx || []); const images = await ctxImages(c.ctx || []);
     const rules = `Eres el tutor particular de ${state.profile.name || "un estudiante"}${s ? ` para «${s.name}»` : ""}. ${COURSE_CTX()}
@@ -1194,7 +1204,7 @@ ${dc.text ? `\nDOCUMENTOS DEL ALUMNO:\n${dc.text}` : ""}`;
     const r = await sample(turns, opts);
     answer = r.text;
   } catch (e) { if (e && e.text) answer = e.text; else if (!(e && e.code === "cancelled")) bubble.innerHTML = `<span class="small">⚠️ ${aiErr(e)}</span>`; }
-  streaming = false; aiCtl = null;
+  clearInterval(tick2); streaming = false; aiCtl = null;
   if (answer) {
     msgs.push({ role: "assistant", content: answer, at: Date.now() });
     try { await saveMsgs(cid, msgs); const cur = S.chats.find(x => x.id === cid) || c; await sPut("chats", cid, { ...stripId(cur), title: cur.title || text.replace(/\s+/g, " ").slice(0, 60), n: msgs.length, updatedAt: Date.now() }); }
