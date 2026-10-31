@@ -539,7 +539,7 @@ async function connect() {
 
 /* ================= IA: Gemini con la clave gratis del alumno ================= */
 const AI_KEY = "pupitre.gemini";
-const aiCfg = () => Object.assign({ key: "", model: "gemini-flash-latest" }, lsGet(AI_KEY) || {});
+const aiCfg = () => Object.assign({ key: "", model: "gemini-flash-latest", speed: "fast", noThink: false }, lsGet(AI_KEY) || {});
 const blobToB64 = b => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1]); r.onerror = rej; r.readAsDataURL(b); });
 async function geminiCall(input, opts = {}, json = false) {
   const cfg = aiCfg(); if (!cfg.key) throw { code: "no_key" };
@@ -548,6 +548,8 @@ async function geminiCall(input, opts = {}, json = false) {
   for (const t of turns) { const role = t.role === "assistant" ? "model" : "user"; const last = contents[contents.length - 1]; if (last && last.role === role) last.parts[0].text += "\n\n" + t.content; else contents.push({ role, parts: [{ text: String(t.content) }] }); }
   if (opts.images && opts.images.length) { const lastUser = [...contents].reverse().find(c => c.role === "user"); for (const b of opts.images) lastUser.parts.push({ inline_data: { mime_type: b.type || "image/jpeg", data: await blobToB64(b) } }); }
   const body = { contents, generationConfig: { temperature: json ? 0.4 : 0.7, ...(json ? { responseMimeType: "application/json" } : {}) } };
+  const fast = cfg.speed !== "smart" && !cfg.noThink && !opts._noThink;
+  if (fast) body.generationConfig.thinkingConfig = { thinkingBudget: json ? 512 : 0 };
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent((cfg.model || "gemini-flash-latest").replace(/^models\//, ""))}:streamGenerateContent?alt=sse`;
   const ctl = new AbortController(); let timedOut = false;
   const to = setTimeout(() => { timedOut = true; ctl.abort(); }, 120000);
@@ -556,6 +558,10 @@ async function geminiCall(input, opts = {}, json = false) {
   let res;
   try { res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": cfg.key }, body: JSON.stringify(body), signal: ctl.signal }); }
   catch (e) { clearTimeout(to); if (e && e.name === "AbortError") throw { code: abortCode() }; throw { code: "network", message: String(e && e.message || e) }; }
+  if (!res.ok && res.status === 400 && fast) {
+    const m = await res.clone().json().catch(() => ({})); const em = (m.error && m.error.message) || "";
+    if (/think/i.test(em)) { clearTimeout(to); lsSet(AI_KEY, { ...aiCfg(), noThink: true }); return geminiCall(input, { ...opts, _noThink: true }, json); }
+  }
   if (!res.ok) { clearTimeout(to); let msg = ""; try { msg = (await res.json()).error.message || ""; } catch (e) {} throw { code: res.status === 429 ? "rate_limited" : (res.status === 401 || res.status === 403 || (res.status === 400 && /api key|API_KEY/i.test(msg))) ? "bad_key" : res.status === 404 ? "bad_model" : "upstream_error", message: msg }; }
   const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = "", text = "";
   try {
@@ -1623,7 +1629,9 @@ function settingsModal() {
       <h3>🔑 IA gratis con Gemini</h3>
       <p class="small muted">1) Entra en <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" style="color:var(--accent)">aistudio.google.com/app/apikey</a> con tu cuenta de Google. 2) Pulsa <b>Create API key</b>. 3) Cópiala y pégala aquí. Es gratis y no usa tu suscripción de Gemini.</p>
       <label class="field"><span>Clave de API</span><input class="input" id="stKey" type="password" autocomplete="off" value="${esc(cfg.key)}" placeholder="AIza…"></label>
+      <label class="field"><span>Velocidad</span><select class="input" id="stSpeed"><option value="fast" ${cfg.speed !== "smart" ? "selected" : ""}>⚡ Rápida (contesta en segundos)</option><option value="smart" ${cfg.speed === "smart" ? "selected" : ""}>🧠 Más lista (piensa más, tarda más)</option></select></label>
       <label class="field"><span>Modelo</span><input class="input" id="stModel" list="modelList" value="${esc(cfg.model)}"><datalist id="modelList"></datalist></label>
+      <p class="tiny muted">💡 Si aún va lenta, pon de modelo <b>gemini-flash-lite-latest</b>: es el más rápido.</p>
       <div class="row"><button class="btn btn-p btn-sm" id="aiSave">💾 Guardar clave</button><button class="btn btn-sm" id="aiTest">🧪 Probar clave</button>${cfg.key ? `<button class="btn btn-sm btn-g" id="aiDel">Quitar clave</button>` : ""}</div>
       <div id="aiMsg" class="small"></div>
       <p class="tiny muted">🔒 La clave se guarda solo en este móvil y solo se envía a Google. En el plan gratis, Google puede usar lo que envías para mejorar sus modelos: no metas datos personales.</p>
@@ -1645,7 +1653,7 @@ function settingsModal() {
     <hr class="sep">
     <div class="stack"><h3>☠️ Zona peligrosa</h3><div class="row"><button class="btn btn-sm btn-d" id="wipe">Borrar asignaturas, plan y sesiones</button></div><div id="wipeBox"></div></div>`, root => {
     const msg = t => { $("#aiMsg", root).innerHTML = t; };
-    const saveKey = () => { lsSet(AI_KEY, { key: $("#stKey", root).value.trim(), model: $("#stModel", root).value.trim() || "gemini-flash-latest" }); setupAI(); };
+    const saveKey = () => { const m = $("#stModel", root).value.trim() || "gemini-flash-latest"; const prev = aiCfg(); lsSet(AI_KEY, { key: $("#stKey", root).value.trim(), model: m, speed: $("#stSpeed", root).value, noThink: prev.model === m ? prev.noThink : false }); setupAI(); };
     $("#aiSave", root).onclick = () => { saveKey(); msg(sample ? "✅ Clave guardada. Pulsa «Probar clave» para comprobarla." : "Clave borrada."); render(); };
     const del = $("#aiDel", root); del && (del.onclick = () => { lsSet(AI_KEY, { key: "", model: aiCfg().model }); setupAI(); closeModal(); render(); toast("🔑 Clave quitada"); });
     $("#aiTest", root).onclick = async () => {
@@ -1662,7 +1670,8 @@ function settingsModal() {
         msg(`✅ Funciona. Modelo: <b>${esc(aiCfg().model)}</b>. Respuesta: ${esc(t.text.trim().slice(0, 80))}`); render();
       } catch (e) { msg("❌ " + aiErr(e)); }
     };
-    $("#setForm", root).addEventListener("submit", e => { e.preventDefault(); if ($("#stKey", root).value.trim() !== aiCfg().key) saveKey(); state.profile.name = $("#stName", root).value.trim(); state.profile.school = $("#stSchool", root).value.trim(); state.profile.goalMin = Math.max(15, Math.min(720, Math.round(+$("#stGoal", root).value || 120))); state.settings.sound = $("#stSound", root).checked; closeModal(); commit(); toast(sample ? "✅ Ajustes guardados · IA activada 🤖" : "✅ Ajustes guardados"); });
+    $("#stSpeed", root).onchange = () => { saveKey(); toast($("#stSpeed", root).value === "smart" ? "🧠 Modo más listo" : "⚡ Modo rápido"); };
+    $("#setForm", root).addEventListener("submit", e => { e.preventDefault(); saveKey(); state.profile.name = $("#stName", root).value.trim(); state.profile.school = $("#stSchool", root).value.trim(); state.profile.goalMin = Math.max(15, Math.min(720, Math.round(+$("#stGoal", root).value || 120))); state.settings.sound = $("#stSound", root).checked; closeModal(); commit(); toast(sample ? "✅ Ajustes guardados · IA activada 🤖" : "✅ Ajustes guardados"); });
     $("#exp", root).onclick = exportAll;
     $("#impBtn", root).onclick = () => $("#impFile", root).click();
     $("#impFile", root).onchange = e => { const f = e.target.files[0]; if (f) importAll(f); };
