@@ -302,6 +302,12 @@ textarea.input{resize:vertical;min-height:110px;line-height:1.5}
 .feat div{display:flex;gap:10px;align-items:flex-start;font-size:.9rem}
 .feat svg{width:20px;height:20px;color:var(--accent);flex:none;margin-top:2px}
 .preview{transform:rotate(-1.2deg)}
+.mods{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:8px}
+.mod{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line-strong);border-radius:11px;cursor:pointer;background:var(--sheet);line-height:1.3}
+.mod input{width:18px;height:18px;flex:none;margin:1px 0 0;accent-color:var(--c)}
+.mod .dot{margin-top:4px}
+.mod:has(input:checked){border-color:var(--c);box-shadow:inset 0 0 0 1px var(--c)}
+.school{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.02em}
 
 /* ---------- Modal & toast ---------- */
 .scrim{position:fixed;inset:0;z-index:50;background:rgba(10,14,28,.45);display:flex;align-items:flex-end;justify-content:center;padding:max(12px,env(safe-area-inset-top,0px)) max(0px,env(safe-area-inset-right,0px)) 0 max(0px,env(safe-area-inset-left,0px));animation:fade .18s ease}
@@ -358,7 +364,50 @@ const fmtH = m => (m / 60).toFixed(m >= 600 ? 0 : 1).replace(".", ",") + " h";
 const DOW = ["L", "M", "X", "J", "V", "S", "D"];
 const longDate = d => { const t = d.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" }); return t.charAt(0).toUpperCase() + t.slice(1); };
 const shortDate = d => d.toLocaleDateString("es-ES", { day: "numeric", month: "short" });
-const COLORS = ["#2F55D4", "#E0623A", "#1F9D6B", "#B5489E", "#D69A00", "#0E93A8", "#7656D6", "#C8364B"];
+const COLORS = ["#2F55D4", "#E0623A", "#1F9D6B", "#B5489E", "#D69A00", "#0E93A8", "#7656D6", "#C8364B", "#5E8A1E", "#8A5A2B"];
+const SCHOOL = "Escola Joan XXIII · 1r CFGS Administració i Finances";
+/* Módulos de 1º del CFGS Administración y Finanzas (currículo LOE: RD 1584/2011 y adaptación de Cataluña).
+   El reparto exacto por curso depende del centro: el alumno marca los que tiene. */
+const CURSO = [
+  { key: "pia", name: "Proceso integral de la actividad comercial", ca: "Procés integral de l'activitat comercial", color: COLORS[0], def: true, topics: [
+    ["Patrimonio, masas patrimoniales y balance", 2], ["PGC: marco conceptual y cuadro de cuentas", 3], ["Partida doble, libro diario y mayor", 3],
+    ["Compras y ventas: grupos 6 y 7, descuentos y devoluciones", 3], ["Facturación: requisitos de la factura", 2], ["IVA: devengo, base, tipos y liquidación (modelo 303)", 3],
+    ["Cobros y pagos: efectos comerciales y descuento", 2], ["Cálculo financiero: interés simple, compuesto y descuento", 3],
+    ["Inmovilizado y amortización", 3], ["Existencias: valoración PMP y FIFO", 2], ["Periodificación y regularización", 2], ["Cierre del ejercicio y cuentas anuales", 3],
+    ["IRPF en actividades económicas e Impuesto sobre Sociedades (básico)", 2] ] },
+  { key: "gdj", name: "Gestión de la documentación jurídica y empresarial", ca: "Gestió de la documentació jurídica i empresarial", color: COLORS[3], def: true, topics: [
+    ["Organización del Estado, la Generalitat y la UE", 2], ["Fuentes del derecho y jerarquía normativa", 2], ["Formas jurídicas de empresa (autónomo, SL, SA, cooperativa)", 3],
+    ["Constitución y puesta en marcha: trámites", 3], ["Documentación societaria: escrituras, estatutos, actas y libros", 2], ["Contratos privados: compraventa, arrendamiento y otros", 3],
+    ["Procedimiento administrativo común (Ley 39/2015)", 3], ["Actos administrativos y recursos", 3], ["Administración electrónica: certificado y firma digital", 2],
+    ["Archivo y protección de datos (RGPD)", 1] ] },
+  { key: "rrhh", name: "Recursos humanos y responsabilidad social corporativa", ca: "Recursos humans i responsabilitat social corporativa", color: COLORS[1], def: true, topics: [
+    ["La empresa: organización, departamentos y organigramas", 2], ["Funciones del departamento de RRHH", 2], ["Planificación de plantilla y análisis de puestos", 3],
+    ["Reclutamiento y selección de personal", 3], ["Formación y desarrollo profesional", 2], ["Evaluación del desempeño y retribución", 2],
+    ["Motivación, liderazgo y clima laboral", 2], ["Ética empresarial y responsabilidad social corporativa", 3], ["Igualdad, conciliación y protección de datos del personal", 1] ] },
+  { key: "ofi", name: "Ofimática y proceso de la información", ca: "Ofimàtica i procés de la informació", color: COLORS[2], def: true, topics: [
+    ["Equipos, sistemas operativos y redes", 1], ["Seguridad informática y copias", 1], ["Mecanografía: velocidad y precisión", 2],
+    ["Procesador de textos: estilos, plantillas y combinar correspondencia", 2], ["Hoja de cálculo: fórmulas y referencias", 3], ["Hoja de cálculo: SI, BUSCARV/BUSCARX, SUMAR.SI", 3],
+    ["Hoja de cálculo: tablas dinámicas y gráficos", 3], ["Bases de datos: tablas, relaciones y consultas", 3], ["Bases de datos: formularios e informes", 2],
+    ["Presentaciones eficaces", 1], ["Correo, agenda e integración de aplicaciones", 1] ] },
+  { key: "cac", name: "Comunicación y atención al cliente", ca: "Comunicació i atenció al client", color: COLORS[5], def: true, topics: [
+    ["La comunicación en la empresa: elementos y barreras", 2], ["Comunicación oral presencial y telefónica", 3], ["Comunicación escrita: cartas, correos e informes", 3],
+    ["Registro, clasificación y archivo de documentos", 2], ["Atención al cliente y técnicas de venta", 2], ["Quejas, reclamaciones y protección del consumidor", 3],
+    ["Servicio postventa y calidad", 2], ["Protocolo empresarial y eventos", 1] ] },
+  { key: "ing", name: "Inglés profesional", ca: "Anglès professional", color: COLORS[4], def: true, topics: [
+    ["Business vocabulary: company, departments, jobs", 2], ["Formal emails and letters", 3], ["Telephone calls", 3], ["Orders, invoices and payments", 3],
+    ["Meetings and presentations", 2], ["Grammar: tenses review", 2], ["CV and job interview", 2] ] },
+  { key: "ipo", name: "Itinerario personal para la empleabilidad I (FOL)", ca: "Itinerari personal per a l'ocupabilitat I", color: COLORS[6], def: true, topics: [
+    ["Itinerario profesional y búsqueda de empleo", 1], ["Prevención de riesgos laborales: conceptos y riesgos", 3], ["Plan de prevención y primeros auxilios", 2],
+    ["Derecho laboral: fuentes y contrato de trabajo", 3], ["Modalidades de contrato", 3], ["Jornada, descansos, vacaciones y permisos", 2],
+    ["La nómina: devengos y deducciones", 3], ["Modificación, suspensión y extinción del contrato", 3], ["Seguridad Social y prestaciones", 2], ["Representación de los trabajadores y convenio", 1] ] },
+  { key: "dig", name: "Digitalización aplicada a los sectores productivos", ca: "Digitalització aplicada als sectors productius", color: COLORS[8], def: false, topics: [
+    ["Transformación digital de la empresa", 2], ["Tecnologías habilitadoras: cloud, IA, IoT, big data", 3], ["Ciberseguridad", 2], ["Proyecto de digitalización", 3] ] },
+  { key: "sos", name: "Sostenibilidad aplicada al sistema productivo", ca: "Sostenibilitat aplicada al sistema productiu", color: COLORS[9], def: false, topics: [
+    ["Objetivos de Desarrollo Sostenible (ODS)", 2], ["Economía circular", 3], ["Impacto ambiental de la actividad administrativa", 2], ["Plan de sostenibilidad de la empresa", 3] ] },
+];
+const fromTpl = t => ({ id: uid(), tpl: t.key, name: t.name, kind: "asignatura", color: t.color, notes: "", exams: [], topics: t.topics.map(([title, w]) => ({ id: uid(), title, w, done: false })) });
+const hasTpl = t => state && state.subjects.some(x => x.tpl === t.key || x.name === t.name);
+const tplPicker = (prefix, onlyMissing) => CURSO.filter(t => !onlyMissing || !hasTpl(t)).map(t => `<label class="mod" style="--c:${t.color}"><input type="checkbox" data-${prefix}="${t.key}" ${t.def ? "checked" : ""}><span class="dot"></span><span style="min-width:0"><b>${esc(t.name)}</b><span class="tiny muted" style="display:block">${esc(t.ca)} · ${t.topics.length} temas${t.def ? "" : " · según centro"}</span></span></label>`).join("");
 const W_LABEL = { 1: "Baja", 2: "Media", 3: "Clave" };
 
 const I = {
@@ -393,7 +442,7 @@ const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } ca
 function blankState() {
   return {
     v: 1, updatedAt: Date.now(), example: false,
-    profile: { name: "", goalMin: 120 },
+    profile: { name: "", goalMin: 120, school: "" },
     settings: { focus: 25, short: 5, long: 15, longEvery: 4, sound: true, avail: [120, 120, 120, 120, 90, 180, 60], startTime: "17:00" },
     subjects: [], sessions: [], plan: [], tutor: {},
   };
@@ -551,11 +600,14 @@ function viewOnboarding() {
         <div>${ic("spark")}<span><b>Tutor por asignatura</b><br><span class="muted">Esquemas 80/20, tests tipo examen y tarjetas.</span></span></div>
         <div>${ic("chart")}<span><b>Progreso real</b><br><span class="muted">Racha, horas por asignatura y mapa de constancia.</span></span></div>
       </div>
-      <form id="onbForm" class="card stack" style="gap:12px">
+      <form id="onbForm" class="card stack" style="gap:14px">
+        <span class="school">${ic("book", 'style="width:15px;height:15px"')}${esc(SCHOOL)}</span>
         <label class="field"><span>¿Cómo te llamas?</span><input class="input" id="onbName" placeholder="Tu nombre" autocomplete="given-name" maxlength="40"></label>
+        <div class="field"><span>Tus módulos de este curso (desmarca los que no tengas)</span><div class="mods">${tplPicker("onb", false)}</div></div>
         <div class="row">
-          <button class="btn btn-p btn-lg" type="submit">Empezar desde cero</button>
-          <button class="btn btn-lg" type="button" id="onbExample">Probar con un curso de ejemplo</button>
+          <button class="btn btn-p btn-lg" type="submit">Crear mi curso</button>
+          <button class="btn btn-lg" type="button" id="onbExample">Ver con datos de ejemplo</button>
+          <button class="btn btn-g" type="button" id="onbEmpty">Empezar vacío</button>
         </div>
         ${loading ? `<p class="tiny muted"><span class="thinking"><i></i><i></i><i></i></span> Buscando tus datos guardados…</p>` : ""}
       </form>
@@ -572,9 +624,12 @@ function viewOnboarding() {
 function bindOnboarding() {
   $("#onbForm").addEventListener("submit", e => {
     e.preventDefault();
-    state = blankState(); state.profile.name = $("#onbName").value.trim();
-    commit(false); toast("Listo. Añade tu primera asignatura."); go("asignaturas"); render();
+    state = blankState(); state.profile.name = $("#onbName").value.trim(); state.profile.school = SCHOOL;
+    state.subjects = CURSO.filter(t => $(`[data-onb="${t.key}"]`).checked).map(fromTpl);
+    commit(false); toast(state.subjects.length ? `${state.subjects.length} módulos creados. Añade tus fechas de examen.` : "Listo. Añade tu primera asignatura.");
+    go(state.subjects.length ? "hoy" : "asignaturas"); render();
   });
+  $("#onbEmpty").addEventListener("click", () => { state = blankState(); state.profile.name = $("#onbName").value.trim(); commit(false); go("asignaturas"); render(); });
   $("#onbExample").addEventListener("click", () => {
     state = exampleState(); state.profile.name = $("#onbName").value.trim() || state.profile.name;
     commit(false); go("hoy"); render();
@@ -593,12 +648,12 @@ function viewHoy() {
   const exams = allUpcomingExams().slice(0, 4); const pr = priorities().slice(0, 5);
   const nm = state.profile.name ? `, ${esc(state.profile.name)}` : "";
   if (!state.subjects.length) return `
-    <div class="hello"><div><h1>${greeting()}${nm}</h1><p class="date">${longDate(new Date())}</p></div></div>
+    <div class="hello"><div>${state.profile.school ? `<span class="school">${esc(state.profile.school)}</span>` : ""}<h1>${greeting()}${nm}</h1><p class="date">${longDate(new Date())}</p></div></div>
     <div class="empty" style="margin-top:22px">${ic("book", 'style="width:28px;height:28px"')}<h2>Empieza por tus asignaturas</h2><p>Añade cada asignatura o proyecto con sus temas y fechas de examen. Con eso Pupitre te organiza el resto.</p><button class="btn btn-p" data-act="new-subject">${ic("plus")}Añadir asignatura</button></div>`;
   return `
   <div class="stack" style="gap:22px">
     <div class="hello">
-      <div><h1>${greeting()}${nm}</h1><p class="date">${longDate(new Date())}</p></div>
+      <div>${state.profile.school ? `<span class="school">${esc(state.profile.school)}</span>` : ""}<h1>${greeting()}${nm}</h1><p class="date">${longDate(new Date())}</p></div>
       <button class="btn btn-p btn-lg" data-go="foco">${ic("play")}Empezar sesión</button>
     </div>
     <div class="stats">
@@ -613,7 +668,7 @@ function viewHoy() {
       </section>
       <section class="card">
         <div class="card-h"><h2>Próximos exámenes</h2></div>
-        ${exams.length ? exams.map(e => { const d = daysUntil(e.date); return `<div class="exam"><div class="cd ${urg(d)}"><b class="num">${d}</b><small>${d === 1 ? "día" : "días"}</small></div><div style="min-width:0"><b style="overflow-wrap:anywhere">${esc(e.title)}</b><div class="small muted row" style="gap:6px"><span class="dot" style="--c:${e.s.color}"></span>${esc(e.s.name)} · ${shortDate(parseD(e.date))}</div></div></div>`; }).join("") : `<p class="muted small">Sin exámenes a la vista. Añade fechas en cada asignatura para que el plan se adapte.</p>`}
+        ${exams.length ? exams.map(e => { const d = daysUntil(e.date); return `<div class="exam"><div class="cd ${urg(d)}"><b class="num">${d}</b><small>${d === 1 ? "día" : "días"}</small></div><div style="min-width:0"><b style="overflow-wrap:anywhere">${esc(e.title)}</b><div class="small muted row" style="gap:6px"><span class="dot" style="--c:${e.s.color}"></span>${esc(e.s.name)} · ${shortDate(parseD(e.date))}</div></div></div>`; }).join("") : `<div class="empty"><p>Aún no hay fechas. Copia las de tu calendario de exámenes en cada módulo: el plan con IA y las prioridades dependen de ellas.</p><a class="btn btn-sm btn-p" href="#asignaturas">Añadir fechas</a></div>`}
       </section>
     </div>
     <section class="card">
@@ -757,7 +812,7 @@ function renderSideTimer() {
 function viewAsignaturas() {
   const list = state.subjects;
   return `<div class="stack" style="gap:18px">
-    <div class="row between"><div><h1>Asignaturas y proyectos</h1><p class="muted">${list.length ? `${list.length} en curso · ${list.reduce((a, s) => a + s.topics.filter(t => !t.done).length, 0)} temas pendientes` : "Crea la primera para empezar."}</p></div><button class="btn btn-p" data-act="new-subject">${ic("plus")}Nueva</button></div>
+    <div class="row between"><div><h1>Asignaturas y proyectos</h1><p class="muted">${list.length ? `${list.length} en curso · ${list.reduce((a, s) => a + s.topics.filter(t => !t.done).length, 0)} temas pendientes` : "Crea la primera para empezar."}</p></div><div class="row">${CURSO.some(t => !hasTpl(t)) ? `<button class="btn" data-act="add-modules">${ic("book")}Módulos de 1º AiF</button>` : ""}<button class="btn btn-p" data-act="new-subject">${ic("plus")}Nueva</button></div></div>
     ${list.length ? `<div class="grid g3">${list.map(s => { const p = progress(s), ex = nextExam(s); const d = ex ? daysUntil(ex.date) : null; return `<button class="card subj-card" style="--c:${s.color}" data-go="asig-${s.id}">
       <div class="row between" style="align-items:flex-start;flex-wrap:nowrap"><span class="nm">${esc(s.name)}</span><span class="pill neutral">${s.kind === "proyecto" ? "Proyecto" : "Asignatura"}</span></div>
       <div><div class="row between small" style="margin-bottom:6px"><span class="muted">${s.topics.filter(t => t.done).length}/${s.topics.length} temas</span><b class="num">${Math.round(p * 100)} %</b></div><div class="bar" style="--c:${s.color}"><i style="width:${p * 100}%"></i></div></div>
@@ -840,6 +895,15 @@ function subjectModal(s) {
   });
 }
 
+function modulesModal() {
+  openModal(`<div class="sheet-h"><h2>Módulos de 1º de Administración y Finanzas</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
+    <p class="small muted">${esc(SCHOOL)}. Cada módulo se crea con sus temas oficiales, ya marcados por importancia. Luego puedes editarlos.</p>
+    <div class="mods">${tplPicker("mm", true)}</div>
+    <div class="row" style="justify-content:flex-end"><button class="btn btn-g" data-close>Cancelar</button><button class="btn btn-p" id="mmAdd">Añadir seleccionados</button></div>`, root => {
+    $("#mmAdd", root).onclick = () => { const add = CURSO.filter(t => { const c = $(`[data-mm="${t.key}"]`, root); return c && c.checked; }).map(fromTpl); state.subjects.push(...add); state.profile.school = state.profile.school || SCHOOL; closeModal(); commit(); toast(`${add.length} módulos añadidos`); };
+  });
+}
+
 /* ---------- Plan semanal ---------- */
 function viewPlan() {
   const mon = addDays(mondayOf(new Date()), ui.weekOffset * 7);
@@ -906,10 +970,11 @@ function aiErr(e) {
   return { not_granted: "Has denegado el acceso a la IA. Puedes activarlo en los permisos del artefacto.", rate_limited: "Demasiadas peticiones seguidas. Espera un minuto y vuelve a probar.", prompt_too_large: "Hay demasiado texto. Recorta los apuntes y prueba otra vez.", invalid_json: "La respuesta no salió en el formato esperado. Dale otra vez.", cancelled: "Parado.", refused: "La IA no ha querido responder a eso. Reformula la petición." }[c] || "No se pudo contactar con la IA. Prueba de nuevo en un momento.";
 }
 const thinkingHtml = (t = "Pensando…") => `<span class="thinking"><i></i><i></i><i></i> ${t}</span>`;
+const COURSE_CTX = () => `Contexto del alumno: ${state.profile.school || "1º de CFGS Administración y Finanzas"} (Jesuïtes Bellvitge, L'Hospitalet de Llobregat, Cataluña). Usa la normativa española vigente (PGC 2007, IVA, Estatuto de los Trabajadores, Ley 39/2015) y el currículo del ciclo. Responde en español; si el alumno escribe en catalán, responde en catalán y usa la terminología catalana.`;
 function subjContext(s, maxNotes = 6000) {
   const ex = s.exams.filter(e => daysUntil(e.date) >= 0).map(e => `${e.title} (${e.date}, en ${daysUntil(e.date)} días)`).join("; ") || "sin fecha";
   const tp = s.topics.map(t => `- ${t.title} [importancia: ${W_LABEL[t.w || 2]}${t.done ? ", ya dominado" : ""}]`).join("\n") || "(sin temas listados)";
-  return `${s.kind === "proyecto" ? "Proyecto" : "Asignatura"}: ${s.name}\nFechas: ${ex}\nTemas:\n${tp}\n${s.notes ? `Apuntes del estudiante (extracto):\n"""\n${s.notes.slice(0, maxNotes)}\n"""` : ""}`;
+  return `${COURSE_CTX()}\n${s.kind === "proyecto" ? "Proyecto" : "Módulo"}: ${s.name}\nFechas: ${ex}\nTemas:\n${tp}\n${s.notes ? `Apuntes del estudiante (extracto):\n"""\n${s.notes.slice(0, maxNotes)}\n"""` : ""}`;
 }
 function md(src) {
   const lines = String(src || "").replace(/\r/g, "").split("\n"); let out = "", list = null, inCode = false, code = [], tbl = [];
@@ -1209,6 +1274,7 @@ document.addEventListener("click", e => {
   const cur = subj(S.param);
   switch (act) {
     case "new-subject": subjectModal(); break;
+    case "add-modules": modulesModal(); break;
     case "edit-subject": subjectModal(subj(id)); break;
     case "toggle-topic": { const t = cur.topics.find(x => x.id === id); t.done = !t.done; commit(); if (t.done) toast("Tema dominado"); break; }
     case "cycle-w": { const t = cur.topics.find(x => x.id === id); t.w = ((t.w || 2) % 3) + 1; commit(); break; }
@@ -1247,26 +1313,28 @@ $("#settingsBtn").addEventListener("click", () => { if (state) settingsModal(); 
 function exampleState() {
   const s = blankState(); s.example = true; s.profile.name = "";
   const today = new Date(); const K = n => dkey(addDays(today, n));
-  const mk = (name, color, topics, exams, kind = "asignatura", notes = "") => ({ id: uid(), name, kind, color, notes, topics: topics.map(([title, w, done]) => ({ id: uid(), title, w, done: !!done })), exams: exams.map(([title, d]) => ({ id: uid(), title, date: K(d) })) });
-  const pia = mk("Proceso integral de la actividad comercial", COLORS[0], [["PGC: estructura y cuadro de cuentas", 3, 1], ["Partida doble y libro diario", 3, 1], ["IVA: devengo, base imponible y liquidación", 3], ["Compras, ventas y descuentos", 2, 1], ["Amortización del inmovilizado", 3], ["Valoración de existencias (PMP, FIFO)", 2], ["Cierre del ejercicio y cuentas anuales", 3]], [["Examen 1ª evaluación", 6]], "asignatura", "IVA general 21 %, reducido 10 %, superreducido 4 %. Modelo 303 trimestral. Amortización lineal: (Valor − Residual) / Vida útil.");
-  const ofi = mk("Ofimática y proceso de la información", COLORS[2], [["Excel: SI, Y, O anidadas", 2, 1], ["Excel: BUSCARV / BUSCARX", 3], ["Tablas dinámicas", 3], ["Word: combinar correspondencia", 2], ["Mecanografía 200 ppm", 1]], [["Práctica Excel", 13]]);
-  const gdj = mk("Gestión de la documentación jurídica y empresarial", COLORS[3], [["Formas jurídicas de empresa", 3, 1], ["Trámites de constitución", 3], ["Documentación mercantil", 2], ["Contratos privados", 2]], [["Examen tema 1-3", 20]]);
-  const rrhh = mk("Recursos humanos y RSC", COLORS[1], [["Organización y organigramas", 2, 1], ["Reclutamiento y selección", 3], ["Formación y desarrollo", 2], ["Responsabilidad social corporativa", 2]], [["Examen 1ª evaluación", 27]]);
-  const ing = mk("Inglés profesional", COLORS[4], [["Business emails", 3], ["Phone calls & meetings", 2], ["Present perfect vs past simple", 2, 1]], [["Speaking", 16]]);
-  const neg = mk("Proyecto: negocio paralelo", COLORS[5], [["Elegir nicho y propuesta de valor", 3, 1], ["Validar demanda: 10 entrevistas", 3], ["Página de oferta sin coste", 2], ["Primeros 3 clientes", 3]], [["Primer cliente de pago", 30]], "proyecto");
-  s.subjects = [pia, ofi, gdj, rrhh, ing, neg];
+  s.profile.school = SCHOOL;
+  const T = k => fromTpl(CURSO.find(t => t.key === k));
+  const doneN = (sb, n) => sb.topics.slice(0, n).forEach(t => t.done = true);
+  const ex = (sb, title, d) => sb.exams.push({ id: uid(), title, date: K(d) });
+  const pia = T("pia"), gdj = T("gdj"), rrhh = T("rrhh"), ofi = T("ofi"), cac = T("cac"), ing = T("ing"), ipo = T("ipo");
+  doneN(pia, 4); doneN(gdj, 3); doneN(rrhh, 3); doneN(ofi, 5); doneN(cac, 2); doneN(ing, 2); doneN(ipo, 3);
+  ex(pia, "Examen UF1 · contabilidad", 6); ex(ofi, "Práctica de hoja de cálculo", 13); ex(ing, "Speaking", 16); ex(gdj, "Examen temas 1-4", 20); ex(rrhh, "Examen 1ª evaluación", 27); ex(ipo, "Examen PRL", 24); ex(cac, "Role play telefónico", 34);
+  pia.notes = "IVA general 21 %, reducido 10 %, superreducido 4 %. Modelo 303 trimestral. Amortización lineal: (Valor − Residual) / Vida útil. Interés simple: I = C·i·t.";
+  const neg = { id: uid(), name: "Proyecto: negocio paralelo", kind: "proyecto", color: COLORS[7], notes: "", exams: [{ id: uid(), title: "Primer cliente de pago", date: K(30) }], topics: [["Elegir nicho y propuesta de valor", 3, 1], ["Validar demanda: 10 entrevistas", 3], ["Página de oferta sin coste", 2], ["Primeros 3 clientes", 3]].map(([title, w, d]) => ({ id: uid(), title, w, done: !!d })) };
+  s.subjects = [pia, gdj, rrhh, ofi, cac, ing, ipo, neg];
   const subs = s.subjects; let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
   for (let d = 40; d >= 1; d--) { if (rnd() < .22) continue; const n = 1 + Math.floor(rnd() * 4); let h = 16; for (let j = 0; j < n; j++) { const sb = subs[Math.floor(rnd() * (subs.length - 1))]; const dt = addDays(today, -d); dt.setHours(h, Math.floor(rnd() * 50), 0, 0); const min = [25, 25, 50, 50, 45][Math.floor(rnd() * 5)]; s.sessions.push({ id: uid(), subjectId: sb.id, topicId: null, start: dt.getTime(), min, example: true }); h += 1; } }
   const t0 = new Date(); t0.setHours(9, 30, 0, 0); if (t0 < new Date()) s.sessions.push({ id: uid(), subjectId: pia.id, topicId: pia.topics[2].id, start: t0.getTime(), min: 50 });
   const mon = mondayOf(today);
   const P = (di, start, min, sb, title, done) => s.plan.push({ id: uid(), date: dkey(addDays(mon, di)), start, min, subjectId: sb.id, title, done: !!done, ai: true });
-  P(0, "17:00", 50, pia, "IVA: ejercicios de liquidación", 1); P(0, "18:00", 40, ofi, "BUSCARV con 3 casos", 1);
+  P(0, "17:00", 50, pia, "Ejercicios: compras y ventas", 1); P(0, "18:00", 40, ofi, "BUSCARV con 3 casos", 1);
   P(1, "17:00", 50, pia, "Amortización lineal y degresiva", 1); P(1, "18:00", 30, ing, "Redactar 2 business emails", 0);
-  P(2, "17:00", 50, gdj, "Trámites de constitución: esquema", 0); P(2, "18:00", 50, pia, "Test de repaso: IVA");
-  P(3, "17:00", 50, pia, "Existencias: PMP vs FIFO"); P(3, "18:00", 40, ofi, "Tablas dinámicas desde cero");
-  P(4, "17:00", 45, rrhh, "Reclutamiento: casos prácticos"); P(4, "18:00", 30, neg, "Guion para 10 entrevistas");
+  P(2, "17:00", 50, gdj, "Trámites de constitución: esquema", 0); P(2, "18:00", 50, pia, "IVA: liquidación del modelo 303");
+  P(3, "17:00", 50, ipo, "Contratos de trabajo: modalidades"); P(3, "18:00", 40, ofi, "Tablas dinámicas desde cero");
+  P(4, "17:00", 45, rrhh, "Reclutamiento: casos prácticos"); P(4, "18:00", 30, cac, "Redactar carta de reclamación");
   P(5, "10:00", 90, pia, "Simulacro de examen completo"); P(5, "12:00", 50, ing, "Speaking: llamada simulada");
-  P(6, "18:00", 50, pia, "Repaso final: fórmulas clave");
+  P(6, "18:00", 50, pia, "Repaso final: cálculo financiero");
   const todayIdx = (today.getDay() + 6) % 7; s.plan.forEach(b => { const di = (parseD(b.date) - mon) / 864e5; if (di > todayIdx) b.done = false; if (di < todayIdx) b.done = b.done || Math.random() < .7; });
   return s;
 }
