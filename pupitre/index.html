@@ -268,6 +268,12 @@ textarea.input{resize:vertical;min-height:110px;line-height:1.55}
 .thinking i{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse 1s ease-in-out infinite;box-shadow:0 0 8px var(--accent)}
 .thinking i:nth-child(2){animation-delay:.15s}.thinking i:nth-child(3){animation-delay:.3s}
 @keyframes pulse{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+.opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+.mockbar{position:sticky;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:5;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 14px;border-radius:14px;background:rgba(11,11,14,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line-strong);margin:14px 0}
+.mock-clock{font-family:var(--f-mono);font-weight:700;font-size:1.4rem;font-variant-numeric:tabular-nums}
+.mock-clock.late{color:var(--bad);text-shadow:0 0 12px var(--bad)}
+.grade{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:18px;border-radius:16px;background:linear-gradient(135deg,var(--accent-soft),transparent 70%);border:1px solid var(--line-strong);margin-top:14px}
+.grade b{font-family:var(--f-display);font-size:3.4rem;line-height:1;font-weight:800;letter-spacing:-.03em}
 .ai-off{font-size:.86rem;color:var(--muted);padding:10px 12px;border-radius:11px;background:var(--sheet-2);border:1px solid var(--line)}
 
 /* Plan */
@@ -463,7 +469,7 @@ const saveUi = () => lsSet(LS_UI, { asigTab: ui.asigTab, studyTab: ui.studyTab, 
 /* ================= almacenamiento: estado + documentos + chats ================= */
 let mainRef = null, assets = null, sample = null, imgLimits = null;
 let remoteTimer = null, writing = false, dirty = false, dbAnswered = false, storeReady = false;
-const S = { view: "hoy", param: null, docs: [], chats: [] };
+const S = { view: "hoy", param: null, docs: [], chats: [], decks: {} };
 const textCache = new Map(), msgCache = new Map();
 function setSync(s) { const el = $("#sync"); if (!el) return; el.dataset.s = s; el.lastElementChild.textContent = { local: "En este dispositivo", cloud: "Guardado en tu cuenta", saving: "Guardando…", error: "Sin conexión · guardado local", loading: "Conectando…" }[s]; }
 function prune() {
@@ -501,6 +507,7 @@ function sWatch(c, cb) {
 function initStores() {
   sWatch("docs", list => { S.docs = list.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)); storeReady = true; render(); });
   sWatch("chats", list => { S.chats = list.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)); storeReady = true; render(); migrateOld(); });
+  sWatch("decks", list => { const m = {}; list.forEach(d => { m[d.id] = Array.isArray(d.cards) ? d.cards : []; }); S.decks = m; render(); });
 }
 const CH = 80000;
 async function saveText(id, text, oldParts = 0) {
@@ -527,6 +534,8 @@ async function migrateOld() {
   let changed = false;
   for (const s of state.subjects) {
     if (s.notes && s.notes.trim()) { const id = uid(), now = Date.now(); try { const parts = await saveText(id, s.notes); await sPut("docs", id, { subjectId: s.id, title: "Apuntes rápidos", type: "note", parts, chars: s.notes.length, createdAt: now, updatedAt: now }); delete s.notes; changed = true; } catch (e) {} }
+    const oc = state.tutor[s.id] && state.tutor[s.id].cards;
+    if (oc && oc.length && !deckOf(s.id).length) { await saveDeck(s.id, oc.map(c => ({ id: uid(), q: c.q, a: c.a, box: c.known ? 2 : 0, due: dkey() }))); delete state.tutor[s.id].cards; changed = true; }
     const old = state.tutor[s.id] && state.tutor[s.id].chat;
     if (old && old.length) { const id = uid(), now = Date.now(); try { await saveMsgs(id, old); await sPut("chats", id, { subjectId: s.id, title: (old[0].content || "Chat").slice(0, 60), n: old.length, ctx: [], createdAt: now, updatedAt: now }); delete state.tutor[s.id].chat; changed = true; } catch (e) {} }
   }
@@ -673,6 +682,7 @@ function viewHoy() {
   if (!state.subjects.length) return `<div class="hello"><div>${school}<h1>${greeting()}${nm}</h1><p class="date">${longDate(new Date())}</p></div></div>
     <div class="empty" style="margin-top:22px"><span class="emo big">📚</span><h2>Empieza por tus asignaturas</h2><p>Añade tus módulos con sus temas y fechas de examen. Con eso Pupitre te organiza el resto.</p><div class="row" style="justify-content:center"><button class="btn btn-p" data-act="add-modules">${E("🏫")} Módulos de 1º AiF</button><button class="btn" data-act="new-subject">${E("➕")} Otra asignatura</button></div></div>`;
   const lastChat = S.chats[0];
+  const dueAll = state.subjects.map(x => ({ s: x, n: deckOf(x.id).filter(isDue).length })).filter(x => x.n); const dueTot = dueAll.reduce((a, x) => a + x.n, 0);
   return `<div class="stack" style="gap:20px">
     <div class="hello"><div>${school}<h1>${greeting()}${nm}</h1><p class="date">${longDate(new Date())}</p></div>
       <button class="btn btn-p btn-lg" data-go="foco">${ic("play")}Empezar sesión</button></div>
@@ -683,6 +693,7 @@ function viewHoy() {
       <div class="card stat"><span class="stat-ic emo">📄</span><div><b>${S.docs.length}</b><small>documentos · ${S.chats.length} chats IA</small></div></div>
     </div>
     ${lastChat && subj(lastChat.subjectId) ? `<a class="card row" href="#chat-${lastChat.id}" style="text-decoration:none;flex-wrap:nowrap"><span class="semo" style="--c:${sColor(lastChat.subjectId)}">${E(sEmo(lastChat.subjectId))}</span><div style="flex:1;min-width:0"><span class="tiny muted">💬 Seguir con tu último chat · ${ago(lastChat.updatedAt)}</span><div style="font-weight:700;overflow-wrap:anywhere">${esc(lastChat.title || "Chat")}</div></div><span class="btn btn-sm">Abrir</span></a>` : ""}
+    ${dueTot ? `<section class="card"><div class="card-h"><h2>${E("🔁")} Repaso de hoy</h2><span class="pill mk">${dueTot} ${dueTot === 1 ? "tarjeta" : "tarjetas"}</span></div><div class="chips">${dueAll.map(({ s, n }) => `<button class="chip" style="--c:${s.color}" data-act="go-review" data-s="${s.id}">${E(s.emoji)}<span>${esc(s.name.split(" ").slice(0, 3).join(" "))} · ${n}</span></button>`).join("")}</div><p class="tiny muted" style="margin-top:10px">5 minutos de repaso al día valen más que una tarde entera antes del examen.</p></section>` : ""}
     <div class="grid g2">
       <section class="card">
         <div class="card-h"><h2>${E("🗓️")} Plan de hoy</h2><a class="btn btn-sm btn-g" href="#plan">Ver semana</a></div>
@@ -1166,14 +1177,155 @@ ${dc.text ? `\nDOCUMENTOS DEL ALUMNO:\n${dc.text}` : ""}`;
 }
 
 /* ---------- Estudiar con IA (esquema, test, tarjetas) ---------- */
-const tut = id => (state.tutor[id] = state.tutor[id] || { summary: "", quiz: null, cards: [], ci: 0 });
+const tut = id => (state.tutor[id] = state.tutor[id] || { summary: "", quiz: null, mocks: [] });
+const fmtGrade = g => (Math.round(g * 10) / 10).toFixed(1).replace(".", ",");
+
+/* ---------- Tarjetas con repaso espaciado (cajas de Leitner) ---------- */
+const BOX_DAYS = [0, 1, 3, 7, 14, 30];
+const deckOf = sid => S.decks[sid] || [];
+const isDue = c => !c.due || c.due <= dkey();
+const deckChain = {};
+function saveDeck(sid, cards) { S.decks[sid] = cards; deckChain[sid] = (deckChain[sid] || Promise.resolve()).then(() => sPut("decks", sid, { cards })).catch(() => toast("⚠️ No se pudieron guardar las tarjetas")); return deckChain[sid]; }
+let review = null;
+function startReview(sid) {
+  const due = deckOf(sid).filter(isDue).sort((a, b) => (a.box || 0) - (b.box || 0)).map(c => c.id);
+  if (!due.length) { toast("🎉 Nada que repasar hoy en este módulo"); return; }
+  review = { sid, queue: due, flipped: false, done: 0, total: due.length }; render();
+}
+function rateCard(r) {
+  if (!review) return; const sid = review.sid; const cards = deckOf(sid).map(c => ({ ...c })); const c = cards.find(x => x.id === review.queue[0]);
+  if (!c) { review.queue.shift(); if (!review.queue.length) review = null; render(); return; }
+  c.seen = true;
+  if (r === "again") { c.box = 0; c.due = dkey(); review.queue.push(review.queue.shift()); }
+  else if (r === "hard") { c.box = Math.max(1, c.box || 0); c.due = dkey(addDays(new Date(), 1)); review.queue.shift(); review.done++; }
+  else { c.box = Math.min(5, (c.box || 0) + 1); c.due = dkey(addDays(new Date(), BOX_DAYS[c.box])); review.queue.shift(); review.done++; }
+  review.flipped = false; saveDeck(sid, cards);
+  if (!review.queue.length) { toast(`🏆 Repaso terminado: ${review.total} tarjetas`); review = null; }
+  render();
+}
+function cardsPane(s, dis) {
+  const cards = deckOf(s.id); const due = cards.filter(isDue).length; const learned = cards.filter(c => (c.box || 0) >= 3).length;
+  if (review && review.sid === s.id && review.queue.length) {
+    const c = cards.find(x => x.id === review.queue[0]); if (!c) { review = null; return cardsPane(s, dis); }
+    const next = BOX_DAYS[Math.min(5, (c.box || 0) + 1)];
+    return `<div class="stack" style="gap:14px;align-items:center;margin-top:16px">
+      <div class="row between" style="width:100%;max-width:560px"><span class="tiny muted num">🔁 ${review.done}/${review.total} repasadas · quedan ${review.queue.length}</span><button class="btn btn-sm btn-g" data-act="review-stop">Salir</button></div>
+      <div class="bar" style="width:100%;max-width:560px"><i style="width:${(review.done / review.total * 100).toFixed(1)}%"></i></div>
+      <div class="flash"><div class="flash-in ${review.flipped ? "flip" : ""}" id="flashIn" role="button" tabindex="0" aria-label="Ver respuesta"><div class="face"><span class="eyebrow">❓ Pregunta · caja ${c.box || 0}/5</span><span class="fq">${esc(c.q)}</span><span class="tiny muted">Toca para ver la respuesta</span></div><div class="face back"><span class="eyebrow">💡 Respuesta</span><div class="prose">${md(c.a)}</div></div></div></div>
+      ${review.flipped ? `<div class="row" style="justify-content:center"><button class="btn" data-act="review-rate" data-r="again">😵 No me la sé</button><button class="btn" data-act="review-rate" data-r="hard">🤔 Dudé</button><button class="btn btn-p" data-act="review-rate" data-r="good">😎 Me la sé</button></div><p class="tiny muted" style="text-align:center">😎 vuelve en ${next} ${next === 1 ? "día" : "días"} · 🤔 mañana · 😵 otra vez hoy</p>` : `<button class="btn btn-p" data-act="review-flip">👀 Ver respuesta</button>`}
+    </div>`;
+  }
+  return `<div class="stats" style="margin-top:16px">
+      <div class="card stat"><span class="stat-ic mk emo">📅</span><div><b>${due}</b><small>para repasar hoy</small></div></div>
+      <div class="card stat"><span class="stat-ic emo">🧠</span><div><b>${learned}</b><small>ya memorizadas</small></div></div>
+      <div class="card stat"><span class="stat-ic emo">🃏</span><div><b>${cards.length}</b><small>en tu mazo</small></div></div>
+    </div>
+    <div class="row" style="margin-top:14px"><button class="btn btn-p" data-act="review-start" data-s="${s.id}" ${due ? "" : "disabled"}>🔁 Repasar ahora${due ? ` (${due})` : ""}</button><button class="btn" data-act="ai-cards" ${dis}>${E("🪄")} Añadir 12 tarjetas con IA</button></div>
+    <p class="tiny muted" style="margin-top:10px">🧠 Repaso espaciado: cada tarjeta que aciertas vuelve más tarde (1, 3, 7, 14 y 30 días) y las que fallas vuelven hoy. Memorizas con la mitad de esfuerzo.</p>
+    ${!cards.length ? `<p class="muted small" style="margin-top:8px">Tu mazo está vacío. Pulsa «Añadir 12 tarjetas con IA» y empieza.</p>` : !due ? `<p class="muted small" style="margin-top:8px">🎉 Hoy no te toca nada en este módulo. Vuelve mañana o añade tarjetas nuevas.</p>` : ""}
+    <div id="cardsOut" style="margin-top:12px"></div>`;
+}
+
+/* ---------- Simulacro de examen ---------- */
+let mockGen = false, mockSaveT = null;
+function mockPane(s, t, dis) {
+  const m = t.mock; const hist = (t.mocks || []).slice(-8);
+  const histHtml = hist.length ? `<div class="row tiny muted" style="margin-top:14px;gap:6px">📈 Tus simulacros: ${hist.map(h => `<span class="pill ${h.grade >= 7 ? "ok" : h.grade >= 5 ? "warn" : "bad"}" title="${shortDate(new Date(h.at))}">${fmtGrade(h.grade)}</span>`).join("")}</div>` : "";
+  if (mockGen) return `<div style="margin-top:16px">${thinkingHtml("Preparando tu examen… (puede tardar un minuto)")}</div>`;
+  if (m && m.status === "grading") return `<div style="margin-top:16px">${thinkingHtml("Corrigiendo como un profe… ✍️")}</div>`;
+  if (m && m.status === "running") {
+    const left = Math.max(0, m.start + m.dur * 60000 - Date.now()); const answered = m.items.filter(x => x.picked != null).length;
+    return `<div class="mockbar"><span class="mock-clock ${left < 300000 ? "late" : ""}" id="mockClock">${pad(Math.floor(left / 60000))}:${pad(Math.floor(left / 1000) % 60)}</span><span class="tiny muted">📝 ${answered}/${m.items.length} test${m.open.length ? ` · ✍️ ${m.open.length} desarrollo` : ""}</span><button class="btn btn-p btn-sm" data-act="mock-submit">📤 Entregar</button></div>
+      <p class="tiny muted">Sin soluciones hasta que entregues, como en el examen real. Si se acaba el tiempo, se entrega solo.</p>
+      ${m.items.map((it, qi) => `<div class="q"><div class="qt">${qi + 1}. ${esc(it.q)}</div>${it.options.map((o, oi) => `<button class="opt ${it.picked === oi ? "sel" : ""}" data-mq="${qi}" data-mo="${oi}"><span class="k">${"ABCD"[oi]}</span><span>${esc(o)}</span></button>`).join("")}</div>`).join("")}
+      ${m.open.map((o, i) => `<div class="q"><div class="qt">✍️ ${m.items.length + i + 1}. ${esc(o.q)}</div><textarea class="input" id="mopen-${i}" data-keep data-mopen="${i}" placeholder="Escribe tu respuesta…">${esc(o.answer || "")}</textarea></div>`).join("")}
+      <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn btn-p btn-lg" data-act="mock-submit">📤 Entregar examen</button></div>`;
+  }
+  if (m && m.status === "done") {
+    const right = m.items.filter(x => x.picked === x.answer).length; const g = m.grade;
+    const face = g >= 9 ? "🏆" : g >= 7 ? "😎" : g >= 5 ? "👍" : "📚";
+    const msg = g >= 9 ? "Nivel matrícula. Así se hace." : g >= 7 ? "Muy bien. Pule los fallos y vas a por el sobresaliente." : g >= 5 ? "Aprobado, pero hay margen. Repasa lo de abajo." : "Aún no. Repasa estos temas y repite el simulacro en un par de días.";
+    return `<div class="grade"><span class="emo" style="font-size:44px">${face}</span><div><span class="eyebrow">Nota del simulacro</span><div><b class="${g >= 5 ? "" : ""}" style="color:${g >= 7 ? "var(--ok)" : g >= 5 ? "var(--warn)" : "var(--bad)"}">${fmtGrade(g)}</b><span class="muted"> / 10</span></div><p class="small muted">${msg}</p></div></div>
+      <div class="stats" style="margin-top:12px">
+        <div class="card stat"><span class="stat-ic emo">📝</span><div><b>${right}/${m.items.length}</b><small>test · ${fmtGrade(m.mcq)} / 10</small></div></div>
+        ${m.open.length ? `<div class="card stat"><span class="stat-ic emo">✍️</span><div><b>${m.openAvg == null ? "—" : fmtGrade(m.openAvg)}</b><small>desarrollo / 10</small></div></div>` : ""}
+        <div class="card stat"><span class="stat-ic emo">⏱️</span><div><b>${m.used || 0} min</b><small>de ${m.dur} disponibles</small></div></div>
+      </div>
+      ${m.gradeNote ? `<p class="ai-off" style="margin-top:12px">⚠️ ${esc(m.gradeNote)}</p>` : ""}
+      ${(m.repasar || []).length ? `<div class="card" style="margin-top:14px;background:var(--marker-soft);border-color:rgba(255,228,92,.35)"><h3>${E("🎯")} Repasa esto antes del examen</h3><ul style="margin:8px 0 0;padding-left:20px">${m.repasar.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}
+      <details style="margin-top:14px" ${right < m.items.length ? "open" : ""}><summary class="small muted" style="cursor:pointer">${E("🔍")} Ver corrección del test</summary>
+        ${m.items.map((it, qi) => `<div class="q"><div class="qt">${qi + 1}. ${esc(it.q)}</div>${it.options.map((o, oi) => `<div class="opt ${oi === it.answer ? "right" : oi === it.picked ? "wrong" : ""}"><span class="k">${"ABCD"[oi]}</span><span>${esc(o)}</span></div>`).join("")}<div class="why">${it.picked === it.answer ? "✅ <b>Correcto.</b> " : it.picked == null ? "⚪ <b>Sin responder.</b> " : "❌ <b>Incorrecto.</b> "}${esc(it.why || "")}</div></div>`).join("")}
+      </details>
+      ${m.open.map((o, i) => `<div class="q"><div class="qt">✍️ ${esc(o.q)}</div><div class="small"><span class="muted">Tu respuesta:</span> ${o.answer ? esc(o.answer) : "<i class='muted'>(en blanco)</i>"}</div>${typeof o.points === "number" ? `<div class="why"><b>${fmtGrade(o.points)} / 10.</b> ${esc(o.feedback || "")}</div>` : ""}<details><summary class="tiny muted" style="cursor:pointer">💡 Respuesta modelo</summary><div class="prose small">${md(o.ref)}</div></details></div>`).join("")}
+      <div class="row" style="margin-top:14px"><button class="btn btn-p" data-act="mock-new">${E("🔁")} Nuevo simulacro</button></div>${histHtml}`;
+  }
+  return `<div class="row" style="align-items:flex-end;margin-top:14px">
+      <label class="field" style="width:150px"><span>📝 Preguntas test</span><select class="input" id="mockN"><option>10</option><option selected>15</option><option>20</option></select></label>
+      <label class="field" style="width:150px"><span>✍️ De desarrollo</span><select class="input" id="mockO"><option value="0">Ninguna</option><option value="2" selected>2</option><option value="3">3</option></select></label>
+      <label class="field" style="width:130px"><span>⏱️ Tiempo</span><select class="input" id="mockDur"><option value="20">20 min</option><option value="30">30 min</option><option value="45" selected>45 min</option><option value="60">60 min</option></select></label>
+      <button class="btn btn-p" data-act="mock-start" ${dis}>⏱️ Empezar simulacro</button></div>
+    <p class="tiny muted" style="margin-top:10px">Como el examen real: con tiempo y sin ver soluciones hasta entregar. Te pongo nota sobre 10, corrijo el desarrollo y te digo qué repasar.</p>${histHtml}`;
+}
+async function startMock() {
+  const s = subj(S.param), t = tut(s.id); if (!sample) return;
+  const n = +($("#mockN") || {}).value || 15, o = +(($("#mockO") || {}).value || 0), dur = +($("#mockDur") || {}).value || 45;
+  mockGen = true; render();
+  try {
+    const src = await studySource(s, 110000);
+    const prompt = `Crea un SIMULACRO DE EXAMEN realista de este módulo: ${n} preguntas tipo test (4 opciones, 1 correcta, dificultad de examen real de FP; cubre sobre todo los temas de importancia clave y los documentos del alumno; incluye preguntas prácticas con cálculos si la materia lo permite; las incorrectas, errores típicos plausibles; varía la posición de la correcta)${o ? ` y ${o} preguntas de desarrollo o casos prácticos cortos, cada una con su respuesta modelo y criterios de corrección` : ""}. En español.
+${src}
+
+Responde SOLO con JSON: {"mcq":[{"q":"","options":["","","",""],"answer":0,"why":"explicación breve"}],"open":[{"q":"","ref":"respuesta modelo y criterios"}]}`;
+    const r = await sample.json(prompt, { modelTier: "default", cache: false });
+    const items = (r && Array.isArray(r.mcq) ? r.mcq : []).filter(x => x && x.q && Array.isArray(x.options) && x.options.length >= 2).slice(0, 25).map(x => ({ q: String(x.q), options: x.options.slice(0, 4).map(String), answer: Math.max(0, Math.min(x.options.length - 1, +x.answer || 0)), why: String(x.why || ""), picked: null }));
+    const open = (r && Array.isArray(r.open) ? r.open : []).filter(x => x && x.q).slice(0, o).map(x => ({ q: String(x.q), ref: String(x.ref || ""), answer: "" }));
+    if (!items.length) throw { code: "invalid_json" };
+    t.mock = { status: "running", items, open, start: Date.now(), dur };
+    mockGen = false; commit(); toast("⏱️ ¡Empieza el simulacro! Mucha suerte 🍀");
+  } catch (e) { mockGen = false; render(); toast("⚠️ " + aiErr(e)); }
+}
+async function submitMock(sid) {
+  const s = subj(sid); if (!s) return; const t = tut(sid); const m = t.mock; if (!m || m.status !== "running") return;
+  $$("[data-mopen]").forEach(el => { if (m.open[+el.dataset.mopen]) m.open[+el.dataset.mopen].answer = el.value; });
+  m.status = "grading"; m.used = Math.max(1, Math.min(m.dur, Math.round((Date.now() - m.start) / 60000))); commit();
+  const right = m.items.filter(x => x.picked === x.answer).length; m.mcq = m.items.length ? right / m.items.length * 10 : 0; m.repasar = [];
+  try {
+    if (!sample) throw 0;
+    const wrong = m.items.filter(x => x.picked !== x.answer).map(x => "- " + x.q);
+    const prompt = `Eres profesor de «${s.name}». ${COURSE_CTX()} Corrige con criterio de examen de FP, justo pero exigente.
+${m.open.length ? `Preguntas de desarrollo: puntúa cada una de 0 a 10 y da un feedback de 1-2 frases concreto (qué falta o qué está mal).
+${m.open.map((o, i) => `${i + 1}. Pregunta: ${o.q}
+Respuesta modelo y criterios: ${o.ref}
+Respuesta del alumno: ${o.answer || "(en blanco)"}`).join("\n\n")}
+` : ""}
+Preguntas tipo test que ha fallado:
+${wrong.join("\n") || "(ninguna)"}
+Indica de 2 a 5 temas concretos que debe repasar.
+Responde SOLO con JSON: {"open":[{"points":número,"feedback":"texto"}],"repasar":["tema"]}`;
+    const r = await sample.json(prompt, { modelTier: "default", cache: false });
+    if (r && Array.isArray(r.open)) m.open.forEach((o, i) => { const g = r.open[i]; if (g) { o.points = Math.max(0, Math.min(10, +g.points || 0)); o.feedback = String(g.feedback || ""); } });
+    if (r && Array.isArray(r.repasar)) m.repasar = r.repasar.slice(0, 6).map(String);
+  } catch (e) { if (m.open.length) m.gradeNote = "No se pudo corregir el desarrollo con IA: la nota cuenta solo el test."; }
+  const graded = m.open.filter(o => typeof o.points === "number");
+  m.openAvg = m.open.length && graded.length === m.open.length ? graded.reduce((a, o) => a + o.points, 0) / graded.length : null;
+  m.grade = m.openAvg == null ? m.mcq : m.mcq * .6 + m.openAvg * .4;
+  m.status = "done"; t.mocks = (t.mocks || []).concat({ at: Date.now(), grade: m.grade }).slice(-20);
+  commit(); toast(`📊 Nota del simulacro: ${fmtGrade(m.grade)}`);
+}
+setInterval(() => {
+  if (!state || S.view !== "asig") return; const t = state.tutor[S.param]; const m = t && t.mock; if (!m || m.status !== "running") return;
+  const left = m.start + m.dur * 60000 - Date.now(); const el = $("#mockClock");
+  if (el) { el.textContent = `${pad(Math.max(0, Math.floor(left / 60000)))}:${pad(Math.max(0, Math.floor(left / 1000) % 60))}`; el.classList.toggle("late", left < 300000); }
+  if (left <= 0) { toast("⏰ ¡Tiempo! Entregando…"); submitMock(S.param); }
+}, 1000);
 const studyCtx = s => { const docs = docsOf(s.id).filter(d => d.chars); const saved = ui.ctx[s.id]; return saved ? saved.filter(id => docs.some(d => d.id === id)) : docs.slice(0, 5).map(d => d.id); };
 function tabEstudiar(s) {
   const t = tut(s.id); const docs = docsOf(s.id).filter(d => d.chars); const ctx = studyCtx(s); const dis = sample ? "" : "disabled";
+  const due = deckOf(s.id).filter(isDue).length; const running = t.mock && t.mock.status === "running";
   const head = `<div class="stack" style="gap:12px">
-    <div class="seg" role="tablist">${[["resumen", "🗺️ Esquema 80/20"], ["test", "📝 Test"], ["tarjetas", "🃏 Tarjetas"]].map(([k, l]) => `<button data-stab="${k}" aria-pressed="${ui.studyTab === k}">${l}</button>`).join("")}</div>
+    <div class="seg" role="tablist">${[["resumen", "🗺️ Esquema 80/20"], ["test", "📝 Test rápido"], ["tarjetas", `🃏 Tarjetas${due ? ` · ${due}` : ""}`], ["simulacro", `⏱️ Simulacro${running ? " 🔴" : ""}`]].map(([k, l]) => `<button data-stab="${k}" aria-pressed="${ui.studyTab === k}">${l}</button>`).join("")}</div>
     ${!sample ? `<p class="ai-off">${E("🔌")} La IA se activa al abrir Pupitre dentro de Claude (usa tu propia cuenta).</p>` : ""}
-    <div class="ctxbar"><span class="tiny muted">${E("📎")} Fuente:</span>${docs.length ? docs.map(d => `<button type="button" class="ctxchip" data-sctx="${d.id}" aria-pressed="${ctx.includes(d.id)}" title="${esc(d.title)}">${E(DOC_EMO[d.type] || "📄")}<span>${esc(d.title)}</span></button>`).join("") : `<span class="tiny muted">temas del módulo (sube documentos para que se base en tus apuntes)</span>`}</div>
+    ${(ui.studyTab === "simulacro" && running) || (ui.studyTab === "tarjetas" && review && review.sid === s.id) ? "" : `<div class="ctxbar"><span class="tiny muted">${E("📎")} Fuente:</span>${docs.length ? docs.map(d => `<button type="button" class="ctxchip" data-sctx="${d.id}" aria-pressed="${ctx.includes(d.id)}" title="${esc(d.title)}">${E(DOC_EMO[d.type] || "📄")}<span>${esc(d.title)}</span></button>`).join("") : `<span class="tiny muted">temas del módulo (sube documentos para que se base en tus apuntes)</span>`}</div>`}
   </div>`;
   let body = "";
   if (ui.studyTab === "resumen") {
@@ -1191,22 +1343,19 @@ function tabEstudiar(s) {
         + q.items.map((it, qi) => `<div class="q"><div class="qt">${qi + 1}. ${esc(it.q)}</div>${it.options.map((o, oi) => { let cls = ""; if (it.picked != null) { if (oi === it.answer) cls = "right"; else if (oi === it.picked) cls = "wrong"; } return `<button class="opt ${cls}" data-qi="${qi}" data-oi="${oi}" ${it.picked != null ? "disabled" : ""}><span class="k">${"ABCD"[oi]}</span><span>${esc(o)}</span></button>`; }).join("")}${it.picked != null ? `<div class="why">${it.picked === it.answer ? "✅ <b>Correcto.</b> " : "❌ <b>Incorrecto.</b> "}${esc(it.why || "")}</div>` : ""}</div>`).join("");
     }
     body += `</div>`;
-  } else {
-    const cards = t.cards || []; const i = Math.min(t.ci || 0, Math.max(0, cards.length - 1)); const c = cards[i]; const known = cards.filter(x => x.known).length;
-    body = `<div class="row" style="margin-top:14px"><button class="btn ${cards.length ? "" : "btn-p"}" data-act="ai-cards" ${dis}>${E("🪄")} ${cards.length ? "Nuevas tarjetas" : "Generar tarjetas"}</button></div>
-      <div id="cardsOut" style="margin-top:16px">${c ? `<div class="stack" style="gap:14px;align-items:center">
-        <div class="row between" style="width:100%;max-width:560px"><span class="tiny muted num">Tarjeta ${i + 1} de ${cards.length}</span><span class="pill ok">✅ ${known} dominadas</span></div>
-        <div class="flash"><div class="flash-in" id="flashIn" role="button" tabindex="0" aria-label="Girar tarjeta"><div class="face"><span class="eyebrow">❓ Pregunta</span><span class="fq">${esc(c.q)}</span>${c.known ? `<span class="pill ok">Dominada</span>` : ""}<span class="tiny muted">Toca para girar</span></div><div class="face back"><span class="eyebrow">💡 Respuesta</span><div class="prose">${md(c.a)}</div></div></div></div>
-        <div class="row" style="justify-content:center"><button class="btn" data-act="card-again">🔁 Repasar otra vez</button><button class="btn btn-p" data-act="card-known">${ic("check")}Me la sé</button></div>
-      </div>` : `<p class="muted small">Sin tarjetas aún. Genera 12 con lo que tienes que saberte de memoria.</p>`}</div>`;
-  }
+  } else if (ui.studyTab === "tarjetas") body = cardsPane(s, dis);
+  else body = mockPane(s, t, dis);
   return `<section class="card">${head}${body}</section>`;
 }
 function bindStudy(s) {
   $$("[data-stab]").forEach(b => b.onclick = () => { ui.studyTab = b.dataset.stab; saveUi(); render(); });
   $$("[data-sctx]").forEach(b => b.onclick = () => { const set = new Set(studyCtx(s)); const id = b.dataset.sctx; set.has(id) ? set.delete(id) : set.add(id); ui.ctx[s.id] = [...set]; saveUi(); render(); });
   $$(".opt[data-qi]").forEach(b => b.onclick = () => { const t = tut(s.id); const it = t.quiz.items[+b.dataset.qi]; if (it.picked != null) return; it.picked = +b.dataset.oi; commit(); });
-  const fl = $("#flashIn"); if (fl) { const flip = () => fl.classList.toggle("flip"); fl.onclick = flip; fl.onkeydown = e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); flip(); } }; }
+  const t = tut(s.id);
+  $$("[data-mq]").forEach(b => b.onclick = () => { const m = t.mock; if (!m || m.status !== "running") return; m.items[+b.dataset.mq].picked = +b.dataset.mo; commit(); });
+  $$("[data-mopen]").forEach(el => el.addEventListener("input", () => { const m = t.mock; if (!m || m.status !== "running") return; m.open[+el.dataset.mopen].answer = el.value; clearTimeout(mockSaveT); mockSaveT = setTimeout(() => commit(false), 1200); }));
+  const fl = $("#flashIn");
+  if (fl && review && !review.flipped) { const flip = () => { fl.classList.add("flip"); setTimeout(() => { if (review) { review.flipped = true; render(); } }, 320); }; fl.onclick = flip; fl.onkeydown = e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); flip(); } }; }
 }
 async function studySource(s, budget) { const dc = await docsContext(studyCtx(s), budget); return `${COURSE_CTX()}\n${subjContext(s)}${dc.text ? `\n\nAPUNTES Y DOCUMENTOS DEL ALUMNO:\n${dc.text}` : "\n\n(Sin documentos: básate en los temas y en el temario estándar del módulo.)"}`; }
 async function aiSummary() {
@@ -1251,18 +1400,21 @@ Responde SOLO con JSON: [{"q":"pregunta","options":["A","B","C","D"],"answer":í
   } catch (e) { out.innerHTML = `<p class="ai-off">⚠️ ${aiErr(e)}</p>`; }
 }
 async function aiCards() {
-  const s = subj(S.param), t = tut(s.id); const out = $("#cardsOut"); out.innerHTML = thinkingHtml("Creando tarjetas…");
+  const s = subj(S.param); const out = $("#cardsOut"); if (out) out.innerHTML = thinkingHtml("Creando tarjetas…");
   try {
-    const src = await studySource(s, 90000);
-    const prompt = `Crea 12 tarjetas de memoria en español con lo que el alumno tiene que saberse de memoria de este módulo: definiciones clave, fórmulas, plazos, porcentajes, clasificaciones. Prioriza lo que más cae en examen y lo que aparece en sus documentos. Pregunta corta; respuesta concisa (máx. 40 palabras, puede usar **negrita**).
+    const src = await studySource(s, 90000); const have = deckOf(s.id);
+    const prompt = `Crea 12 tarjetas de memoria en español con lo que el alumno tiene que saberse de memoria de este módulo: definiciones clave, fórmulas, plazos, porcentajes, clasificaciones. Prioriza lo que más cae en examen y lo que aparece en sus documentos. Pregunta corta; respuesta concisa (máx. 40 palabras, puede usar **negrita**).${have.length ? `\nYa tiene estas tarjetas, NO las repitas:\n${have.slice(-80).map(c => "- " + c.q).join("\n")}` : ""}
 ${src}
 
 Responde SOLO con JSON: [{"q":"pregunta","a":"respuesta"}]`;
     const arr = await sample.json(prompt, { modelTier: "default", cache: false });
-    const cards = (Array.isArray(arr) ? arr : []).filter(x => x && x.q && x.a).slice(0, 20).map(x => ({ q: String(x.q), a: String(x.a), known: false }));
-    if (!cards.length) throw { code: "invalid_json" };
-    t.cards = cards; t.ci = 0; commit();
-  } catch (e) { out.innerHTML = `<p class="ai-off">⚠️ ${aiErr(e)}</p>`; }
+    const seen = new Set(have.map(c => String(c.q).trim().toLowerCase()));
+    const add = (Array.isArray(arr) ? arr : []).filter(x => x && x.q && x.a && !seen.has(String(x.q).trim().toLowerCase())).slice(0, 20).map(x => ({ id: uid(), q: String(x.q), a: String(x.a), box: 0, due: dkey() }));
+    if (!add.length) throw { code: "invalid_json" };
+    const cards = have.concat(add);
+    while (cards.length > 20 && new Blob([JSON.stringify(cards)]).size > 200000) cards.shift();
+    await saveDeck(s.id, cards); toast(`🃏 ${add.length} tarjetas nuevas listas para repasar`); render();
+  } catch (e) { const o = $("#cardsOut"); if (o) o.innerHTML = `<p class="ai-off">⚠️ ${aiErr(e)}</p>`; }
 }
 async function aiBreakdown() {
   const s = subj(S.param); if (!s || !sample) return;
@@ -1514,7 +1666,14 @@ document.addEventListener("click", e => {
     case "ai-quiz": aiQuiz(); break;
     case "ai-cards": aiCards(); break;
     case "go-study": ui.asigTab = "estudiar"; saveUi(); go("asig-" + a.dataset.s); break;
-    case "card-known": case "card-again": { const t = tut(cur.id); const c = t.cards[t.ci || 0]; if (c) c.known = act === "card-known"; const n = t.cards.length, i = t.ci || 0; for (let k = 1; k <= n; k++) { const j = (i + k) % n; if (!t.cards[j].known || k === n) { t.ci = j; break; } } if (t.cards.every(x => x.known)) toast("🏆 Todas dominadas. Genera nuevas o repasa."); commit(); break; }
+    case "review-start": startReview(a.dataset.s || cur.id); break;
+    case "review-flip": if (review) { const fl = $("#flashIn"); if (fl) fl.classList.add("flip"); setTimeout(() => { if (review) { review.flipped = true; render(); } }, 320); } break;
+    case "review-rate": rateCard(a.dataset.r); break;
+    case "review-stop": review = null; render(); break;
+    case "go-review": ui.asigTab = "estudiar"; ui.studyTab = "tarjetas"; saveUi(); go("asig-" + a.dataset.s); startReview(a.dataset.s); break;
+    case "mock-start": startMock(); break;
+    case "mock-submit": submitMock(cur.id); break;
+    case "mock-new": tut(cur.id).mock = null; commit(); break;
     case "clear-example": { const name = state.profile.name; state = blankState(); state.profile.name = name; state.profile.school = SCHOOL; resetTimer(); commit(false); go("hoy"); render(); toast("🧹 Ejemplo borrado. Elige tus módulos."); modulesModal(); break; }
   }
 });
