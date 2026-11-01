@@ -447,7 +447,10 @@ const W_LABEL = { 1: "💤 Baja", 2: "⭐ Media", 3: "🔥 Clave" };
 const W_TXT = { 1: "baja", 2: "media", 3: "clave" };
 const DOC_EMO = { note: "📝", pdf: "📕", docx: "📘", image: "🖼️", text: "📄", file: "📎", web: "🔗", youtube: "▶️" };
 const DOC_LBL = { note: "Nota", pdf: "PDF", docx: "Word", image: "Imagen", text: "Texto", file: "Archivo", web: "Web", youtube: "YouTube" };
-const SCHOOL = "Escola Joan XXIII · 1r CFGS Administració i Finances";
+const PRESET = (document.querySelector('meta[name="pupitre-preset"]') || {}).content || "aif";
+const SCHOOL = PRESET === "mecanica" ? "URV · 1º Grado en Ingeniería Mecánica" : "Escola Joan XXIII · 1r CFGS Administració i Finances";
+const PRESET_LABEL = PRESET === "mecanica" ? "⚙️ 1º Mecánica · URV" : "🏫 1º AdFi · Joan XXIII";
+const PRESET_BTN = PRESET === "mecanica" ? "⚙️ Asignaturas de 1º Mecánica" : "🏫 Módulos de 1º AiF";
 
 const I = {
   check: '<path d="M5 12.5l4.5 4.5L19 7"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>', plus: '<path d="M12 5v14M5 12h14"/>',
@@ -459,7 +462,7 @@ const ic = (name, extra = "") => `<svg viewBox="0 0 24 24" fill="none" stroke="c
 const E = (e, cls = "") => `<span class="emo ${cls}">${e}</span>`;
 
 /* ===== Módulos de 1º del CFGS Administración y Finanzas (currículo LOE: RD 1584/2011 y adaptación de Cataluña) ===== */
-const CURSO = [
+const CURSO_AIF = [
   { key: "pia", emoji: "🧾", name: "Proceso integral de la actividad comercial", ca: "Procés integral de l'activitat comercial", color: COLORS[0], def: true, topics: [
     ["Patrimonio, masas patrimoniales y balance", 2], ["PGC: marco conceptual y cuadro de cuentas", 3], ["Partida doble, libro diario y mayor", 3],
     ["Compras y ventas: grupos 6 y 7, descuentos y devoluciones", 3], ["Facturación: requisitos de la factura", 2], ["IVA: devengo, base, tipos y liquidación (modelo 303)", 3],
@@ -495,6 +498,26 @@ const CURSO = [
   { key: "sos", emoji: "🌱", name: "Sostenibilidad aplicada al sistema productivo", ca: "Sostenibilitat aplicada al sistema productiu", color: COLORS[9], def: false, topics: [
     ["Objetivos de Desarrollo Sostenible (ODS)", 2], ["Economía circular", 3], ["Impacto ambiental de la actividad administrativa", 2], ["Plan de sostenibilidad de la empresa", 3]] },
 ];
+const CURSO_MEC = [
+  { key: "mat", emoji: "📐", name: "Matemáticas (Cálculo y Álgebra)", ca: "Càlcul i Àlgebra", color: COLORS[0], def: true, topics: [
+    ["Números reales y complejos", 1], ["Funciones, límites y continuidad", 2], ["Derivadas y aplicaciones (optimización, Taylor)", 3], ["Integrales y aplicaciones (áreas, volúmenes)", 3],
+    ["Sucesiones y series", 2], ["Matrices y determinantes", 3], ["Sistemas de ecuaciones lineales (Gauss)", 3], ["Espacios vectoriales y aplicaciones lineales", 2],
+    ["Valores y vectores propios, diagonalización", 3], ["Funciones de varias variables y derivadas parciales", 2], ["Introducción a ecuaciones diferenciales", 2]] },
+  { key: "fis", emoji: "🧲", name: "Física", ca: "Física", color: COLORS[1], def: true, topics: [
+    ["Magnitudes, unidades y vectores", 1], ["Cinemática de la partícula", 3], ["Dinámica: leyes de Newton y rozamiento", 3], ["Trabajo, energía y conservación", 3],
+    ["Momento lineal y choques", 2], ["Sólido rígido: rotación y momento de inercia", 3], ["Estática y equilibrio", 3], ["Oscilaciones y movimiento armónico", 2],
+    ["Fluidos: hidrostática y Bernoulli", 2], ["Termodinámica: calor, trabajo y primer principio", 2], ["Electrostática y campo eléctrico", 2], ["Corriente eléctrica y circuitos", 2], ["Campo magnético e inducción", 1]] },
+  { key: "qui", emoji: "🧪", name: "Química", ca: "Química", color: COLORS[2], def: true, topics: [
+    ["Estructura atómica y tabla periódica", 2], ["Enlace químico", 3], ["Estequiometría y reacciones", 3], ["Gases y estados de la materia", 2], ["Termoquímica", 3],
+    ["Cinética química", 2], ["Equilibrio químico", 3], ["Ácidos y bases", 2], ["Electroquímica y corrosión", 3], ["Materiales: metales, polímeros y cerámicos", 2]] },
+  { key: "dib", emoji: "📏", name: "Dibujo técnico (Expresión gráfica)", ca: "Expressió gràfica", color: COLORS[4], def: true, topics: [
+    ["Normalización: formatos, líneas y escalas", 2], ["Geometría plana y tangencias", 2], ["Sistema diédrico", 3], ["Vistas normalizadas", 3], ["Perspectivas isométrica y caballera", 2],
+    ["Cortes y secciones", 3], ["Acotación", 3], ["Tolerancias y ajustes", 2], ["Elementos de máquinas: roscas y uniones", 2], ["CAD 2D y 3D", 2]] },
+  { key: "ade", emoji: "💼", name: "Empresa (ADE)", ca: "Empresa", color: COLORS[3], def: true, topics: [
+    ["La empresa y su entorno", 1], ["Formas jurídicas de empresa", 2], ["Dirección y organización", 2], ["Inversión: VAN, TIR y payback", 3], ["Financiación de la empresa", 2],
+    ["Contabilidad básica: balance y resultados", 3], ["Costes y punto muerto", 3], ["Función productiva y productividad", 2], ["Marketing", 1], ["Recursos humanos", 1]] },
+];
+const CURSO = PRESET === "mecanica" ? CURSO_MEC : CURSO_AIF;
 const fromTpl = t => ({ id: uid(), tpl: t.key, emoji: t.emoji, name: t.name, kind: "asignatura", color: t.color, exams: [], topics: t.topics.map(([title, w]) => ({ id: uid(), title, w, done: false })) });
 const hasTpl = t => state && state.subjects.some(x => x.tpl === t.key || x.name === t.name);
 const tplPicker = (prefix, onlyMissing) => CURSO.filter(t => !onlyMissing || !hasTpl(t)).map(t => `<label class="mod" style="--c:${t.color}"><input type="checkbox" data-${prefix}="${t.key}" ${t.def ? "checked" : ""}>${E(t.emoji)}<span style="min-width:0"><b>${esc(t.name)}</b><span class="tiny muted" style="display:block">${esc(t.ca)} · ${t.topics.length} temas${t.def ? "" : " · según centro"}</span></span></label>`).join("");
@@ -716,12 +739,12 @@ function viewOnboarding() {
       </div>
       <form id="onbForm" class="card stack" style="gap:14px">
         <label class="field"><span>¿Cómo te llamas?</span><input class="input" id="onbName" placeholder="Tu nombre" autocomplete="given-name" maxlength="40"></label>
-        <div class="field"><span>¿Qué estudias?</span><div class="seg" role="group" aria-label="Curso"><button type="button" data-oc="aif" aria-pressed="true">🏫 1º AdFi · Joan XXIII</button><button type="button" data-oc="otro" aria-pressed="false">✏️ Otro curso</button></div></div>
-        <div class="field" id="ocAif"><span>Tus módulos de este curso (desmarca los que no tengas)</span><div class="mods">${tplPicker("onb", false)}</div></div>
+        <div class="field"><span>¿Qué estudias?</span><div class="seg" role="group" aria-label="Curso"><button type="button" data-oc="aif" aria-pressed="true">${PRESET_LABEL}</button><button type="button" data-oc="otro" aria-pressed="false">✏️ Otro curso</button></div></div>
+        <div class="field" id="ocAif"><span>${PRESET === "mecanica" ? "Tus asignaturas" : "Tus módulos"} de este curso (desmarca los que no tengas)</span><div class="mods">${tplPicker("onb", false)}</div></div>
         <div class="field" id="ocOtro" hidden><span>Escribe tu curso (y el centro si quieres)</span><input class="input" id="onbCourse" placeholder="p. ej. 2º Bachillerato Ciencias · IES Bellvitge" maxlength="90"><span class="tiny muted">Después pegas tu clave de Gemini y la IA te crea las asignaturas con sus temas.</span></div>
         <div class="row">
           <button class="btn btn-p btn-lg" type="submit">${E("🚀")} Crear mi curso</button>
-          <button class="btn btn-lg" type="button" id="onbExample">${E("👀")} Ver ejemplo</button>
+          ${PRESET === "aif" ? `<button class="btn btn-lg" type="button" id="onbExample">${E("👀")} Ver ejemplo</button>` : ""}
           <button class="btn btn-g" type="button" id="onbEmpty">Empezar vacío</button>
         </div>
         ${loading ? `<p class="tiny muted"><span class="thinking"><i></i><i></i><i></i></span> Buscando tus datos guardados…</p>` : ""}
@@ -730,9 +753,9 @@ function viewOnboarding() {
     <div class="preview" aria-hidden="true">
       <div class="card stack" style="gap:16px">
         <div class="row between"><span class="eyebrow">Hoy · plan</span><span class="pill warn">${E("🚨")} Examen en 6 días</span></div>
-        ${[["17:00", "🧾", "IVA: liquidación del modelo 303", COLORS[0], 1], ["18:00", "💻", "Tablas dinámicas", COLORS[2], 0], ["19:00", "🗣️", "Business emails", COLORS[4], 0]].map(([t, e, n, c, d]) => `<div class="blk ${d ? "done" : ""}" style="--c:${c}"><span class="check" aria-checked="${d ? "true" : "false"}">${ic("check")}</span><span class="ttl">${E(e)} ${n}</span><span class="t">${t}</span></div>`).join("")}
+        ${(PRESET === "mecanica" ? [["17:00", "📐", "Derivadas: problemas de optimización", COLORS[0], 1], ["18:00", "🧲", "Dinámica: leyes de Newton", COLORS[1], 0], ["19:00", "📏", "Sistema diédrico", COLORS[4], 0]] : [["17:00", "🧾", "IVA: liquidación del modelo 303", COLORS[0], 1], ["18:00", "💻", "Tablas dinámicas", COLORS[2], 0], ["19:00", "🗣️", "Business emails", COLORS[4], 0]]).map(([t, e, n, c, d]) => `<div class="blk ${d ? "done" : ""}" style="--c:${c}"><span class="check" aria-checked="${d ? "true" : "false"}">${ic("check")}</span><span class="ttl">${E(e)} ${n}</span><span class="t">${t}</span></div>`).join("")}
         <div class="ring" style="width:170px;margin:4px auto;--c:${COLORS[0]}"><svg viewBox="0 0 260 260"><circle class="track" cx="130" cy="130" r="118" fill="none" stroke-width="12"/><circle class="prog" cx="130" cy="130" r="118" fill="none" stroke-width="12" stroke-linecap="round" stroke-dasharray="741" stroke-dashoffset="250"/></svg><div class="ring-center"><span class="clock" style="font-size:2.3rem">16:24</span><span class="phase">🎯 Foco</span></div></div>
-        <div class="msg a small"><b>🤖 Tutor:</b> En tu PDF del tema 4, lo que más cae es la <b>liquidación del IVA</b>. Te pongo un caso práctico…</div>
+        <div class="msg a small"><b>🤖 Tutor:</b> ${PRESET === "mecanica" ? "En tus apuntes de Física, lo que más cae es el <b>sólido rígido</b>. Te pongo un problema tipo examen…" : "En tu PDF del tema 4, lo que más cae es la <b>liquidación del IVA</b>. Te pongo un caso práctico…"}</div>
       </div>
     </div>
   </section>`;
@@ -752,7 +775,7 @@ function bindOnboarding() {
     commit(false); toast(state.subjects.length ? `🎉 ${state.subjects.length} módulos creados. Mete tus fechas de examen.` : "✅ Listo. Añade tu primera asignatura.");
     go(state.subjects.length ? "hoy" : "asignaturas"); render();
   });
-  $("#onbExample").addEventListener("click", () => { state = exampleState(); state.profile.name = $("#onbName").value.trim(); commit(false); go("hoy"); render(); });
+  $("#onbExample") && $("#onbExample").addEventListener("click", () => { state = exampleState(); state.profile.name = $("#onbName").value.trim(); commit(false); go("hoy"); render(); });
   $("#onbEmpty").addEventListener("click", () => { state = blankState(); state.profile.name = $("#onbName").value.trim(); commit(false); go("asignaturas"); render(); });
 }
 
@@ -769,7 +792,7 @@ function viewHoy() {
   const nm = state.profile.name ? `, ${esc(state.profile.name)}` : "";
   const school = state.profile.school ? `<span class="school">${E("🏫")} ${esc(state.profile.school)}</span>` : "";
   if (!state.subjects.length) return `<div class="hello"><div>${school}<h1>${greeting()}${nm}</h1><p class="date">${longDate(new Date())}</p></div></div>
-    <div class="empty" style="margin-top:22px"><span class="emo big">📚</span><h2>Empieza por tus asignaturas</h2><p>Añade tus módulos con sus temas y fechas de examen. Con eso Pupitre te organiza el resto.</p><div class="row" style="justify-content:center"><button class="btn btn-p" data-act="ai-subjects">${E("🪄")} Crear con IA</button>${(!state.profile.school || /administr/i.test(state.profile.school)) ? `<button class="btn" data-act="add-modules">${E("🏫")} Módulos de 1º AiF</button>` : ""}<button class="btn" data-act="new-subject">${E("➕")} Otra asignatura</button></div></div>`;
+    <div class="empty" style="margin-top:22px"><span class="emo big">📚</span><h2>Empieza por tus asignaturas</h2><p>Añade tus módulos con sus temas y fechas de examen. Con eso Pupitre te organiza el resto.</p><div class="row" style="justify-content:center"><button class="btn btn-p" data-act="ai-subjects">${E("🪄")} Crear con IA</button>${(!state.profile.school || state.profile.school === SCHOOL || /administr/i.test(state.profile.school)) ? `<button class="btn" data-act="add-modules">${PRESET_BTN}</button>` : ""}<button class="btn" data-act="new-subject">${E("➕")} Otra asignatura</button></div></div>`;
   const lastChat = S.chats[0];
   const dueAll = state.subjects.map(x => ({ s: x, n: deckOf(x.id).filter(isDue).length })).filter(x => x.n); const dueTot = dueAll.reduce((a, x) => a + x.n, 0);
   return `<div class="stack" style="gap:20px">
@@ -927,12 +950,12 @@ function viewAsignaturas() {
   const list = state.subjects;
   return `<div class="stack" style="gap:18px">
     <div class="row between"><div><h1>${E("📚")} Asignaturas</h1><p class="muted">${list.length ? `${list.length} en curso · ${list.reduce((a, s) => a + s.topics.filter(t => !t.done).length, 0)} temas pendientes · ${S.docs.length} documentos` : "Crea la primera para empezar."}</p></div>
-      <div class="row"><button class="btn" data-act="ai-subjects">${E("🪄")} Crear con IA</button>${(!state.profile.school || /administr/i.test(state.profile.school)) && CURSO.some(t => !hasTpl(t)) ? `<button class="btn" data-act="add-modules">${E("🏫")} Módulos de 1º AiF</button>` : ""}<button class="btn btn-p" data-act="new-subject">${E("➕")} Nueva</button></div></div>
+      <div class="row"><button class="btn" data-act="ai-subjects">${E("🪄")} Crear con IA</button>${(!state.profile.school || state.profile.school === SCHOOL || /administr/i.test(state.profile.school)) && CURSO.some(t => !hasTpl(t)) ? `<button class="btn" data-act="add-modules">${PRESET_BTN}</button>` : ""}<button class="btn btn-p" data-act="new-subject">${E("➕")} Nueva</button></div></div>
     ${list.length ? `<div class="grid g3">${list.map(s => { const p = progress(s), ex = nextExam(s); const d = ex ? daysUntil(ex.date) : null; return `<button class="card subj-card" style="--c:${s.color}" data-go="asig-${s.id}">
       <div class="row" style="align-items:flex-start;flex-wrap:nowrap;gap:12px"><span class="semo" style="--c:${s.color}">${E(s.emoji)}</span><span class="nm" style="flex:1">${esc(s.name)}</span></div>
       <div><div class="row between small" style="margin-bottom:6px"><span class="muted">${s.topics.filter(t => t.done).length}/${s.topics.length} temas</span><b class="num">${Math.round(p * 100)} %</b></div><div class="bar" style="--c:${s.color}"><i style="width:${p * 100}%"></i></div></div>
       <div class="subj-meta"><span>⏱️ ${fmtH(subjMinutes(s.id))}</span><span>📄 ${docsOf(s.id).length}</span><span>💬 ${chatsOf(s.id).length}</span>${ex ? `<span class="pill ${urg(d)}" style="margin-left:auto">${d <= 3 ? "🚨" : "📅"} ${d} d</span>` : ""}</div>
-    </button>`; }).join("")}</div>` : `<div class="empty"><span class="emo big">📚</span><p>Deja que la IA cree tus asignaturas con sus temas, o añádelas a mano.</p><div class="row" style="justify-content:center"><button class="btn btn-p" data-act="ai-subjects">${E("🪄")} Crear con IA</button>${(!state.profile.school || /administr/i.test(state.profile.school)) ? `<button class="btn" data-act="add-modules">${E("🏫")} Módulos de 1º AiF</button>` : ""}<button class="btn" data-act="new-subject">${E("➕")} Otra</button></div></div>`}
+    </button>`; }).join("")}</div>` : `<div class="empty"><span class="emo big">📚</span><p>Deja que la IA cree tus asignaturas con sus temas, o añádelas a mano.</p><div class="row" style="justify-content:center"><button class="btn btn-p" data-act="ai-subjects">${E("🪄")} Crear con IA</button>${(!state.profile.school || state.profile.school === SCHOOL || /administr/i.test(state.profile.school)) ? `<button class="btn" data-act="add-modules">${PRESET_BTN}</button>` : ""}<button class="btn" data-act="new-subject">${E("➕")} Otra</button></div></div>`}
   </div>`;
 }
 function viewAsig() {
@@ -1035,7 +1058,7 @@ function subjectModal(s) {
   });
 }
 function modulesModal() {
-  openModal(`<div class="sheet-h"><h2>🏫 Módulos de 1º AiF</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
+  openModal(`<div class="sheet-h"><h2>${PRESET_BTN}</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
     <p class="small muted">${esc(SCHOOL)}. Cada módulo se crea con sus temas oficiales, ya marcados por importancia. Luego puedes editarlos.</p>
     <div class="mods">${tplPicker("mm", true)}</div>
     <div class="row" style="justify-content:flex-end"><button class="btn btn-g" data-close>Cancelar</button><button class="btn btn-p" id="mmAdd">Añadir seleccionados</button></div>`, root => {
@@ -1740,7 +1763,7 @@ if (window.speechSynthesis) speechSynthesis.onvoiceschanged = () => {};
 
 /* ---------- Tutor (todos los chats) ---------- */
 function viewTutor() {
-  if (!state.subjects.length) return `<div class="stack" style="gap:18px"><h1>${E("🤖")} Tutor IA</h1><div class="empty"><span class="emo big">📚</span><p>El tutor trabaja sobre tus asignaturas. Crea una primero.</p><button class="btn btn-p" data-act="add-modules">${E("🏫")} Módulos de 1º AiF</button></div></div>`;
+  if (!state.subjects.length) return `<div class="stack" style="gap:18px"><h1>${E("🤖")} Tutor IA</h1><div class="empty"><span class="emo big">📚</span><p>El tutor trabaja sobre tus asignaturas. Crea una primero.</p><button class="btn btn-p" data-act="add-modules">${PRESET_BTN}</button></div></div>`;
   const f = subj(ui.tutorFilter) ? ui.tutorFilter : "";
   const chats = S.chats.filter(c => !f || c.subjectId === f);
   return `<div class="stack" style="gap:18px">
@@ -2065,7 +2088,7 @@ $("#settingsBtn").addEventListener("click", () => { if (state) settingsModal(); 
 function exampleState() {
   const s = blankState(); s.example = true; s.profile.school = SCHOOL;
   const today = new Date(); const K = n => dkey(addDays(today, n));
-  const T = k => fromTpl(CURSO.find(t => t.key === k));
+  const T = k => fromTpl(CURSO_AIF.find(t => t.key === k));
   const doneN = (sb, n) => sb.topics.slice(0, n).forEach(t => t.done = true);
   const ex = (sb, title, d) => sb.exams.push({ id: uid(), title, date: K(d) });
   const pia = T("pia"), gdj = T("gdj"), rrhh = T("rrhh"), ofi = T("ofi"), cac = T("cac"), ing = T("ing"), ipo = T("ipo");
@@ -2084,7 +2107,7 @@ function exampleState() {
 }
 
 /* ================= actualizaciones ================= */
-const APP_VERSION = "2026.11.01-5";
+const APP_VERSION = "2026.11.01-6";
 let updateReady = false;
 async function checkUpdate() {
   try {
