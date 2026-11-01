@@ -2045,6 +2045,25 @@ function exampleState() {
   return s;
 }
 
+/* ================= actualizaciones ================= */
+const APP_VERSION = "2026.11.01-4";
+let updateReady = false;
+async function checkUpdate() {
+  try {
+    const r = await fetch("version.json?t=" + Date.now(), { cache: "no-store" }); if (!r.ok) return;
+    const j = await r.json(); if (j && j.v && j.v !== APP_VERSION && !updateReady) { updateReady = j.v; showUpdate(); }
+  } catch (e) {}
+}
+function showUpdate() {
+  if ($("#updBar")) return;
+  const d = document.createElement("div"); d.id = "updBar"; d.className = "toast"; d.style.cssText = "bottom:auto;top:calc(env(safe-area-inset-top,0px) + 12px);display:flex;gap:10px;align-items:center;background:var(--accent);color:var(--accent-ink)";
+  d.innerHTML = `<span>🆕 Hay una versión nueva de Pupitre</span><button class="btn btn-sm" id="updGo" style="background:#000;color:#fff;border-color:#000">Actualizar</button>`;
+  document.body.appendChild(d);
+  $("#updGo").onclick = () => { flushState(); setTimeout(() => location.replace(location.pathname + "?v=" + encodeURIComponent(updateReady) + location.hash), 300); };
+}
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") checkUpdate(); });
+setTimeout(checkUpdate, 1500);
+
 /* ================= arranque ================= */
 readHash();
 render(true);
