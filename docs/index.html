@@ -715,9 +715,10 @@ function viewOnboarding() {
         <div>${E("🗓️")}<span><b>Plan con IA</b><br><span class="muted">Tu semana repartida según exámenes y horas libres.</span></span></div>
       </div>
       <form id="onbForm" class="card stack" style="gap:14px">
-        <span class="school">${E("🏫")} ${esc(SCHOOL)}</span>
         <label class="field"><span>¿Cómo te llamas?</span><input class="input" id="onbName" placeholder="Tu nombre" autocomplete="given-name" maxlength="40"></label>
-        <div class="field"><span>Tus módulos de este curso (desmarca los que no tengas)</span><div class="mods">${tplPicker("onb", false)}</div></div>
+        <div class="field"><span>¿Qué estudias?</span><div class="seg" role="group" aria-label="Curso"><button type="button" data-oc="aif" aria-pressed="true">🏫 1º AdFi · Joan XXIII</button><button type="button" data-oc="otro" aria-pressed="false">✏️ Otro curso</button></div></div>
+        <div class="field" id="ocAif"><span>Tus módulos de este curso (desmarca los que no tengas)</span><div class="mods">${tplPicker("onb", false)}</div></div>
+        <div class="field" id="ocOtro" hidden><span>Escribe tu curso (y el centro si quieres)</span><input class="input" id="onbCourse" placeholder="p. ej. 2º Bachillerato Ciencias · IES Bellvitge" maxlength="90"><span class="tiny muted">Después pegas tu clave de Gemini y la IA te crea las asignaturas con sus temas.</span></div>
         <div class="row">
           <button class="btn btn-p btn-lg" type="submit">${E("🚀")} Crear mi curso</button>
           <button class="btn btn-lg" type="button" id="onbExample">${E("👀")} Ver ejemplo</button>
@@ -736,9 +737,16 @@ function viewOnboarding() {
     </div>
   </section>`;
 }
+let onbMode = "aif";
 function bindOnboarding() {
+  $$("[data-oc]").forEach(b => b.onclick = () => { onbMode = b.dataset.oc; $$("[data-oc]").forEach(x => x.setAttribute("aria-pressed", x === b)); $("#ocAif").hidden = onbMode !== "aif"; $("#ocOtro").hidden = onbMode === "aif"; if (onbMode !== "aif") $("#onbCourse").focus(); });
   $("#onbForm").addEventListener("submit", e => {
     e.preventDefault();
+    if (onbMode === "otro") {
+      const course = $("#onbCourse").value.trim(); if (!course) { toast("✏️ Escribe qué estudias"); $("#onbCourse").focus(); return; }
+      state = blankState(); state.profile.name = $("#onbName").value.trim(); state.profile.school = course;
+      commit(false); go("asignaturas"); render(); setTimeout(() => sample ? aiSubjectsModal() : (toast("🔑 Pon tu clave de Gemini y la IA te crea las asignaturas"), settingsModal()), 300); return;
+    }
     state = blankState(); state.profile.name = $("#onbName").value.trim(); state.profile.school = SCHOOL;
     state.subjects = CURSO.filter(t => $(`[data-onb="${t.key}"]`).checked).map(fromTpl);
     commit(false); toast(state.subjects.length ? `🎉 ${state.subjects.length} módulos creados. Mete tus fechas de examen.` : "✅ Listo. Añade tu primera asignatura.");
@@ -761,7 +769,7 @@ function viewHoy() {
   const nm = state.profile.name ? `, ${esc(state.profile.name)}` : "";
   const school = state.profile.school ? `<span class="school">${E("🏫")} ${esc(state.profile.school)}</span>` : "";
   if (!state.subjects.length) return `<div class="hello"><div>${school}<h1>${greeting()}${nm}</h1><p class="date">${longDate(new Date())}</p></div></div>
-    <div class="empty" style="margin-top:22px"><span class="emo big">📚</span><h2>Empieza por tus asignaturas</h2><p>Añade tus módulos con sus temas y fechas de examen. Con eso Pupitre te organiza el resto.</p><div class="row" style="justify-content:center"><button class="btn btn-p" data-act="add-modules">${E("🏫")} Módulos de 1º AiF</button><button class="btn" data-act="new-subject">${E("➕")} Otra asignatura</button></div></div>`;
+    <div class="empty" style="margin-top:22px"><span class="emo big">📚</span><h2>Empieza por tus asignaturas</h2><p>Añade tus módulos con sus temas y fechas de examen. Con eso Pupitre te organiza el resto.</p><div class="row" style="justify-content:center"><button class="btn btn-p" data-act="ai-subjects">${E("🪄")} Crear con IA</button>${(!state.profile.school || /administr/i.test(state.profile.school)) ? `<button class="btn" data-act="add-modules">${E("🏫")} Módulos de 1º AiF</button>` : ""}<button class="btn" data-act="new-subject">${E("➕")} Otra asignatura</button></div></div>`;
   const lastChat = S.chats[0];
   const dueAll = state.subjects.map(x => ({ s: x, n: deckOf(x.id).filter(isDue).length })).filter(x => x.n); const dueTot = dueAll.reduce((a, x) => a + x.n, 0);
   return `<div class="stack" style="gap:20px">
@@ -919,12 +927,12 @@ function viewAsignaturas() {
   const list = state.subjects;
   return `<div class="stack" style="gap:18px">
     <div class="row between"><div><h1>${E("📚")} Asignaturas</h1><p class="muted">${list.length ? `${list.length} en curso · ${list.reduce((a, s) => a + s.topics.filter(t => !t.done).length, 0)} temas pendientes · ${S.docs.length} documentos` : "Crea la primera para empezar."}</p></div>
-      <div class="row">${CURSO.some(t => !hasTpl(t)) ? `<button class="btn" data-act="add-modules">${E("🏫")} Módulos de 1º AiF</button>` : ""}<button class="btn btn-p" data-act="new-subject">${E("➕")} Nueva</button></div></div>
+      <div class="row"><button class="btn" data-act="ai-subjects">${E("🪄")} Crear con IA</button>${(!state.profile.school || /administr/i.test(state.profile.school)) && CURSO.some(t => !hasTpl(t)) ? `<button class="btn" data-act="add-modules">${E("🏫")} Módulos de 1º AiF</button>` : ""}<button class="btn btn-p" data-act="new-subject">${E("➕")} Nueva</button></div></div>
     ${list.length ? `<div class="grid g3">${list.map(s => { const p = progress(s), ex = nextExam(s); const d = ex ? daysUntil(ex.date) : null; return `<button class="card subj-card" style="--c:${s.color}" data-go="asig-${s.id}">
       <div class="row" style="align-items:flex-start;flex-wrap:nowrap;gap:12px"><span class="semo" style="--c:${s.color}">${E(s.emoji)}</span><span class="nm" style="flex:1">${esc(s.name)}</span></div>
       <div><div class="row between small" style="margin-bottom:6px"><span class="muted">${s.topics.filter(t => t.done).length}/${s.topics.length} temas</span><b class="num">${Math.round(p * 100)} %</b></div><div class="bar" style="--c:${s.color}"><i style="width:${p * 100}%"></i></div></div>
       <div class="subj-meta"><span>⏱️ ${fmtH(subjMinutes(s.id))}</span><span>📄 ${docsOf(s.id).length}</span><span>💬 ${chatsOf(s.id).length}</span>${ex ? `<span class="pill ${urg(d)}" style="margin-left:auto">${d <= 3 ? "🚨" : "📅"} ${d} d</span>` : ""}</div>
-    </button>`; }).join("")}</div>` : `<div class="empty"><span class="emo big">📚</span><p>Añade tus módulos de 1º o crea una asignatura o proyecto propio.</p><div class="row" style="justify-content:center"><button class="btn btn-p" data-act="add-modules">${E("🏫")} Módulos de 1º AiF</button><button class="btn" data-act="new-subject">${E("➕")} Otra</button></div></div>`}
+    </button>`; }).join("")}</div>` : `<div class="empty"><span class="emo big">📚</span><p>Deja que la IA cree tus asignaturas con sus temas, o añádelas a mano.</p><div class="row" style="justify-content:center"><button class="btn btn-p" data-act="ai-subjects">${E("🪄")} Crear con IA</button>${(!state.profile.school || /administr/i.test(state.profile.school)) ? `<button class="btn" data-act="add-modules">${E("🏫")} Módulos de 1º AiF</button>` : ""}<button class="btn" data-act="new-subject">${E("➕")} Otra</button></div></div>`}
   </div>`;
 }
 function viewAsig() {
@@ -1032,6 +1040,33 @@ function modulesModal() {
     <div class="mods">${tplPicker("mm", true)}</div>
     <div class="row" style="justify-content:flex-end"><button class="btn btn-g" data-close>Cancelar</button><button class="btn btn-p" id="mmAdd">Añadir seleccionados</button></div>`, root => {
     $("#mmAdd", root).onclick = () => { const add = CURSO.filter(t => { const c = $(`[data-mm="${t.key}"]`, root); return c && c.checked; }).map(fromTpl); state.subjects.push(...add); state.profile.school = state.profile.school || SCHOOL; closeModal(); commit(); toast(`🎉 ${add.length} módulos añadidos`); };
+  });
+}
+
+function aiSubjectsModal() {
+  if (!sample) { toast("🔑 Pega tu clave de Gemini en ⚙️ Ajustes"); settingsModal(); return; }
+  const course = /administr/i.test(state.profile.school || "") ? "" : (state.profile.school || "");
+  openModal(`<div class="sheet-h"><h2>🪄 Crear asignaturas con IA</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
+    <form id="aisForm" class="stack"><label class="field"><span>¿Qué estudias?</span><input class="input" id="aisIn" value="${esc(course)}" placeholder="p. ej. 1º DAM, 2º Bachillerato Sociales, Grado en ADE…" maxlength="90" required></label>
+      <div class="row" style="justify-content:flex-end"><button class="btn btn-p" type="submit">${E("🪄")} Generar</button></div></form>
+    <div id="aisOut"></div>`, root => {
+    setTimeout(() => $("#aisIn", root).focus(), 50);
+    $("#aisForm", root).addEventListener("submit", async e => {
+      e.preventDefault(); const c = $("#aisIn", root).value.trim(); if (!c) return; const out = $("#aisOut", root);
+      out.innerHTML = thinkingHtml("Buscando las asignaturas de tu curso…");
+      try {
+        const r = await sample.json(`Eres orientador académico en España. El alumno estudia: «${c}». Devuelve las asignaturas o módulos oficiales habituales de ese curso (máximo 12), cada uno con sus temas principales en el orden del temario (6-14 por asignatura) y la importancia de cada tema para el examen (3 = clave, 2 = media, 1 = baja). Elige un emoji representativo por asignatura. Nombres en español.\n\nResponde SOLO con JSON: [{"name":"","emoji":"","topics":[{"t":"","w":2}]}]`);
+        const list = (Array.isArray(r) ? r : []).filter(x => x && x.name).slice(0, 14).map(x => ({ name: String(x.name).slice(0, 80), emoji: (String(x.emoji || "📘").match(/\p{Extended_Pictographic}[\uFE0F\u200D\p{Extended_Pictographic}]*/u) || ["📘"])[0], topics: (Array.isArray(x.topics) ? x.topics : []).filter(t => t && (t.t || typeof t === "string")).slice(0, 20).map(t => ({ t: String(t.t || t).slice(0, 110), w: [1, 2, 3].includes(+t.w) ? +t.w : 2 })) }));
+        if (!list.length) throw { code: "invalid_json" };
+        out.innerHTML = `<p class="small muted" style="margin:6px 0 10px">Desmarca las que no tengas. Luego podrás editar temas y añadir tus fechas de examen.</p><div class="mods">${list.map((x, i) => `<label class="mod" style="--c:${COLORS[(state.subjects.length + i) % COLORS.length]}"><input type="checkbox" checked data-ais="${i}">${E(x.emoji)}<span style="min-width:0"><b>${esc(x.name)}</b><span class="tiny muted" style="display:block">${x.topics.length} temas</span></span></label>`).join("")}</div>
+          <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn btn-p" id="aisAdd">Añadir seleccionadas</button></div>`;
+        $("#aisAdd", root).onclick = () => {
+          let n = 0; list.forEach((x, i) => { const cb = $(`[data-ais="${i}"]`, root); if (!cb || !cb.checked) return; state.subjects.push({ id: uid(), name: x.name, emoji: x.emoji, kind: "asignatura", color: COLORS[state.subjects.length % COLORS.length], exams: [], topics: x.topics.map(t => ({ id: uid(), title: t.t, w: t.w, done: false })) }); n++; });
+          state.profile.school = state.profile.school && !/administr/i.test(state.profile.school) ? state.profile.school : c;
+          closeModal(); commit(); toast(`🎉 ${n} asignaturas creadas. Mete tus fechas de examen.`);
+        };
+      } catch (err) { out.innerHTML = `<p class="ai-off">⚠️ ${aiErr(err)}</p>`; }
+    });
   });
 }
 
@@ -1151,7 +1186,9 @@ function aiErr(e) {
   return ({ not_granted: "Has denegado el acceso a la IA. Actívalo en los permisos del artefacto.", rate_limited: "Has llegado al límite gratis de Gemini por ahora. Espera un minuto (o hasta mañana si es el límite diario).", prompt_too_large: "Demasiado texto a la vez. Quita algún documento del contexto.", invalid_json: "La respuesta no salió en el formato esperado. Dale otra vez.", cancelled: "Parado.", refused: "La IA no ha querido responder a eso. Reformula la pregunta.", images_unavailable: "No se pudo enviar la imagen.", no_key: "Falta tu clave de Gemini: pégala en ⚙️ Ajustes.", bad_key: "La clave de Gemini no es válida. Revísala en ⚙️ Ajustes.", bad_model: "Ese modelo de Gemini no está disponible con tu clave. Pulsa «Probar clave» en ⚙️ Ajustes.", network: "Sin conexión a internet. Prueba otra vez cuando tengas señal.", empty_completion: "La IA no ha devuelto nada. Prueba otra vez.", timeout: "Gemini ha tardado más de 2 minutos. Prueba otra vez o elige otro modelo en ⚙️ Ajustes → Probar clave.", upstream_error: "Gemini ha dado un error." }[c] || "No se pudo contactar con la IA. Prueba de nuevo en un momento.") + extra;
 }
 const thinkingHtml = (t = "Pensando…") => `<span class="thinking"><i></i><i></i><i></i> ${t}</span>`;
-const COURSE_CTX = () => `Contexto del alumno: ${state.profile.school || "1º de CFGS Administración y Finanzas"} (Jesuïtes Bellvitge, L'Hospitalet de Llobregat, Cataluña). Usa la normativa española vigente (PGC 2007, IVA, Estatuto de los Trabajadores, Ley 39/2015) y el currículo del ciclo. Responde en español; si el alumno escribe en catalán, responde en catalán con la terminología catalana.`;
+const COURSE_CTX = () => { const sc = state.profile.school || ""; return /administr/i.test(sc) || !sc
+  ? `Contexto del alumno: ${sc || "1º de CFGS Administración y Finanzas"} (Jesuïtes Bellvitge, L'Hospitalet de Llobregat, Cataluña). Usa la normativa española vigente (PGC 2007, IVA, Estatuto de los Trabajadores, Ley 39/2015) y el currículo del ciclo. Responde en español; si el alumno escribe en catalán, responde en catalán con la terminología catalana.`
+  : `Contexto del alumno: estudia «${sc}» en España. Adapta el nivel, el temario y los ejemplos a ese curso y a su currículo oficial. Responde en español; si el alumno escribe en catalán, responde en catalán.`; };
 function subjContext(s) {
   const ex = s.exams.filter(e => daysUntil(e.date) >= 0).map(e => `${e.title} (${e.date}, en ${daysUntil(e.date)} días)`).join("; ") || "sin fecha";
   const tp = s.topics.map(t => `- ${t.title} [importancia ${W_TXT[t.w || 2]}${t.done ? ", ya dominado" : ""}]`).join("\n") || "(sin temas listados)";
@@ -1969,6 +2006,7 @@ document.addEventListener("click", e => {
     case "studio-del": { const it = S.studio.find(x => x.id === S.param); if (it) confirmInline("#studioDel", "🗑️ Se borra esta creación.", "Eliminar", async () => { podStop(); await sDel("studio", it.id); ui.asigTab = "studio"; saveUi(); go(subj(it.subjectId) ? "asig-" + it.subjectId : "asignaturas"); toast("🗑️ Eliminado"); }); break; }
     case "open-settings": settingsModal(); break;
     case "add-modules": modulesModal(); break;
+    case "ai-subjects": aiSubjectsModal(); break;
     case "edit-subject": subjectModal(subj(id)); break;
     case "toggle-topic": { const t = cur.topics.find(x => x.id === id); t.done = !t.done; commit(); if (t.done) toast("✅ Tema dominado. ¡Bien!"); break; }
     case "cycle-w": { const t = cur.topics.find(x => x.id === id); t.w = ((t.w || 2) % 3) + 1; commit(); break; }
@@ -2046,7 +2084,7 @@ function exampleState() {
 }
 
 /* ================= actualizaciones ================= */
-const APP_VERSION = "2026.11.01-4";
+const APP_VERSION = "2026.11.01-5";
 let updateReady = false;
 async function checkUpdate() {
   try {
