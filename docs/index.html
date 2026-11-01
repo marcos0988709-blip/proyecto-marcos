@@ -352,6 +352,44 @@ textarea.input{resize:vertical;min-height:110px;line-height:1.55}
 .toast{position:fixed;left:50%;bottom:calc(var(--nav-h) + 18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;background:var(--ink);color:#000;padding:11px 16px;border-radius:13px;font-weight:650;font-size:.9rem;box-shadow:0 10px 40px -10px rgba(91,134,255,.6);animation:up .25s ease;max-width:calc(100% - 32px);text-align:center}
 @media (min-width:900px){.toast{bottom:28px}}
 .side-timer .card{padding:14px}
+.tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,210px),1fr));gap:10px}
+.tool{display:flex;gap:12px;align-items:flex-start;text-align:left;padding:14px;border-radius:14px;border:1px solid var(--line-strong);background:var(--sheet-2);font:inherit;color:inherit;transition:border-color .15s ease,transform .15s ease}
+.tool:hover{border-color:var(--accent);transform:translateY(-1px)}
+.tool .emo{font-size:26px}
+.tool b{display:block}
+.tool[disabled]{opacity:.45;pointer-events:none}
+.player{display:flex;flex-direction:column;gap:12px;align-items:center;padding:20px;border-radius:18px;background:radial-gradient(120% 120% at 0% 0%,rgba(91,134,255,.22),transparent 60%),var(--sheet);border:1px solid var(--line-strong)}
+.player .big{width:76px;height:76px;border-radius:50%;border:0;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;box-shadow:var(--glow)}
+.player .big svg{width:30px;height:30px}
+.wave{display:flex;gap:4px;align-items:flex-end;height:28px}
+.wave i{width:4px;border-radius:2px;background:var(--accent);height:30%;opacity:.5}
+.wave.on i{animation:wave 1s ease-in-out infinite;opacity:1}
+.wave i:nth-child(2n){animation-delay:.15s;background:var(--marker)} .wave i:nth-child(3n){animation-delay:.3s} .wave i:nth-child(5n){animation-delay:.45s}
+@keyframes wave{0%,100%{height:25%}50%{height:100%}}
+.pline{display:flex;gap:10px;padding:9px 11px;border-radius:12px;cursor:pointer;line-height:1.5;transition:background .15s ease}
+.pline:hover{background:var(--sheet-2)}
+.pline.on{background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent)}
+.pline .who{font-weight:800;min-width:46px;flex:none}
+.pline.A .who{color:var(--accent)} .pline.B .who{color:var(--marker)}
+.mm ul{list-style:none;margin:0;padding-left:20px;border-left:2px solid var(--line-strong);margin-left:12px}
+.mm>ul{border-left:0;padding-left:0;margin-left:0}
+.mm li{margin:7px 0}
+.mm-row{display:flex;align-items:center;gap:6px}
+.mm-b{border:1px solid var(--line-strong);background:var(--sheet-2);border-radius:11px;padding:7px 11px;font-weight:650;text-align:left;color:var(--ink);font-size:.9rem;max-width:100%;overflow-wrap:anywhere}
+.mm .d0>.mm-row .mm-b{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-size:1.05rem;font-weight:800;box-shadow:var(--glow)}
+.mm .d1>.mm-row .mm-b{border-color:rgba(91,134,255,.6);background:var(--accent-soft)}
+.mm .d2>.mm-row .mm-b{border-color:rgba(255,228,92,.45);background:var(--marker-soft)}
+.mm .d3>.mm-row .mm-b{border-color:rgba(61,220,151,.4);background:var(--ok-soft);font-weight:500}
+.mm-ask{border:0;background:transparent;font-size:15px;opacity:.55;padding:4px}
+.mm-ask:hover{opacity:1}
+.cite{display:inline-flex;align-items:center;gap:3px;font-size:.72rem;padding:1px 8px;border-radius:99px;background:var(--marker-soft);color:var(--marker);text-decoration:none;font-weight:700;margin:0 2px;vertical-align:1px;white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis}
+.lvl{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.lvl .ring-l{width:74px;height:74px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-display);font-weight:800;font-size:1.6rem;flex:none}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,118px),1fr));gap:10px}
+.badge{text-align:center;padding:12px 8px;border-radius:14px;border:1px solid var(--line);background:var(--sheet-2);display:flex;flex-direction:column;gap:6px;align-items:center;font-size:.78rem;font-weight:650;line-height:1.25}
+.badge .emo{font-size:30px}
+.badge.on{border-color:rgba(255,228,92,.45);box-shadow:0 0 18px -8px var(--marker)}
+.badge.off{opacity:.35;filter:grayscale(1)}
 hr.sep{border:0;border-top:1px solid var(--line);width:100%;margin:0}
 </style>
 </head>
@@ -378,6 +416,7 @@ hr.sep{border:0;border-top:1px solid var(--line);width:100%;margin:0}
 </div>
 <div id="layer"></div>
 <input type="file" id="fileIn" multiple accept=".pdf,.docx,.txt,.md,.csv,.json,image/*" hidden>
+<input type="file" id="camIn" accept="image/*" capture="environment" hidden>
 
 <script>
 (() => {
@@ -406,8 +445,8 @@ const COLORS = ["#5B86FF", "#FF7A45", "#2FD39A", "#E06BD0", "#FFC83D", "#2CC6E0"
 const EMOJIS = ["🧾", "⚖️", "👥", "💻", "📞", "🗣️", "🦺", "🌐", "🌱", "🚀", "📘", "🧮", "📊", "💼", "🎯", "🧠", "📈", "🏦"];
 const W_LABEL = { 1: "💤 Baja", 2: "⭐ Media", 3: "🔥 Clave" };
 const W_TXT = { 1: "baja", 2: "media", 3: "clave" };
-const DOC_EMO = { note: "📝", pdf: "📕", docx: "📘", image: "🖼️", text: "📄", file: "📎" };
-const DOC_LBL = { note: "Nota", pdf: "PDF", docx: "Word", image: "Imagen", text: "Texto", file: "Archivo" };
+const DOC_EMO = { note: "📝", pdf: "📕", docx: "📘", image: "🖼️", text: "📄", file: "📎", web: "🔗", youtube: "▶️" };
+const DOC_LBL = { note: "Nota", pdf: "PDF", docx: "Word", image: "Imagen", text: "Texto", file: "Archivo", web: "Web", youtube: "YouTube" };
 const SCHOOL = "Escola Joan XXIII · 1r CFGS Administració i Finances";
 
 const I = {
@@ -485,10 +524,10 @@ const saveUi = () => lsSet(LS_UI, { asigTab: ui.asigTab, studyTab: ui.studyTab, 
 
 /* ================= almacenamiento local (IndexedDB) ================= */
 let sample = null, imgLimits = null, dbAnswered = false, storeReady = false, idb = null;
-const S = { view: "hoy", param: null, docs: [], chats: [], decks: {} };
+const S = { view: "hoy", param: null, docs: [], chats: [], decks: {}, studio: [] };
 const textCache = new Map(), msgCache = new Map(), urlCache = new Map();
-const STORES = ["kv", "docs", "doctext", "chats", "chatmsgs", "decks", "files"];
-function openDB() { return new Promise((res, rej) => { const r = indexedDB.open("pupitre", 1); r.onupgradeneeded = () => { STORES.forEach(n => { if (!r.result.objectStoreNames.contains(n)) r.result.createObjectStore(n); }); }; r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
+const STORES = ["kv", "docs", "doctext", "chats", "chatmsgs", "decks", "files", "studio"];
+function openDB() { return new Promise((res, rej) => { const r = indexedDB.open("pupitre", 2); r.onupgradeneeded = () => { STORES.forEach(n => { if (!r.result.objectStoreNames.contains(n)) r.result.createObjectStore(n); }); }; r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
 function tx(store, mode, fn) { return new Promise((res, rej) => { const t = idb.transaction(store, mode); const r = fn(t.objectStore(store)); let out; if (r) r.onsuccess = () => { out = r.result; }; t.oncomplete = () => res(out); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error || { code: "quota" }); }); }
 const idbGet = (st, k) => tx(st, "readonly", o => o.get(k));
 const idbPut = (st, k, v) => tx(st, "readwrite", o => o.put(v, k));
@@ -511,6 +550,7 @@ function initStores() {
   sWatch("docs", list => { S.docs = list.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)); storeReady = true; render(); });
   sWatch("chats", list => { S.chats = list.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)); storeReady = true; render(); });
   sWatch("decks", list => { const m = {}; list.forEach(d => { m[d.id] = Array.isArray(d.cards) ? d.cards : []; }); S.decks = m; render(); });
+  sWatch("studio", list => { S.studio = list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)); render(); });
 }
 const CH = 2000000;
 async function saveText(id, text, oldParts = 0) {
@@ -546,8 +586,10 @@ async function geminiCall(input, opts = {}, json = false) {
   const turns = typeof input === "string" ? [{ role: "user", content: input }] : input;
   const contents = [];
   for (const t of turns) { const role = t.role === "assistant" ? "model" : "user"; const last = contents[contents.length - 1]; if (last && last.role === role) last.parts[0].text += "\n\n" + t.content; else contents.push({ role, parts: [{ text: String(t.content) }] }); }
+  if (opts.parts && opts.parts.length) { const lastUser = [...contents].reverse().find(c => c.role === "user"); lastUser.parts.unshift(...opts.parts); }
   if (opts.images && opts.images.length) { const lastUser = [...contents].reverse().find(c => c.role === "user"); for (const b of opts.images) lastUser.parts.push({ inline_data: { mime_type: b.type || "image/jpeg", data: await blobToB64(b) } }); }
   const body = { contents, generationConfig: { temperature: json ? 0.4 : 0.7, ...(json ? { responseMimeType: "application/json" } : {}) } };
+  if (opts.tools) body.tools = opts.tools;
   const fast = cfg.speed !== "smart" && !cfg.noThink && !opts._noThink;
   if (fast) body.generationConfig.thinkingConfig = { thinkingBudget: json ? 512 : 0 };
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent((cfg.model || "gemini-flash-latest").replace(/^models\//, ""))}:streamGenerateContent?alt=sse`;
@@ -623,15 +665,15 @@ const urg = d => d <= 3 ? "bad" : d <= 10 ? "warn" : "";
 /* ================= enrutado ================= */
 const NAV = [["hoy", "Hoy", "🏠"], ["foco", "Foco", "⏱️"], ["asignaturas", "Asignaturas", "📚"], ["plan", "Plan", "🗓️"], ["tutor", "Tutor IA", "🤖"], ["progreso", "Progreso", "📈"]];
 function readHash() {
-  const h = (location.hash || "").slice(1); const m = h.match(/^(asig|chat|doc)-([a-z0-9]+)$/);
+  const h = (location.hash || "").slice(1); const m = h.match(/^(asig|chat|doc|studio)-([a-z0-9]+)$/);
   if (m) { S.view = m[1]; S.param = m[2]; }
   else if (NAV.some(n => n[0] === h)) { S.view = h; S.param = null; }
   else { S.view = "hoy"; S.param = null; }
 }
 function go(h) { if (location.hash.slice(1) === h) render(); else location.hash = h; }
-window.addEventListener("hashchange", () => { readHash(); render(true); window.scrollTo(0, 0); });
+window.addEventListener("hashchange", () => { const was = S.view + S.param; readHash(); if (pod && was !== S.view + S.param) podStop(); render(true); window.scrollTo(0, 0); });
 function renderNav() {
-  const cur = { asig: "asignaturas", doc: "asignaturas", chat: "tutor" }[S.view] || S.view;
+  const cur = { asig: "asignaturas", doc: "asignaturas", studio: "asignaturas", chat: "tutor" }[S.view] || S.view;
   const html = NAV.map(([k, l, e]) => `<a class="nav-a" href="#${k}" ${cur === k ? 'aria-current="page"' : ""}>${E(e)}<span>${l}</span></a>`).join("");
   $("#sidenav").innerHTML = html; $("#bnav").innerHTML = html;
 }
@@ -647,14 +689,15 @@ function render(anim) {
   const same = lastRoute === route && !anim;
   const a = document.activeElement; const keep = {}; const focus = same && a && a.id ? { id: a.id, s: a.selectionStart, e: a.selectionEnd } : null;
   if (same) $$("[data-keep]").forEach(el => keep[el.id] = el.value);
-  const fn = { hoy: viewHoy, foco: viewFoco, asignaturas: viewAsignaturas, asig: viewAsig, doc: viewDoc, chat: viewChat, plan: viewPlan, tutor: viewTutor, progreso: viewProgreso }[S.view] || viewHoy;
+  const fn = { hoy: viewHoy, foco: viewFoco, asignaturas: viewAsignaturas, asig: viewAsig, doc: viewDoc, chat: viewChat, studio: viewStudio, plan: viewPlan, tutor: viewTutor, progreso: viewProgreso }[S.view] || viewHoy;
   v.innerHTML = (state.example ? `<div class="banner" style="margin-bottom:18px"><span>${E("👀")} <b>Datos de ejemplo.</b> Así se ve Pupitre en pleno curso. Bórralos cuando quieras empezar con lo tuyo.</span><button class="btn btn-sm" data-act="clear-example">Empezar con mis datos</button></div>` : "") + `<div class="${same ? "" : "view-in"}">${fn()}</div>`;
   lastRoute = route;
   for (const id in keep) { const el = document.getElementById(id); if (el && el.value !== keep[id]) el.value = keep[id]; }
-  const binder = { foco: bindFoco, asig: bindAsig, doc: bindDoc, chat: bindChat, plan: bindPlan, tutor: bindTutor }[S.view];
+  const binder = { foco: bindFoco, asig: bindAsig, doc: bindDoc, chat: bindChat, plan: bindPlan, tutor: bindTutor, studio: bindStudioView }[S.view];
   if (binder) binder();
   if (focus) { const el = document.getElementById(focus.id); if (el) { el.focus({ preventScroll: true }); try { if (focus.s != null) el.setSelectionRange(focus.s, focus.e); } catch (e) {} } }
   renderSideTimer();
+  checkBadges();
 }
 
 /* ---------- Onboarding ---------- */
@@ -722,7 +765,7 @@ function viewHoy() {
   const lastChat = S.chats[0];
   const dueAll = state.subjects.map(x => ({ s: x, n: deckOf(x.id).filter(isDue).length })).filter(x => x.n); const dueTot = dueAll.reduce((a, x) => a + x.n, 0);
   return `<div class="stack" style="gap:20px">
-    <div class="hello"><div>${school}<h1>${greeting()}${nm}</h1><p class="date">${longDate(new Date())}</p></div>
+    <div class="hello"><div>${school}<h1>${greeting()}${nm}</h1><p class="date">${longDate(new Date())} · <a href="#progreso" class="pill mk" style="text-decoration:none">⭐ Nivel ${levelInfo().lvl} · ${levelInfo().title}</a></p></div>
       <button class="btn btn-p btn-lg" data-go="foco">${ic("play")}Empezar sesión</button></div>
     <div class="stats">
       <div class="card stat">${ringSvg(mins / goal, 46, 6, mins >= goal ? "var(--ok)" : "var(--accent)")}<div><b class="num">${mins}<span style="font-size:.9rem;color:var(--muted)">/${goal}</span></b><small>${mins >= goal ? "✅ objetivo cumplido" : "minutos de foco hoy"}</small></div></div>
@@ -888,7 +931,7 @@ function viewAsig() {
   const s = subj(S.param);
   if (!s) return `<div class="empty"><p>Esta asignatura ya no existe.</p><a class="btn" href="#asignaturas">Volver</a></div>`;
   const p = progress(s); const docs = docsOf(s.id), chats = chatsOf(s.id);
-  const tabs = [["temas", "📋", s.kind === "proyecto" ? "Tareas" : "Temas", s.topics.length], ["docs", "📄", "Documentos", docs.length], ["chats", "💬", "Chats IA", chats.length], ["estudiar", "🧠", "Estudiar con IA", null], ["fechas", "📅", s.kind === "proyecto" ? "Entregas" : "Exámenes", s.exams.length]];
+  const tabs = [["temas", "📋", s.kind === "proyecto" ? "Tareas" : "Temas", s.topics.length], ["docs", "📄", "Documentos", docs.length], ["chats", "💬", "Chats IA", chats.length], ["studio", "🎧", "Estudio IA", S.studio.filter(x => x.subjectId === s.id).length], ["estudiar", "🧠", "Estudiar con IA", null], ["fechas", "📅", s.kind === "proyecto" ? "Entregas" : "Exámenes", s.exams.length]];
   const tab = tabs.some(t => t[0] === ui.asigTab) ? ui.asigTab : "temas";
   return `<div class="stack" style="gap:16px;--c:${s.color}">
     <a class="btn btn-sm btn-g" href="#asignaturas" style="align-self:flex-start">${ic("back")}Asignaturas</a>
@@ -898,7 +941,7 @@ function viewAsig() {
     </div>
     <div class="bar" style="--c:${s.color};height:8px"><i style="width:${p * 100}%"></i></div>
     <div class="tabs" role="tablist">${tabs.map(([k, e, l, n]) => `<button role="tab" aria-selected="${tab === k}" data-tab="${k}">${E(e)} ${l}${n != null ? ` <span class="cnt">${n}</span>` : ""}</button>`).join("")}</div>
-    <div>${{ temas: tabTemas, docs: tabDocs, chats: tabChats, estudiar: tabEstudiar, fechas: tabFechas }[tab](s)}</div>
+    <div>${{ temas: tabTemas, docs: tabDocs, chats: tabChats, studio: tabStudio, estudiar: tabEstudiar, fechas: tabFechas }[tab](s)}</div>
   </div>`;
 }
 function tabTemas(s) {
@@ -924,7 +967,7 @@ function tabDocs(s) {
   const q = (ui.docQ || "").toLowerCase();
   const all = docsOf(s.id); const docs = all.filter(d => !q || (d.title || "").toLowerCase().includes(q));
   return `<div class="stack" style="gap:14px">
-    <div class="row between"><div class="row"><button class="btn btn-p" data-act="new-note">${E("📝")} Nueva nota</button><button class="btn" data-act="upload">${E("⬆️")} Subir archivos</button></div>
+    <div class="row between"><div class="row"><button class="btn btn-p" data-act="new-note">${E("📝")} Nueva nota</button><button class="btn" data-act="camera">${E("📸")} Foto</button><button class="btn" data-act="add-link">${E("🔗")} Enlace o YouTube</button><button class="btn" data-act="upload">${E("⬆️")} Subir archivos</button></div>
       ${all.length > 4 ? `<input class="input" id="docQ" data-keep placeholder="🔎 Buscar documento" value="${esc(ui.docQ || "")}" style="max-width:260px">` : ""}</div>
     <div class="drop" id="drop" role="button" tabindex="0">${E("📥")} Arrastra aquí PDF, Word, imágenes o texto, o toca para elegir. Sin límite de documentos.<br><span class="tiny">La IA lee el texto de cada documento para tus chats, esquemas y tests.</span></div>
     ${!storeReady ? `<p class="muted small">${E("⏳")} Cargando documentos…</p>` : docs.length ? `<div class="docs">${docs.map(d => `<a class="card doc" href="#doc-${d.id}"><span class="di emo">${DOC_EMO[d.type] || "📄"}</span><div style="min-width:0;flex:1"><div class="dt">${esc(d.title || "Sin título")}</div><div class="tiny muted">${DOC_LBL[d.type] || "Documento"}${d.size ? " · " + fmtSize(d.size) : ""}${d.chars ? " · " + (d.chars < 1000 ? d.chars + " car." : Math.round(d.chars / 1000) + "k car.") : ""} · ${ago(d.updatedAt || d.createdAt)}</div></div></a>`).join("")}</div>` : `<div class="empty"><span class="emo big">🗂️</span><p>${q ? "Ningún documento coincide." : "Aún no hay documentos. Sube tus apuntes, el PDF del tema o una foto de la pizarra."}</p></div>`}
@@ -953,7 +996,7 @@ function bindAsig() {
     drop.addEventListener("click", () => openFilePicker(s.id));
     drop.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openFilePicker(s.id); } });
   }
-  if (ui.asigTab === "estudiar") bindStudy(s);
+  if (ui.asigTab === "estudiar" || ui.asigTab === "studio") bindStudy(s);
 }
 function subjectModal(s) {
   const isNew = !s; s = s || { name: "", kind: "asignatura", color: COLORS[state.subjects.length % COLORS.length], emoji: "📘" };
@@ -1009,6 +1052,7 @@ async function docxText(f) { await loadScript(MAMMOTH); const r = await window.m
 let pickFor = null;
 function openFilePicker(sid) { pickFor = sid; const fi = $("#fileIn"); fi.value = ""; fi.click(); }
 $("#fileIn").addEventListener("change", e => { if (pickFor) handleFiles(e.target.files, pickFor); });
+$("#camIn").addEventListener("change", e => { if (pickFor) handleFiles(e.target.files, pickFor); });
 async function handleFiles(files, sid) {
   const list = [...(files || [])]; if (!list.length) return;
   let ok = 0;
@@ -1027,6 +1071,7 @@ async function handleFiles(files, sid) {
       const parts = text ? await saveText(id, text) : 0;
       await sPut("docs", id, { subjectId: sid, title: f.name.replace(/\.[^.]+$/, "").slice(0, 120), type, fileId, size: f.size, chars: text.length, parts, createdAt: now, updatedAt: now });
       ok++;
+      if (type === "image" && sample) await ocrDoc({ id, subjectId: sid, title: f.name.replace(/\.[^.]+$/, "").slice(0, 120), type, fileId, size: f.size, chars: 0, parts: 0, createdAt: now, updatedAt: now }, true);
       if (type === "pdf" && !text) toast(`⚠️ ${f.name}: es un PDF escaneado sin texto. Súbelo como foto para que la IA lo lea.`);
     } catch (e) { toast(e && e.code === "quota" ? "💾 El móvil no tiene más espacio para Pupitre. Libera espacio o borra documentos viejos." : `❌ ${f.name}: ${(e && (e.msg || e.message)) || "no se pudo subir"}`); }
   }
@@ -1043,14 +1088,14 @@ function viewDoc() {
   if (!d) return storeReady ? `<div class="empty"><span class="emo big">🗂️</span><p>Este documento ya no existe.</p><a class="btn" href="#asignaturas">Volver</a></div>` : `<p class="muted">${E("⏳")} Cargando…</p>`;
   const s = subj(d.subjectId); const loaded = textCache.has(d.id); const text = loaded ? textCache.get(d.id) : "";
   if (!loaded && docLoading !== d.id) { docLoading = d.id; loadText(d.id).then(() => { docLoading = null; render(); }).catch(() => { docLoading = null; textCache.set(d.id, ""); render(); }); }
-  const isNote = d.type === "note"; const furl = fileUrl(d);
+  const isNote = d.type === "note"; const furl = fileUrl(d) || d.link || "";
   return `<div class="stack" style="gap:14px">
     <a class="btn btn-sm btn-g" href="${s ? "#asig-" + s.id : "#asignaturas"}" style="align-self:flex-start" data-act="tab-docs">${ic("back")}${s ? esc(s.name) : "Asignaturas"}</a>
     <div class="row" style="flex-wrap:nowrap;align-items:center"><span class="emo" style="font-size:32px">${DOC_EMO[d.type] || "📄"}</span><input class="input" id="docTitle" data-keep value="${esc(d.title || "")}" style="font-family:var(--f-display);font-weight:800;font-size:1.3rem;background:transparent;border-color:transparent" maxlength="120" aria-label="Título"></div>
     <div class="row">
       <button class="btn btn-p" data-act="doc-chat" data-id="${d.id}" ${sample && s ? "" : "disabled"}>${E("💬")} Preguntar a la IA</button>
       <button class="btn" data-act="doc-study" data-id="${d.id}" ${s ? "" : "disabled"}>${E("🧠")} Esquema, test o tarjetas</button>
-      ${furl ? `<a class="btn" href="${esc(furl)}" target="_blank" rel="noopener">${E("↗️")} Abrir archivo</a>` : ""}
+      ${furl ? `<a class="btn" href="${esc(furl)}" target="_blank" rel="noopener">${E("↗️")} ${d.link ? "Abrir enlace" : "Abrir archivo"}</a>` : ""}
       ${d.type === "image" && d.fileId ? `<button class="btn" data-act="doc-ocr" data-id="${d.id}" ${sample && imgLimits ? "" : "disabled"}>${E("👁️")} Leer texto con IA</button>` : ""}
       <button class="btn btn-d" data-act="doc-del" data-id="${d.id}">${E("🗑️")} Eliminar</button>
       <span class="tiny muted" id="docStatus">${s ? E(s.emoji) + " " + esc(s.name) : ""} · ${DOC_LBL[d.type] || ""}${d.size ? " · " + fmtSize(d.size) : ""}</span>
@@ -1089,14 +1134,14 @@ function fileUrl(d) {
   urlCache.set(d.fileId, ""); idbGet("files", d.fileId).then(b => { if (b) { urlCache.set(d.fileId, URL.createObjectURL(b)); render(); } }).catch(() => {});
   return "";
 }
-async function ocrDoc(d) {
+async function ocrDoc(d, quiet) {
   if (!sample || !imgLimits) return;
-  toast("👁️ Leyendo la imagen…");
+  toast(quiet ? "👁️ Pasando la foto a texto…" : "👁️ Leyendo la imagen…");
   try {
     const blob = await blobOf(d);
     const { text } = await sample("Transcribe todo el texto de esta imagen (apuntes, pizarra o documento) en español, manteniendo la estructura con títulos y listas en Markdown. Si hay tablas, fórmulas o esquemas, reprodúcelos. Responde solo con la transcripción.", { images: [blob], modelTier: "default" });
     const parts = await saveText(d.id, text, d.parts || 0);
-    await sPut("docs", d.id, { ...stripId(d), parts, chars: text.length, updatedAt: Date.now() }); toast("✅ Texto extraído. Ya puedes usarla en tus chats."); render();
+    await sPut("docs", d.id, { ...stripId(d), parts, chars: text.length, updatedAt: Date.now() }); toast("✅ Foto pasada a texto. La IA ya la puede usar."); if (!quiet) render();
   } catch (e) { toast("⚠️ " + aiErr(e)); }
 }
 
@@ -1112,13 +1157,14 @@ function subjContext(s) {
   const tp = s.topics.map(t => `- ${t.title} [importancia ${W_TXT[t.w || 2]}${t.done ? ", ya dominado" : ""}]`).join("\n") || "(sin temas listados)";
   return `${s.kind === "proyecto" ? "Proyecto" : "Módulo"}: ${s.name}\nFechas: ${ex}\nTemas:\n${tp}`;
 }
-async function docsContext(ids, budget = 110000) {
+async function docsContext(ids, budget = 280000) {
   const metas = ids.map(id => S.docs.find(d => d.id === id)).filter(Boolean);
   const texts = await Promise.all(metas.map(m => loadText(m.id).catch(() => "")));
   const items = metas.map((m, i) => ({ m, t: texts[i] || "" })).filter(x => x.t).sort((a, b) => a.t.length - b.t.length);
   let left = budget; const out = [];
-  items.forEach((x, i) => { const share = Math.floor(left / (items.length - i)); const t = x.t.slice(0, share); left -= t.length; out.push(`### Documento: «${x.m.title}» (${DOC_LBL[x.m.type] || "doc"})\n${t}${t.length < x.t.length ? "\n[…recortado]" : ""}`); });
-  return { text: out.join("\n\n"), n: items.length };
+  const map = {};
+  items.forEach((x, i) => { const share = Math.floor(left / (items.length - i)); const t = x.t.slice(0, share); left -= t.length; map["D" + (i + 1)] = x.m.id; out.push(`### [D${i + 1}] «${x.m.title}» (${DOC_LBL[x.m.type] || "doc"})\n${t}${t.length < x.t.length ? "\n[…recortado]" : ""}`); });
+  return { text: out.join("\n\n"), n: items.length, map };
 }
 async function ctxImages(ids) {
   if (!imgLimits) return [];
@@ -1148,11 +1194,11 @@ function md(src) {
 let aiCtl = null;
 
 /* ---------- Chats ---------- */
-async function newChat(sid, ctx) {
+async function newChat(sid, ctx, first) {
   if (!sample) { { toast("🔑 Pega tu clave de Gemini en ⚙️ Ajustes"); settingsModal(); }; return; }
   const id = uid(), now = Date.now();
   const def = ctx || docsOf(sid).filter(d => d.chars || d.type === "image").slice(0, 5).map(d => d.id);
-  try { msgCache.set(id, []); await sPut("chatmsgs", id, { messages: [] }); await sPut("chats", id, { subjectId: sid, title: "", n: 0, ctx: def, createdAt: now, updatedAt: now }); go("chat-" + id); }
+  try { msgCache.set(id, []); await sPut("chatmsgs", id, { messages: [] }); await sPut("chats", id, { subjectId: sid, title: "", n: 0, ctx: def, createdAt: now, updatedAt: now }); go("chat-" + id); if (first) setTimeout(() => sendChat(id, first), 80); }
   catch (e) { toast("⚠️ No se pudo crear el chat"); }
 }
 let msgLoading = null;
@@ -1168,7 +1214,7 @@ function viewChat() {
       <div class="row" style="gap:6px"><button class="btn btn-sm btn-g" data-act="chat-rename" data-id="${c.id}" aria-label="Renombrar">${E("✏️")}</button><button class="btn btn-sm btn-g" data-act="chat-del" data-id="${c.id}" aria-label="Eliminar">${E("🗑️")}</button></div></div>
     <h1 style="font-size:clamp(1.3rem,3.4vw,1.8rem);overflow-wrap:anywhere">${esc(c.title || "💬 Nuevo chat")}</h1>
     <div id="chatDel"></div>
-    <div class="chat" id="chatBox">${!loaded ? `<p class="muted">${E("⏳")} Cargando mensajes…</p>` : msgs.length ? msgs.map((m, i) => `<div class="msg ${m.role === "user" ? "u" : "a"}">${m.role === "user" ? esc(m.content) : `<div class="prose">${md(m.content)}</div><div class="msg-tools"><button class="btn btn-sm btn-g" data-act="msg-copy" data-i="${i}">${E("📋")} Copiar</button><button class="btn btn-sm btn-g" data-act="msg-save" data-i="${i}">${E("💾")} Guardar como nota</button></div>`}</div>`).join("") : `<div class="stack" style="gap:12px;padding:10px 0"><p class="muted">${E("🤖")} Soy tu tutor de <b>${esc(s ? s.name : "esta asignatura")}</b>. ${ctx.length ? `Tengo ${ctx.length} ${ctx.length === 1 ? "documento" : "documentos"} tuyos delante.` : "Añade documentos al contexto para que me base en tus apuntes."} Pregúntame lo que quieras:</p><div class="chips">${starters.map(q => `<button class="chip" data-starter="${esc(q.replace(/^\S+\s/, ""))}" ${sample ? "" : "disabled"}>${esc(q)}</button>`).join("")}</div></div>`}</div>
+    <div class="chat" id="chatBox">${!loaded ? `<p class="muted">${E("⏳")} Cargando mensajes…</p>` : msgs.length ? msgs.map((m, i) => `<div class="msg ${m.role === "user" ? "u" : "a"}">${m.role === "user" ? esc(m.content) : `<div class="prose">${citeHtml(md(m.content), m.cites)}</div><div class="msg-tools"><button class="btn btn-sm btn-g" data-act="msg-copy" data-i="${i}">${E("📋")} Copiar</button><button class="btn btn-sm btn-g" data-act="msg-save" data-i="${i}">${E("💾")} Guardar como nota</button></div>`}</div>`).join("") : `<div class="stack" style="gap:12px;padding:10px 0"><p class="muted">${E("🤖")} Soy tu tutor de <b>${esc(s ? s.name : "esta asignatura")}</b>. ${ctx.length ? `Tengo ${ctx.length} ${ctx.length === 1 ? "documento" : "documentos"} tuyos delante.` : "Añade documentos al contexto para que me base en tus apuntes."} Pregúntame lo que quieras:</p><div class="chips">${starters.map(q => `<button class="chip" data-starter="${esc(q.replace(/^\S+\s/, ""))}" ${sample ? "" : "disabled"}>${esc(q)}</button>`).join("")}</div></div>`}</div>
     <form class="composer" id="chatForm">
       ${docs.length ? `<div class="ctxbar"><span class="tiny muted">${E("📎")} ${ctx.filter(id => docs.some(d => d.id === id)).length}/${docs.length} en contexto:</span>${docs.map(d => `<button type="button" class="ctxchip" data-ctx="${d.id}" aria-pressed="${ctx.includes(d.id)}" title="${esc(d.title)}">${E(DOC_EMO[d.type] || "📄")}<span>${esc(d.title || "Sin título")}</span></button>`).join("")}</div>` : `<div class="tiny muted">${E("📎")} Sin documentos en esta asignatura. Súbelos en la pestaña Documentos y el tutor los leerá.</div>`}
       <div class="composer-in"><textarea class="input" id="chatIn" data-keep rows="1" placeholder="Escribe tu duda… (Enter para enviar)" ${sample ? "" : "disabled"}></textarea>
@@ -1195,24 +1241,24 @@ async function sendChat(cid, text) {
   window.scrollTo(0, document.body.scrollHeight);
   const sb = $("#sendBtn"); if (sb) { sb.innerHTML = ic("stop"); sb.setAttribute("aria-label", "Parar"); sb.type = "button"; sb.onclick = () => aiCtl && aiCtl.abort(); }
   streaming = true; aiCtl = new AbortController();
-  let answer = ""; const t0 = Date.now(); const tick2 = setInterval(() => { if (!answer) bubble.innerHTML = thinkingHtml(`Pensando… ${Math.round((Date.now() - t0) / 1000)} s`); }, 1000);
+  let answer = "", cites = {}; const t0 = Date.now(); const tick2 = setInterval(() => { if (!answer) bubble.innerHTML = thinkingHtml(`Pensando… ${Math.round((Date.now() - t0) / 1000)} s`); }, 1000);
   try {
-    const dc = await docsContext(c.ctx || []); const images = await ctxImages(c.ctx || []);
+    const dc = await docsContext(c.ctx || []); const images = await ctxImages(c.ctx || []); cites = dc.map;
     const rules = `Eres el tutor particular de ${state.profile.name || "un estudiante"}${s ? ` para «${s.name}»` : ""}. ${COURSE_CTX()}
 Estilo: directo, claro, sin rodeos. Prioriza lo que más cuenta para el examen (80/20). Usa listas, **negritas** en lo clave, fórmulas y ejemplos numéricos. Algún emoji para marcar secciones (📌 clave, ⚠️ error típico, 🧮 ejemplo) sin abusar. Casos prácticos: planteamiento y solución paso a paso. 80-350 palabras salvo que pidan más.
-${dc.n ? "Basa tus respuestas en los documentos del alumno cuando sea pertinente y di de cuál sale cada dato. Si algo no está en los documentos, dilo y responde con tu conocimiento." : ""}
+${dc.n ? "Basa tus respuestas en los documentos del alumno. Cada documento tiene una etiqueta como [D1]. Cuando uses información de un documento, pon su etiqueta justo al final de la frase, por ejemplo: «El tipo general es el 21 % [D1].» Si algo no está en los documentos, dilo y responde con tu conocimiento." : ""}
 ${s ? subjContext(s) : ""}
 ${dc.text ? `\nDOCUMENTOS DEL ALUMNO:\n${dc.text}` : ""}`;
     const turns = [{ role: "user", content: rules }, ...msgs.slice(-16).map(m => ({ role: m.role, content: m.content }))];
     if (turns[1] && turns[1].role === "assistant") turns.splice(1, 1);
-    const opts = { cache: false, signal: aiCtl.signal, onText: ({ text }) => { answer = text; bubble.innerHTML = `<div class="prose">${md(text)}</div>`; } };
+    const opts = { cache: false, signal: aiCtl.signal, onText: ({ text }) => { answer = text; bubble.innerHTML = `<div class="prose">${citeHtml(md(text), cites)}</div>`; } };
     if (images.length) opts.images = images;
     const r = await sample(turns, opts);
     answer = r.text;
   } catch (e) { if (e && e.text) answer = e.text; else if (!(e && e.code === "cancelled")) bubble.innerHTML = `<span class="small">⚠️ ${aiErr(e)}</span>`; }
   clearInterval(tick2); streaming = false; aiCtl = null;
   if (answer) {
-    msgs.push({ role: "assistant", content: answer, at: Date.now() });
+    msgs.push({ role: "assistant", content: answer, at: Date.now(), cites });
     try { await saveMsgs(cid, msgs); const cur = S.chats.find(x => x.id === cid) || c; await sPut("chats", cid, { ...stripId(cur), title: cur.title || text.replace(/\s+/g, " ").slice(0, 60), n: msgs.length, updatedAt: Date.now() }); }
     catch (e) { toast("⚠️ No se pudo guardar el chat"); }
   } else { msgCache.set(cid, msgs); }
@@ -1238,7 +1284,7 @@ function startReview(sid) {
 function rateCard(r) {
   if (!review) return; const sid = review.sid; const cards = deckOf(sid).map(c => ({ ...c })); const c = cards.find(x => x.id === review.queue[0]);
   if (!c) { review.queue.shift(); if (!review.queue.length) review = null; render(); return; }
-  c.seen = true;
+  c.seen = true; state.stats = state.stats || {}; state.stats.reviews = (state.stats.reviews || 0) + 1; commit(false);
   if (r === "again") { c.box = 0; c.due = dkey(); review.queue.push(review.queue.shift()); }
   else if (r === "hard") { c.box = Math.max(1, c.box || 0); c.due = dkey(addDays(new Date(), 1)); review.queue.shift(); review.done++; }
   else { c.box = Math.min(5, (c.box || 0) + 1); c.due = dkey(addDays(new Date(), BOX_DAYS[c.box])); review.queue.shift(); review.done++; }
@@ -1406,7 +1452,7 @@ async function aiSummary() {
   const s = subj(S.param), t = tut(s.id); const out = $("#sumOut"); out.innerHTML = thinkingHtml("Destilando lo importante…");
   aiCtl = new AbortController();
   try {
-    const src = await studySource(s, 140000);
+    const src = await studySource(s, 300000);
     const prompt = `Actúa como un profesor experto que prepara a un alumno para sacar la máxima nota estudiando lo mínimo. Haz un ESQUEMA 80/20 en español y en Markdown, con estas secciones exactas:
 ## 🎯 Lo que más cae
 Los 5-8 conceptos clave (el 20 % que da el 80 % de la nota), 1-2 líneas cada uno.
@@ -1432,7 +1478,7 @@ async function aiQuiz() {
   const topic = tid ? (s.topics.find(x => x.id === tid) || {}).title : "";
   const out = $("#quizOut"); out.innerHTML = thinkingHtml("Preparando el test…");
   try {
-    const src = await studySource(s, 90000);
+    const src = await studySource(s, 200000);
     const prompt = `Crea un test de 6 preguntas de opción múltiple (4 opciones, 1 correcta) en español, dificultad "${diff}", sobre ${topic ? `el tema «${topic}» de` : "lo más importante de"} este módulo. Si hay documentos del alumno, básate sobre todo en ellos. Incluye al menos una pregunta práctica con datos numéricos si la materia lo permite. Las incorrectas deben ser errores típicos plausibles. Varía la posición de la correcta.
 ${src}
 
@@ -1446,7 +1492,7 @@ Responde SOLO con JSON: [{"q":"pregunta","options":["A","B","C","D"],"answer":í
 async function aiCards() {
   const s = subj(S.param); const out = $("#cardsOut"); if (out) out.innerHTML = thinkingHtml("Creando tarjetas…");
   try {
-    const src = await studySource(s, 90000); const have = deckOf(s.id);
+    const src = await studySource(s, 200000); const have = deckOf(s.id);
     const prompt = `Crea 12 tarjetas de memoria en español con lo que el alumno tiene que saberse de memoria de este módulo: definiciones clave, fórmulas, plazos, porcentajes, clasificaciones. Prioriza lo que más cae en examen y lo que aparece en sus documentos. Pregunta corta; respuesta concisa (máx. 40 palabras, puede usar **negrita**).${have.length ? `\nYa tiene estas tarjetas, NO las repitas:\n${have.slice(-80).map(c => "- " + c.q).join("\n")}` : ""}
 ${src}
 
@@ -1479,6 +1525,181 @@ Responde SOLO con JSON: [{"title":"máx. 70 caracteres","w":1|2|3}]`;
     $("#biNo").onclick = () => { box.innerHTML = ""; };
   } catch (e) { box.innerHTML = `<p class="ai-off" style="margin-top:12px">⚠️ ${aiErr(e)}</p>`; }
 }
+
+/* ---------- Logros y niveles ---------- */
+function bestStreakCalc() { const m = byDay(); let best = 0, run = 0, prev = null; for (const k of Object.keys(m).sort()) { run = prev && dkey(addDays(parseD(prev), 1)) === k ? run + 1 : 1; best = Math.max(best, run); prev = k; } return best; }
+const totalFocus = () => state.sessions.reduce((a, x) => a + x.min, 0);
+const allMocks = () => Object.values(state.tutor || {}).flatMap(t => (t && t.mocks) || []);
+function xpNow() { const st = state.stats || {}; return Math.round(totalFocus() + (st.reviews || 0) * 2 + allMocks().filter(m => m.grade >= 5).length * 30 + S.docs.length * 5 + S.chats.length * 3 + S.studio.length * 5); }
+const LEVELS = [[1, "🐣 Novato"], [3, "📘 Aprendiz"], [5, "💪 Currante"], [8, "😎 Crack"], [12, "🤖 Máquina"], [16, "🏆 Leyenda"], [20, "👑 Dios del 10"]];
+function levelInfo() { const xp = xpNow(); const lvl = Math.floor(Math.sqrt(xp / 40)) + 1; return { xp, lvl, cur: (lvl - 1) ** 2 * 40, next: lvl ** 2 * 40, title: [...LEVELS].reverse().find(([l]) => lvl >= l)[1] }; }
+const BADGES = [
+  ["streak3", "🔥", "Racha de 3 días", () => bestStreakCalc() >= 3], ["streak7", "🔥", "7 días seguidos", () => bestStreakCalc() >= 7], ["streak30", "☄️", "30 días seguidos", () => bestStreakCalc() >= 30],
+  ["focus10", "⏱️", "10 h de foco", () => totalFocus() >= 600], ["focus50", "⌛", "50 h de foco", () => totalFocus() >= 3000], ["focus100", "🕰️", "100 h de foco", () => totalFocus() >= 6000],
+  ["rev100", "🃏", "100 tarjetas repasadas", () => ((state.stats || {}).reviews || 0) >= 100], ["rev1000", "🧠", "1.000 tarjetas", () => ((state.stats || {}).reviews || 0) >= 1000],
+  ["mock5", "👍", "Primer simulacro aprobado", () => allMocks().some(m => m.grade >= 5)], ["mock9", "🏅", "Simulacro de 9 o más", () => allMocks().some(m => m.grade >= 9)],
+  ["docs10", "📚", "10 documentos", () => S.docs.length >= 10], ["chats10", "💬", "10 chats con el tutor", () => S.chats.length >= 10], ["studio5", "🎧", "5 creaciones en Estudio", () => S.studio.length >= 5],
+];
+function checkBadges() {
+  if (!state || !storeReady) return; state.badges = state.badges || [];
+  const nw = BADGES.filter(b => !state.badges.includes(b[0]) && b[3]()); if (!nw.length) return;
+  nw.forEach(b => state.badges.push(b[0]));
+  if (!state.example) toast(`🏅 ¡Logro desbloqueado! ${nw[0][1]} ${nw[0][2]}`);
+  clearTimeout(saveT); saveT = setTimeout(flushState, 250);
+}
+
+/* ---------- Citas en el chat ---------- */
+function citeHtml(html, cites) {
+  if (!cites) return html;
+  return html.replace(/\[(D\d+(?:\s*,\s*D\d+)*)\]/g, (all, list) => list.split(/\s*,\s*/).map(k => { const d = S.docs.find(x => x.id === cites[k]); return d ? `<a class="cite" href="#doc-${d.id}">${DOC_EMO[d.type] || "📄"} ${esc((d.title || "").slice(0, 28))}</a>` : ""; }).join("") || all);
+}
+
+/* ---------- Enlaces web y YouTube como fuentes ---------- */
+function linkModal(sid) {
+  openModal(`<div class="sheet-h"><h2>🔗 Añadir enlace o vídeo</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
+    <p class="small muted">Pega el enlace de una web (BOE, apuntes online, un artículo…) o de un vídeo de YouTube. La IA lo lee y lo guarda como documento para tus chats, esquemas, tests y pódcast.</p>
+    <form id="lnkForm" class="stack"><input class="input" id="lnkIn" type="url" inputmode="url" placeholder="https://…" required><div class="row" style="justify-content:flex-end"><button class="btn btn-g" type="button" data-close>Cancelar</button><button class="btn btn-p" type="submit">Añadir</button></div></form>`, root => {
+    setTimeout(() => $("#lnkIn", root).focus(), 50);
+    $("#lnkForm", root).addEventListener("submit", e => { e.preventDefault(); const u = $("#lnkIn", root).value.trim(); if (!/^https?:\/\//i.test(u)) { toast("Pega un enlace que empiece por https://"); return; } closeModal(); addLink(sid, u); });
+  });
+}
+async function addLink(sid, url) {
+  if (!sample) { toast("🔑 Pega tu clave de Gemini en ⚙️ Ajustes"); settingsModal(); return; }
+  const yt = /(youtube\.com|youtu\.be)\//i.test(url);
+  toast(yt ? "▶️ Viendo el vídeo… (puede tardar un poco)" : "🔗 Leyendo la página…");
+  try {
+    const prompt = yt
+      ? "Eres un estudiante modelo tomando apuntes. Transcribe y desarrolla el contenido de este vídeo en español, en Markdown, con TODO el detalle útil para estudiar: conceptos, definiciones, datos, ejemplos y explicaciones, en el mismo orden que el vídeo. Empieza con una línea '# Título' con el título del vídeo."
+      : `Lee esta página y extrae su contenido principal completo en español, en Markdown, sin menús, anuncios ni pies de página. Conserva tablas, cifras y artículos de ley. Empieza con una línea '# Título' con el título de la página.\n${url}`;
+    const r = await geminiCall(prompt, yt ? { parts: [{ file_data: { file_uri: url } }] } : { tools: [{ url_context: {} }] });
+    const text = r.text.trim(); const m = text.match(/^#\s+(.+)$/m);
+    const title = (m ? m[1] : (yt ? "Vídeo de YouTube" : new URL(url).hostname)).replace(/[*_`]/g, "").slice(0, 120);
+    const id = uid(), now = Date.now(); const parts = await saveText(id, text);
+    await sPut("docs", id, { subjectId: sid, title, type: yt ? "youtube" : "web", link: url, chars: text.length, parts, createdAt: now, updatedAt: now });
+    toast(`✅ ${yt ? "Vídeo" : "Página"} añadido: ${title.slice(0, 40)}`);
+  } catch (e) { toast("⚠️ No se pudo leer: " + aiErr(e)); }
+}
+
+/* ---------- Estudio IA (estilo NotebookLM) ---------- */
+const STUDIO = {
+  podcast: { e: "🎧", n: "Pódcast", d: "Dos profes te lo explican charlando (5-8 min)" },
+  mindmap: { e: "🧠", n: "Mapa mental", d: "Todo el tema de un vistazo" },
+  guia: { e: "📖", n: "Guía de estudio", d: "Conceptos, ejemplos y autoevaluación" },
+  faq: { e: "❓", n: "Preguntas frecuentes", d: "Las dudas típicas, resueltas" },
+  crono: { e: "🧭", n: "Paso a paso", d: "Procesos, trámites y cronologías en orden" },
+  brief: { e: "📄", n: "Resumen ejecutivo", d: "Todo lo importante en una página" },
+  glos: { e: "🔤", n: "Glosario", d: "Términos clave de la A a la Z" },
+};
+const STUDIO_PROMPT = {
+  guia: "Crea una GUÍA DE ESTUDIO completa en Markdown con estas secciones: ## 🎯 Objetivos (qué tienes que saber hacer), ## 📚 Conceptos clave (cada uno en 2-4 líneas con un ejemplo), ## 🧮 Ejemplos resueltos (si hay cálculos, paso a paso), ## ✅ Autoevaluación (8 preguntas, cada una con su respuesta corta debajo).",
+  faq: "Crea 12-15 PREGUNTAS FRECUENTES que se haría un alumno sobre este contenido, con respuestas claras de 2-5 líneas. Formato Markdown: '### ❓ pregunta' y debajo la respuesta.",
+  crono: "Crea un PASO A PASO en Markdown: identifica los procesos, procedimientos o secuencias del contenido (por ejemplo ciclo contable, trámites de constitución, procedimiento administrativo, proceso de selección) y explícalos como listas numeradas en orden, con plazos, documentos y responsables si aplica. Si hay fechas o hechos, ordénalos en una cronología.",
+  brief: "Crea un RESUMEN EJECUTIVO de una página en Markdown: ## 💡 En una frase, ## 📌 Ideas principales (5-7 viñetas), ## 🔢 Datos y cifras clave, ## 🚨 Lo que no puedes olvidar para el examen.",
+  glos: "Crea un GLOSARIO en Markdown con 20-30 términos clave ordenados alfabéticamente, cada uno así: **Término**: definición breve (1-2 líneas) y, si ayuda, un ejemplo.",
+};
+let studioBusy = false;
+function tabStudio(s) {
+  const docs = docsOf(s.id).filter(d => d.chars); const ctx = studyCtx(s); const items = S.studio.filter(x => x.subjectId === s.id); const dis = sample && !studioBusy ? "" : "disabled";
+  return `<div class="stack" style="gap:14px">
+    <section class="card"><div class="card-h"><div><h2>${E("🎧")} Estudio IA</h2><p class="small muted">Elige tus fuentes y crea pódcast, mapas mentales y guías con un toque.</p></div></div>
+      ${!sample ? `<p class="ai-off" style="margin-bottom:12px">${E("🔑")} Pega tu clave gratis de Gemini en ⚙️ Ajustes para activar la IA. <button class="btn btn-sm" data-act="open-settings">🔑 Poner clave</button></p>` : ""}
+      <div class="ctxbar" style="margin-bottom:12px"><span class="tiny muted">${E("📎")} Fuentes:</span>${docs.length ? docs.map(d => `<button type="button" class="ctxchip" data-sctx="${d.id}" aria-pressed="${ctx.includes(d.id)}" title="${esc(d.title)}">${E(DOC_EMO[d.type] || "📄")}<span>${esc(d.title)}</span></button>`).join("") : `<span class="tiny muted">temas del módulo (sube PDF, fotos, enlaces o vídeos en Documentos para que se base en ellos)</span>`}</div>
+      <div class="tools">${Object.entries(STUDIO).map(([k, t]) => `<button class="tool" data-act="studio-gen" data-k="${k}" ${dis}>${E(t.e)}<span><b>${t.n}</b><span class="tiny muted">${t.d}</span></span></button>`).join("")}</div>
+      <div id="studioOut" style="margin-top:14px">${studioBusy ? thinkingHtml("Creando…") : ""}</div>
+    </section>
+    <section class="card"><div class="card-h"><h2>${E("🗂️")} Tus creaciones</h2><span class="tiny muted">${items.length}</span></div>
+      ${items.length ? items.map(it => `<a class="chat-row" href="#studio-${it.id}"><span class="semo" style="--c:${s.color}">${E((STUDIO[it.kind] || {}).e || "📄")}</span><div style="min-width:0"><div class="ct">${esc(it.title || "Sin título")}</div><div class="tiny muted">${(STUDIO[it.kind] || {}).n || ""}</div></div><span class="tiny muted">${ago(it.createdAt)}</span></a>`).join("") : `<div class="empty"><span class="emo big">✨</span><p>Aún no has creado nada. Prueba el 🎧 Pódcast para escuchar el tema mientras vas en el bus.</p></div>`}
+    </section></div>`;
+}
+async function genStudio(kind) {
+  const s = subj(S.param); if (!s) return;
+  if (!sample) { toast("🔑 Pega tu clave de Gemini en ⚙️ Ajustes"); settingsModal(); return; }
+  if (studioBusy) return; studioBusy = true; render();
+  const out = () => $("#studioOut");
+  try {
+    const src = await studySource(s, 300000);
+    const item = { subjectId: s.id, kind, createdAt: Date.now(), updatedAt: Date.now() };
+    if (kind === "podcast") {
+      const r = await sample.json(`Escribe el GUION de un pódcast educativo en español de España entre dos profesores, Laura (A) y Dani (B), que explican este contenido a un alumno de FP de forma amena, clara y con ejemplos cotidianos. Duración 5-8 minutos (900-1300 palabras), 24-40 intervenciones cortas (1-3 frases cada una). Empieza presentando el tema, cubre lo más importante para el examen (80/20), incluye algún ejemplo con números si aplica, haz que uno pregunte las dudas típicas y el otro las resuelva, y termina con un resumen de 3 ideas clave. Las frases se van a leer en voz alta: nada de Markdown, emojis, paréntesis ni símbolos raros; escribe porcentajes y siglas como se pronuncian si ayuda.\n${src}\n\nResponde SOLO con JSON: {"title":"título corto","lines":[{"s":"A","t":"frase"}]}`);
+      const lines = (r && Array.isArray(r.lines) ? r.lines : []).filter(l => l && l.t).map(l => ({ s: l.s === "B" ? "B" : "A", t: String(l.t).replace(/[*_#`]/g, "") }));
+      if (lines.length < 4) throw { code: "invalid_json" };
+      item.title = "🎧 " + String((r && r.title) || "Pódcast: " + s.name).slice(0, 90); item.lines = lines;
+    } else if (kind === "mindmap") {
+      const r = await sample.json(`Crea un MAPA MENTAL jerárquico de este contenido en español: un nodo raíz con el tema, 4-7 ramas principales, cada una con 2-6 subramas y, si hace falta, un tercer nivel. Textos muy cortos (máximo 8 palabras), con los datos clave (porcentajes, plazos, fórmulas, artículos).\n${src}\n\nResponde SOLO con JSON: {"t":"tema","c":[{"t":"rama","c":[{"t":"subrama","c":[]}]}]}`);
+      const clean = (n, d) => n && n.t ? { t: String(n.t).slice(0, 120), c: d < 4 && Array.isArray(n.c) ? n.c.map(k => clean(k, d + 1)).filter(Boolean).slice(0, 10) : [] } : null;
+      const tree = clean(r, 0); if (!tree || !tree.c.length) throw { code: "invalid_json" };
+      item.title = "🧠 " + tree.t.slice(0, 90); item.tree = tree;
+    } else {
+      const r = await sample(`${STUDIO_PROMPT[kind]} Sé concreto y fiel a los documentos del alumno; si falta información, usa el temario estándar del módulo. En español.\n\n${src}`, { onText: ({ text }) => { const o = out(); if (o) o.innerHTML = `<div class="prose">${md(text)}</div>`; } });
+      item.md = r.text; item.title = `${STUDIO[kind].e} ${STUDIO[kind].n} · ${s.name.split(" ").slice(0, 3).join(" ")}`;
+    }
+    const id = uid(); await sPut("studio", id, item); studioBusy = false; toast(`✨ ${STUDIO[kind].n} listo`); go("studio-" + id);
+  } catch (e) { studioBusy = false; render(); const o = out(); if (o) o.innerHTML = `<p class="ai-off">⚠️ ${aiErr(e)}</p>`; }
+}
+/* reproductor del pódcast con las voces del móvil */
+let pod = null;
+function podVoices() {
+  const all = (window.speechSynthesis && speechSynthesis.getVoices()) || []; const es = all.filter(v => /^es/i.test(v.lang));
+  const esES = es.filter(v => /es[-_]ES/i.test(v.lang)); const pool = esES.length ? esES.concat(es.filter(v => !esES.includes(v))) : es;
+  const a = pool[0] || null; const b = pool.find(v => v !== a && v.name !== (a && a.name)) || a; return [a, b];
+}
+function podSpeak() {
+  if (!pod) return; const it = S.studio.find(x => x.id === pod.id); const line = it && it.lines[pod.i];
+  if (!line) { pod.playing = false; podUI(); return; }
+  const [va, vb] = podVoices(); const same = va === vb; const u = new SpeechSynthesisUtterance(line.t);
+  u.lang = "es-ES"; const v = line.s === "A" ? va : vb; if (v) u.voice = v;
+  u.pitch = same ? (line.s === "A" ? 1.12 : 0.85) : 1; u.rate = pod.rate;
+  const tok = pod.tok = Math.random();
+  u.onend = () => { if (pod && pod.playing && pod.tok === tok) { pod.i++; podSpeak(); } };
+  u.onerror = () => { if (pod && pod.tok === tok) { pod.playing = false; podUI(); } };
+  speechSynthesis.speak(u); podUI();
+}
+function podPlay(id, from) { if (!window.speechSynthesis) { toast("Este navegador no puede leer en voz alta"); return; } speechSynthesis.cancel(); pod = { id, i: from || 0, playing: true, rate: (pod && pod.rate) || 1, tok: 0 }; podSpeak(); }
+function podPause() { if (!pod) return; pod.playing = false; pod.tok = 0; speechSynthesis.cancel(); podUI(); }
+function podStop() { try { speechSynthesis.cancel(); } catch (e) {} pod = null; }
+function podUI() {
+  const it = pod && S.studio.find(x => x.id === pod.id);
+  $$(".pline").forEach(el => el.classList.toggle("on", !!pod && +el.dataset.pl === pod.i));
+  const cur = $(".pline.on"); if (cur && pod && pod.playing) cur.scrollIntoView({ block: "center", behavior: "smooth" });
+  const btn = $("#podBtn"); if (btn) btn.innerHTML = pod && pod.playing ? ic("pause") : ic("play");
+  const w = $("#podWave"); if (w) w.classList.toggle("on", !!(pod && pod.playing));
+  const pr = $("#podProg"); if (pr && it) pr.textContent = `${Math.min((pod ? pod.i : 0) + 1, it.lines.length)} / ${it.lines.length}`;
+}
+const mmOpen = new Set();
+function mmNode(n, path, depth, root) {
+  const kids = n.c && n.c.length; const open = depth === 0 || mmOpen.has(path);
+  return `<li class="d${Math.min(depth, 3)}"><div class="mm-row"><button class="mm-b" data-mmp="${path}">${kids ? (open ? "▾ " : "▸ ") : ""}${esc(n.t)}</button>${depth ? `<button class="mm-ask" data-act="mm-ask" data-q="${esc(n.t)}" data-root="${esc(root)}" aria-label="Preguntar al tutor">💬</button>` : ""}</div>${kids && open ? `<ul>${n.c.map((k, i) => mmNode(k, path + "-" + i, depth + 1, root)).join("")}</ul>` : ""}</li>`;
+}
+function viewStudio() {
+  const it = S.studio.find(x => x.id === S.param);
+  if (!it) return `<div class="empty"><span class="emo big">✨</span><p>Esta creación ya no existe.</p><a class="btn" href="#asignaturas">Volver</a></div>`;
+  const s = subj(it.subjectId);
+  let body = "";
+  if (it.kind === "podcast") {
+    const playing = pod && pod.id === it.id && pod.playing; const idx = pod && pod.id === it.id ? pod.i : -1;
+    body = `<div class="player"><div class="wave ${playing ? "on" : ""}" id="podWave">${"<i></i>".repeat(14)}</div>
+        <div class="row" style="justify-content:center"><button class="icon-btn" data-act="pod-prev" aria-label="Anterior">${ic("back")}</button><button class="big" id="podBtn" data-act="pod-toggle" aria-label="Reproducir o pausar">${playing ? ic("pause") : ic("play")}</button><button class="icon-btn" data-act="pod-next" aria-label="Siguiente" style="transform:scaleX(-1)">${ic("back")}</button></div>
+        <div class="row tiny muted" style="justify-content:center"><span id="podProg">${Math.max(1, idx + 1)} / ${it.lines.length}</span><label class="row" style="gap:6px">⚡ Velocidad <select class="input" id="podRate" style="width:auto;padding:4px 8px;font-size:14px">${[0.9, 1, 1.15, 1.3, 1.5].map(r => `<option value="${r}" ${((pod && pod.rate) || 1) == r ? "selected" : ""}>${String(r).replace(".", ",")}×</option>`).join("")}</select></label></div>
+        <p class="tiny muted" style="text-align:center">🎙️ <b style="color:var(--accent)">Laura</b> y <b style="color:var(--marker)">Dani</b> con las voces de tu móvil. Toca cualquier frase para saltar ahí.</p></div>
+      <section class="card" style="margin-top:14px"><h3 style="margin-bottom:8px">${E("📝")} Transcripción</h3>${it.lines.map((l, i) => `<div class="pline ${l.s} ${i === idx ? "on" : ""}" data-pl="${i}"><span class="who">${l.s === "A" ? "Laura" : "Dani"}</span><span>${esc(l.t)}</span></div>`).join("")}</section>`;
+  } else if (it.kind === "mindmap") {
+    body = `<div class="row" style="margin-bottom:12px"><button class="btn btn-sm" data-act="mm-all">➕ Abrir todo</button><button class="btn btn-sm btn-g" data-act="mm-none">➖ Cerrar todo</button><span class="tiny muted">Toca una rama para abrirla · 💬 para que el tutor te la explique</span></div>
+      <section class="card mm" style="overflow-x:auto"><ul>${mmNode(it.tree, it.id, 0, it.tree.t)}</ul></section>`;
+  } else {
+    body = `<div class="row" style="margin-bottom:12px"><button class="btn btn-sm" data-act="studio-note">${E("💾")} Guardar como nota</button><button class="btn btn-sm btn-g" data-act="studio-copy">${E("📋")} Copiar</button></div><section class="card prose">${md(it.md)}</section>`;
+  }
+  return `<div class="stack" style="gap:14px">
+    <div class="row between" style="flex-wrap:nowrap"><a class="btn btn-sm btn-g" href="${s ? "#asig-" + s.id : "#asignaturas"}" data-act="tab-studio">${ic("back")}${s ? E(s.emoji) + " " + esc(s.name.split(" ").slice(0, 4).join(" ")) : "Asignaturas"}</a><button class="btn btn-sm btn-g" data-act="studio-del" aria-label="Eliminar">${E("🗑️")}</button></div>
+    <h1 style="font-size:clamp(1.3rem,3.6vw,1.9rem);overflow-wrap:anywhere">${esc(it.title || "")}</h1>
+    <div id="studioDel"></div>${body}</div>`;
+}
+function bindStudioView() {
+  const it = S.studio.find(x => x.id === S.param); if (!it) return;
+  $$(".pline").forEach(el => el.onclick = () => podPlay(it.id, +el.dataset.pl));
+  const rt = $("#podRate"); rt && (rt.onchange = () => { const r = +rt.value; if (pod) { pod.rate = r; if (pod.playing) podPlay(it.id, pod.i); } else pod = { id: it.id, i: 0, playing: false, rate: r, tok: 0 }; });
+  $$("[data-mmp]").forEach(b => b.onclick = () => { const p = b.dataset.mmp; mmOpen.has(p) ? mmOpen.delete(p) : mmOpen.add(p); render(); });
+}
+if (window.speechSynthesis) speechSynthesis.onvoiceschanged = () => {};
 
 /* ---------- Tutor (todos los chats) ---------- */
 function viewTutor() {
@@ -1592,6 +1813,13 @@ Responde SOLO con JSON: [{"date":"AAAA-MM-DD","start":"HH:MM","min":número,"sub
 }
 
 /* ---------- Progreso ---------- */
+function levelCard() {
+  const L = levelInfo(); const frac = (L.xp - L.cur) / Math.max(1, L.next - L.cur); const got = state.badges || [];
+  return `<section class="card"><div class="lvl"><div class="ring-l" style="background:conic-gradient(var(--marker) ${(frac * 360).toFixed(0)}deg,var(--line) 0);"><div style="width:62px;height:62px;border-radius:50%;background:var(--sheet);display:grid;place-items:center">${L.lvl}</div></div>
+    <div style="flex:1;min-width:200px"><span class="eyebrow">Nivel ${L.lvl}</span><h2 style="font-size:1.4rem">${L.title}</h2><div class="bar" style="margin-top:8px;--c:var(--marker)"><i style="width:${(frac * 100).toFixed(1)}%"></i></div><p class="tiny muted" style="margin-top:6px">${L.xp} XP · faltan ${Math.max(0, L.next - L.xp)} XP para el nivel ${L.lvl + 1}. Ganas XP con minutos de foco, tarjetas repasadas, simulacros aprobados, documentos y chats.</p></div></div>
+    <h3 style="margin:16px 0 10px">${E("🏅")} Logros · ${got.length}/${BADGES.length}</h3>
+    <div class="badges">${BADGES.map(b => `<div class="badge ${got.includes(b[0]) ? "on" : "off"}"><span class="emo">${b[1]}</span>${esc(b[2])}</div>`).join("")}</div></section>`;
+}
 function viewProgreso() {
   const m = byDay(); const total = state.sessions.reduce((a, s) => a + s.min, 0);
   const weeks = 18, start = addDays(mondayOf(new Date()), -(weeks - 1) * 7), todayK = dkey(), goal = state.profile.goalMin || 120;
@@ -1603,6 +1831,7 @@ function viewProgreso() {
   let bestStreak = 0, run = 0, prev = null; for (const k of Object.keys(m).sort()) { run = prev && dkey(addDays(parseD(prev), 1)) === k ? run + 1 : 1; bestStreak = Math.max(bestStreak, run); prev = k; }
   return `<div class="stack" style="gap:18px">
     <div><h1>${E("📈")} Progreso</h1><p class="muted">La constancia gana a los atracones. Esto es lo que llevas.</p></div>
+    ${levelCard()}
     <div class="stats">
       <div class="card stat"><span class="stat-ic emo">⏱️</span><div><b>${fmtH(total)}</b><small>de foco en total</small></div></div>
       <div class="card stat"><span class="stat-ic mk emo">🔥</span><div><b>${streak()} / ${bestStreak}</b><small>racha actual / mejor</small></div></div>
@@ -1683,7 +1912,7 @@ async function exportAll() {
   try {
     flushState();
     const out = { app: "pupitre", v: 2, at: Date.now(), state, col: {}, files: [] };
-    for (const c of ["docs", "doctext", "chats", "chatmsgs", "decks"]) out.col[c] = await idbAll(c);
+    for (const c of ["docs", "doctext", "chats", "chatmsgs", "decks", "studio"]) out.col[c] = await idbAll(c);
     for (const d of out.col.docs) if (d.fileId) { const b = await idbGet("files", d.fileId); if (b) out.files.push({ id: d.fileId, type: b.type || "", data: await blobToB64(b) }); }
     const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(out)], { type: "application/json" })); a.download = `pupitre-copia-${dkey()}.json`;
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
@@ -1693,12 +1922,12 @@ async function exportAll() {
 async function importAll(file) {
   try {
     const d = JSON.parse(await file.text()); if (!d || d.app !== "pupitre" || !d.state) throw 0;
-    for (const c of ["docs", "doctext", "chats", "chatmsgs", "decks", "files"]) await tx(c, "readwrite", o => o.clear());
+    for (const c of ["docs", "doctext", "chats", "chatmsgs", "decks", "files", "studio"]) await tx(c, "readwrite", o => o.clear());
     for (const c in d.col || {}) for (const it of d.col[c]) { const { id, ...rest } = it; await idbPut(c, id, rest); }
     for (const f of d.files || []) { const bin = atob(f.data); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); await idbPut("files", f.id, new Blob([u], { type: f.type })); }
     state = migrate(d.state); await idbPut("kv", "state", state);
     textCache.clear(); msgCache.clear(); urlCache.clear();
-    await Promise.all(["docs", "chats", "decks"].map(fire)); closeModal(); go("hoy"); render(); toast("✅ Copia restaurada");
+    await Promise.all(["docs", "chats", "decks", "studio"].map(fire)); closeModal(); go("hoy"); render(); toast("✅ Copia restaurada");
   } catch (e) { toast("❌ Ese archivo no es una copia válida de Pupitre"); }
 }
 
@@ -1721,10 +1950,23 @@ function confirmInline(boxSel, text, label, onYes) {
 document.addEventListener("click", e => {
   const g = e.target.closest("[data-go]"); if (g && !e.target.closest("[data-act]")) { e.preventDefault(); go(g.dataset.go); return; }
   const a = e.target.closest("[data-act]"); if (!a || !state) return;
-  if (a.tagName === "A" && a.dataset.act !== "tab-docs" && a.dataset.act !== "tab-chats") e.preventDefault();
+  if (a.tagName === "A" && !a.dataset.act.startsWith("tab-")) e.preventDefault();
   const act = a.dataset.act, id = a.dataset.id; const cur = subj(S.param);
   switch (act) {
     case "new-subject": subjectModal(); break;
+    case "camera": { pickFor = cur.id; const ci = $("#camIn"); ci.value = ""; ci.click(); break; }
+    case "add-link": linkModal(cur.id); break;
+    case "studio-gen": genStudio(a.dataset.k); break;
+    case "tab-studio": ui.asigTab = "studio"; saveUi(); break;
+    case "pod-toggle": { const it = S.studio.find(x => x.id === S.param); if (!it) break; if (pod && pod.id === it.id && pod.playing) podPause(); else podPlay(it.id, pod && pod.id === it.id ? pod.i : 0); break; }
+    case "pod-prev": { const it = S.studio.find(x => x.id === S.param); if (it) podPlay(it.id, Math.max(0, (pod && pod.id === it.id ? pod.i : 0) - 1)); break; }
+    case "pod-next": { const it = S.studio.find(x => x.id === S.param); if (it) podPlay(it.id, Math.min(it.lines.length - 1, (pod && pod.id === it.id ? pod.i : 0) + 1)); break; }
+    case "mm-all": { const it = S.studio.find(x => x.id === S.param); if (it) { const walk = (n, p) => { if (n.c && n.c.length) { mmOpen.add(p); n.c.forEach((k, i) => walk(k, p + "-" + i)); } }; walk(it.tree, it.id); render(); } break; }
+    case "mm-none": mmOpen.clear(); render(); break;
+    case "mm-ask": { const it = S.studio.find(x => x.id === S.param); if (it) newChat(it.subjectId, null, `Explícame «${a.dataset.q}» dentro del tema «${a.dataset.root}», con un ejemplo.`); break; }
+    case "studio-note": { const it = S.studio.find(x => x.id === S.param); if (it && it.md) newNote(it.subjectId, it.title.slice(0, 110), it.md); break; }
+    case "studio-copy": { const it = S.studio.find(x => x.id === S.param); if (it && it.md) navigator.clipboard.writeText(it.md).then(() => toast("📋 Copiado"), () => toast("Selecciona el texto a mano para copiarlo")); break; }
+    case "studio-del": { const it = S.studio.find(x => x.id === S.param); if (it) confirmInline("#studioDel", "🗑️ Se borra esta creación.", "Eliminar", async () => { podStop(); await sDel("studio", it.id); ui.asigTab = "studio"; saveUi(); go(subj(it.subjectId) ? "asig-" + it.subjectId : "asignaturas"); toast("🗑️ Eliminado"); }); break; }
     case "open-settings": settingsModal(); break;
     case "add-modules": modulesModal(); break;
     case "edit-subject": subjectModal(subj(id)); break;
