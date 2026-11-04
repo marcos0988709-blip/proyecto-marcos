@@ -605,8 +605,39 @@ async function connect() {
 const AI_KEY = "pupitre.gemini";
 const aiCfg = () => Object.assign({ key: "", model: "gemini-flash-latest", speed: "fast", noThink: false }, lsGet(AI_KEY) || {});
 const blobToB64 = b => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1]); r.onerror = rej; r.readAsDataURL(b); });
+/* Modelos de reserva: si uno está saturado, se prueba el siguiente */
+const FALLBACK_MODELS = ["gemini-flash-latest", "gemini-flash-lite-latest", "gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash"];
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const isBusy = e => e && (e.code === "overloaded" || e.code === "rate_limited" || (e.code === "upstream_error" && /high demand|overload|unavailable|try again|internal/i.test(e.message || "")));
 async function geminiCall(input, opts = {}, json = false) {
   const cfg = aiCfg(); if (!cfg.key) throw { code: "no_key" };
+  const first = (cfg.model || "gemini-flash-latest").replace(/^models\//, "");
+  const chain = [first, ...FALLBACK_MODELS.filter(m => m !== first)];
+  let lastErr = null;
+  for (let i = 0; i < chain.length; i++) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const r = await geminiOnce(chain[i], input, opts, json);
+        if (i > 0 && !opts._quiet) toast(`⚡ ${first} iba saturado: he usado ${chain[i]}`);
+        return r;
+      } catch (e) {
+        lastErr = e;
+        if (e && e.code === "cancelled") throw e;
+        if (e && e.text) throw e;
+        if (e && e.code === "bad_model") break;
+        if (!isBusy(e)) throw e;
+        if (e.code === "rate_limited") break;
+        if (opts.onStatus) opts.onStatus(attempt === 0 ? "Gemini va saturado, reintentando…" : `Probando otro modelo…`);
+        await sleep(attempt === 0 ? 1500 : 500);
+      }
+    }
+    if (opts.onStatus && i < chain.length - 1) opts.onStatus(`Probando ${chain[i + 1]}…`);
+  }
+  if (lastErr && lastErr.code === "bad_model") throw lastErr;
+  throw isBusy(lastErr) ? { code: lastErr.code === "rate_limited" ? "rate_limited" : "overloaded", message: "" } : lastErr;
+}
+async function geminiOnce(model, input, opts = {}, json = false) {
+  const cfg = aiCfg();
   const turns = typeof input === "string" ? [{ role: "user", content: input }] : input;
   const contents = [];
   for (const t of turns) { const role = t.role === "assistant" ? "model" : "user"; const last = contents[contents.length - 1]; if (last && last.role === role) last.parts[0].text += "\n\n" + t.content; else contents.push({ role, parts: [{ text: String(t.content) }] }); }
@@ -616,7 +647,7 @@ async function geminiCall(input, opts = {}, json = false) {
   if (opts.tools) body.tools = opts.tools;
   const fast = cfg.speed !== "smart" && !cfg.noThink && !opts._noThink;
   if (fast) body.generationConfig.thinkingConfig = { thinkingBudget: json ? 512 : 0 };
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent((cfg.model || "gemini-flash-latest").replace(/^models\//, ""))}:streamGenerateContent?alt=sse`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:streamGenerateContent?alt=sse`;
   const ctl = new AbortController(); let timedOut = false;
   const to = setTimeout(() => { timedOut = true; ctl.abort(); }, 120000);
   if (opts.signal) { if (opts.signal.aborted) ctl.abort(); else opts.signal.addEventListener("abort", () => ctl.abort()); }
@@ -626,9 +657,9 @@ async function geminiCall(input, opts = {}, json = false) {
   catch (e) { clearTimeout(to); if (e && e.name === "AbortError") throw { code: abortCode() }; throw { code: "network", message: String(e && e.message || e) }; }
   if (!res.ok && res.status === 400 && fast) {
     const m = await res.clone().json().catch(() => ({})); const em = (m.error && m.error.message) || "";
-    if (/think/i.test(em)) { clearTimeout(to); lsSet(AI_KEY, { ...aiCfg(), noThink: true }); return geminiCall(input, { ...opts, _noThink: true }, json); }
+    if (/think/i.test(em)) { clearTimeout(to); lsSet(AI_KEY, { ...aiCfg(), noThink: true }); return geminiOnce(model, input, { ...opts, _noThink: true }, json); }
   }
-  if (!res.ok) { clearTimeout(to); let msg = ""; try { msg = (await res.json()).error.message || ""; } catch (e) {} throw { code: res.status === 429 ? "rate_limited" : (res.status === 401 || res.status === 403 || (res.status === 400 && /api key|API_KEY/i.test(msg))) ? "bad_key" : res.status === 404 ? "bad_model" : "upstream_error", message: msg }; }
+  if (!res.ok) { clearTimeout(to); let msg = ""; try { msg = (await res.json()).error.message || ""; } catch (e) {} throw { code: res.status === 429 ? "rate_limited" : (res.status === 503 || res.status === 500 || res.status === 502 || res.status === 504) ? "overloaded" : (res.status === 401 || res.status === 403 || (res.status === 400 && /api key|API_KEY/i.test(msg))) ? "bad_key" : res.status === 404 ? "bad_model" : "upstream_error", message: msg }; }
   const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = "", text = "";
   try {
     for (;;) {
@@ -1207,7 +1238,7 @@ async function ocrDoc(d, quiet) {
 /* ---------- IA: helpers ---------- */
 function aiErr(e) {
   const c = e && e.code; const extra = e && e.message && !["cancelled", "no_key"].includes(c) ? ` (${String(e.message).slice(0, 160)})` : "";
-  return ({ not_granted: "Has denegado el acceso a la IA. Actívalo en los permisos del artefacto.", rate_limited: "Has llegado al límite gratis de Gemini por ahora. Espera un minuto (o hasta mañana si es el límite diario).", prompt_too_large: "Demasiado texto a la vez. Quita algún documento del contexto.", invalid_json: "La respuesta no salió en el formato esperado. Dale otra vez.", cancelled: "Parado.", refused: "La IA no ha querido responder a eso. Reformula la pregunta.", images_unavailable: "No se pudo enviar la imagen.", no_key: "Falta tu clave de Gemini: pégala en ⚙️ Ajustes.", bad_key: "La clave de Gemini no es válida. Revísala en ⚙️ Ajustes.", bad_model: "Ese modelo de Gemini no está disponible con tu clave. Pulsa «Probar clave» en ⚙️ Ajustes.", network: "Sin conexión a internet. Prueba otra vez cuando tengas señal.", empty_completion: "La IA no ha devuelto nada. Prueba otra vez.", timeout: "Gemini ha tardado más de 2 minutos. Prueba otra vez o elige otro modelo en ⚙️ Ajustes → Probar clave.", upstream_error: "Gemini ha dado un error." }[c] || "No se pudo contactar con la IA. Prueba de nuevo en un momento.") + extra;
+  return ({ not_granted: "Has denegado el acceso a la IA. Actívalo en los permisos del artefacto.", rate_limited: "Has llegado al límite gratis de Gemini por ahora. Espera un minuto (o hasta mañana si es el límite diario).", prompt_too_large: "Demasiado texto a la vez. Quita algún documento del contexto.", invalid_json: "La respuesta no salió en el formato esperado. Dale otra vez.", cancelled: "Parado.", refused: "La IA no ha querido responder a eso. Reformula la pregunta.", images_unavailable: "No se pudo enviar la imagen.", no_key: "Falta tu clave de Gemini: pégala en ⚙️ Ajustes.", bad_key: "La clave de Gemini no es válida. Revísala en ⚙️ Ajustes.", bad_model: "Ese modelo de Gemini no está disponible con tu clave. Pulsa «Probar clave» en ⚙️ Ajustes.", network: "Sin conexión a internet. Prueba otra vez cuando tengas señal.", empty_completion: "La IA no ha devuelto nada. Prueba otra vez.", overloaded: "Gemini está saturado ahora mismo y he probado varios modelos sin suerte. Espera 1-2 minutos y vuelve a intentarlo.", timeout: "Gemini ha tardado más de 2 minutos. Prueba otra vez o elige otro modelo en ⚙️ Ajustes → Probar clave.", upstream_error: "Gemini ha dado un error." }[c] || "No se pudo contactar con la IA. Prueba de nuevo en un momento.") + extra;
 }
 const thinkingHtml = (t = "Pensando…") => `<span class="thinking"><i></i><i></i><i></i> ${t}</span>`;
 const COURSE_CTX = () => { const sc = state.profile.school || ""; return /administr/i.test(sc) || !sc
@@ -1276,6 +1307,7 @@ function viewChat() {
     <h1 style="font-size:clamp(1.3rem,3.4vw,1.8rem);overflow-wrap:anywhere">${esc(c.title || "💬 Nuevo chat")}</h1>
     <div id="chatDel"></div>
     <div class="chat" id="chatBox">${!loaded ? `<p class="muted">${E("⏳")} Cargando mensajes…</p>` : msgs.length ? msgs.map((m, i) => `<div class="msg ${m.role === "user" ? "u" : "a"}">${m.role === "user" ? esc(m.content) : `<div class="prose">${citeHtml(md(m.content), m.cites)}</div><div class="msg-tools"><button class="btn btn-sm btn-g" data-act="msg-copy" data-i="${i}">${E("📋")} Copiar</button><button class="btn btn-sm btn-g" data-act="msg-save" data-i="${i}">${E("💾")} Guardar como nota</button></div>`}</div>`).join("") : `<div class="stack" style="gap:12px;padding:10px 0"><p class="muted">${E("🤖")} Soy tu tutor de <b>${esc(s ? s.name : "esta asignatura")}</b>. ${ctx.length ? `Tengo ${ctx.length} ${ctx.length === 1 ? "documento" : "documentos"} tuyos delante.` : "Añade documentos al contexto para que me base en tus apuntes."} Pregúntame lo que quieras:</p><div class="chips">${starters.map(q => `<button class="chip" data-starter="${esc(q.replace(/^\S+\s/, ""))}" ${sample ? "" : "disabled"}>${esc(q)}</button>`).join("")}</div></div>`}</div>
+    ${chatErrors.has(c.id) && msgs.length && msgs[msgs.length - 1].role === "user" ? `<div class="msg a" style="align-self:flex-start"><span class="small">⚠️ ${esc(chatErrors.get(c.id))}</span><div class="msg-tools"><button class="btn btn-sm btn-p" data-act="chat-retry">🔁 Reintentar</button></div></div>` : ""}
     <form class="composer" id="chatForm">
       ${docs.length ? `<div class="ctxbar"><span class="tiny muted">${E("📎")} ${ctx.filter(id => docs.some(d => d.id === id)).length}/${docs.length} en contexto:</span>${docs.map(d => `<button type="button" class="ctxchip" data-ctx="${d.id}" aria-pressed="${ctx.includes(d.id)}" title="${esc(d.title)}">${E(DOC_EMO[d.type] || "📄")}<span>${esc(d.title || "Sin título")}</span></button>`).join("")}</div>` : `<div class="tiny muted">${E("📎")} Sin documentos en esta asignatura. Súbelos en la pestaña Documentos y el tutor los leerá.</div>`}
       <div class="composer-in"><textarea class="input" id="chatIn" data-keep rows="1" placeholder="Escribe tu duda… (Enter para enviar)" ${sample ? "" : "disabled"}></textarea>
@@ -1294,15 +1326,17 @@ function bindChat() {
   $$("[data-starter]").forEach(b => b.onclick = () => sendChat(c.id, b.dataset.starter));
   $$("[data-ctx]").forEach(b => b.onclick = async () => { const cur = S.chats.find(x => x.id === c.id) || c; const id = b.dataset.ctx; const ctx = new Set(cur.ctx || []); ctx.has(id) ? ctx.delete(id) : ctx.add(id); try { await sPut("chats", c.id, { ...stripId(cur), ctx: [...ctx] }); } catch (e) {} });
 }
+const chatErrors = new Map();
 async function sendChat(cid, text) {
   const c = S.chats.find(x => x.id === cid); if (!sample || !c || streaming) return;
   const s = subj(c.subjectId); const msgs = (await loadMsgs(cid)).slice();
+  chatErrors.delete(cid);
   msgs.push({ role: "user", content: text.slice(0, 6000), at: Date.now() }); msgCache.set(cid, msgs); render();
   const box = $("#chatBox"); const bubble = document.createElement("div"); bubble.className = "msg a"; bubble.innerHTML = thinkingHtml(c.ctx && c.ctx.length ? "Leyendo tus documentos…" : "Pensando…"); box.appendChild(bubble);
   window.scrollTo(0, document.body.scrollHeight);
   const sb = $("#sendBtn"); if (sb) { sb.innerHTML = ic("stop"); sb.setAttribute("aria-label", "Parar"); sb.type = "button"; sb.onclick = () => aiCtl && aiCtl.abort(); }
   streaming = true; aiCtl = new AbortController();
-  let answer = "", cites = {}; const t0 = Date.now(); const tick2 = setInterval(() => { if (!answer) bubble.innerHTML = thinkingHtml(`Pensando… ${Math.round((Date.now() - t0) / 1000)} s`); }, 1000);
+  let answer = "", cites = {}, status = "Pensando…"; const t0 = Date.now(); const tick2 = setInterval(() => { if (!answer) bubble.innerHTML = thinkingHtml(`${status} ${Math.round((Date.now() - t0) / 1000)} s`); }, 1000);
   try {
     const dc = await docsContext(c.ctx || []); const images = await ctxImages(c.ctx || []); cites = dc.map;
     const rules = `Eres el tutor particular de ${state.profile.name || "un estudiante"}${s ? ` para «${s.name}»` : ""}. ${COURSE_CTX()}
@@ -1312,11 +1346,11 @@ ${s ? subjContext(s) : ""}
 ${dc.text ? `\nDOCUMENTOS DEL ALUMNO:\n${dc.text}` : ""}`;
     const turns = [{ role: "user", content: rules }, ...msgs.slice(-16).map(m => ({ role: m.role, content: m.content }))];
     if (turns[1] && turns[1].role === "assistant") turns.splice(1, 1);
-    const opts = { cache: false, signal: aiCtl.signal, onText: ({ text }) => { answer = text; bubble.innerHTML = `<div class="prose">${citeHtml(md(text), cites)}</div>`; } };
+    const opts = { cache: false, signal: aiCtl.signal, onStatus: t => { status = t; }, onText: ({ text }) => { answer = text; bubble.innerHTML = `<div class="prose">${citeHtml(md(text), cites)}</div>`; } };
     if (images.length) opts.images = images;
     const r = await sample(turns, opts);
     answer = r.text;
-  } catch (e) { if (e && e.text) answer = e.text; else if (!(e && e.code === "cancelled")) bubble.innerHTML = `<span class="small">⚠️ ${aiErr(e)}</span>`; }
+  } catch (e) { if (e && e.text) answer = e.text; else if (!(e && e.code === "cancelled")) chatErrors.set(cid, aiErr(e)); }
   clearInterval(tick2); streaming = false; aiCtl = null;
   if (answer) {
     msgs.push({ role: "assistant", content: answer, at: Date.now(), cites });
@@ -1956,7 +1990,7 @@ function settingsModal() {
         $("#modelList", root).innerHTML = models.map(m => `<option value="${esc(m)}">`).join("");
         const cur = $("#stModel", root).value.trim();
         if (cur !== "gemini-flash-latest" && !models.includes(cur)) { const pick = models.includes("gemini-flash-latest") ? "gemini-flash-latest" : (models.filter(m => /flash/.test(m) && !/lite|tts|image|live|audio/.test(m)).sort().pop() || models[0]); if (pick) { $("#stModel", root).value = pick; saveKey(); } }
-        const t = await geminiCall("Responde solo con: ¡Listo para estudiar! 📚");
+        const t = await geminiCall("Responde solo con: ¡Listo para estudiar! 📚", { _quiet: true });
         msg(`✅ Funciona. Modelo: <b>${esc(aiCfg().model)}</b>. Respuesta: ${esc(t.text.trim().slice(0, 80))}`); render();
       } catch (e) { msg("❌ " + aiErr(e)); }
     };
@@ -2064,6 +2098,7 @@ document.addEventListener("click", e => {
     case "new-chat": { const sid = a.dataset.s; if (sid) newChat(sid); else pickSubjectModal(newChat); break; }
     case "chat-del": { const c = S.chats.find(x => x.id === id); if (c) confirmInline("#chatDel", "🗑️ Se borra este chat entero.", "Eliminar", async () => { try { await sDel("chatmsgs", c.id); await sDel("chats", c.id); msgCache.delete(c.id); toast("🗑️ Chat eliminado"); ui.asigTab = "chats"; saveUi(); go(subj(c.subjectId) ? "asig-" + c.subjectId : "tutor"); } catch (er) { toast("⚠️ No se pudo eliminar"); } }); break; }
     case "chat-rename": { const c = S.chats.find(x => x.id === id); if (!c) break; openModal(`<div class="sheet-h"><h2>✏️ Renombrar chat</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div><form id="rnForm" class="stack"><input class="input" id="rnIn" value="${esc(c.title || "")}" maxlength="80"><div class="row" style="justify-content:flex-end"><button class="btn btn-p" type="submit">Guardar</button></div></form>`, root => { setTimeout(() => $("#rnIn", root).focus(), 50); $("#rnForm", root).addEventListener("submit", async ev => { ev.preventDefault(); const v = $("#rnIn", root).value.trim(); closeModal(); try { await sPut("chats", c.id, { ...stripId(S.chats.find(x => x.id === c.id) || c), title: v }); } catch (er) {} }); }); break; }
+    case "chat-retry": { const cid = S.param; const msgs = (msgCache.get(cid) || []).slice(); const last = msgs[msgs.length - 1]; if (last && last.role === "user") { msgs.pop(); msgCache.set(cid, msgs); chatErrors.delete(cid); sendChat(cid, last.content); } break; }
     case "msg-copy": { const m = (msgCache.get(S.param) || [])[+a.dataset.i]; if (m) navigator.clipboard.writeText(m.content).then(() => toast("📋 Copiado"), () => toast("Selecciona el texto a mano para copiarlo")); break; }
     case "msg-save": { const c = S.chats.find(x => x.id === S.param); const m = (msgCache.get(S.param) || [])[+a.dataset.i]; if (c && m) { const id2 = uid(), now = Date.now(); saveText(id2, m.content).then(parts => sPut("docs", id2, { subjectId: c.subjectId, title: "💬 " + (c.title || "Respuesta del tutor").slice(0, 70), type: "note", parts, chars: m.content.length, createdAt: now, updatedAt: now })).then(() => toast("💾 Guardado en Documentos"), () => toast("⚠️ No se pudo guardar")); } break; }
     case "ai-summary": aiSummary(); break;
@@ -2108,7 +2143,7 @@ function exampleState() {
 }
 
 /* ================= actualizaciones ================= */
-const APP_VERSION = "2026.11.01-6";
+const APP_VERSION = "2026.11.04-1";
 let updateReady = false;
 async function checkUpdate() {
   try {
