@@ -454,6 +454,7 @@ hr.sep{border:0;border-top:1px solid var(--line);width:100%;margin:0}
 <input type="file" id="fileIn" multiple accept=".pdf,.docx,.txt,.md,.csv,.json,image/*" hidden>
 <input type="file" id="camIn" accept="image/*" capture="environment" hidden>
 <input type="file" id="icsIn" accept=".ics,text/calendar" hidden>
+<input type="file" id="ttIn" accept="image/*" hidden>
 
 <script>
 (() => {
@@ -1184,6 +1185,7 @@ let pickFor = null;
 function openFilePicker(sid) { pickFor = sid; const fi = $("#fileIn"); fi.value = ""; fi.click(); }
 $("#fileIn").addEventListener("change", e => { if (pickFor) handleFiles(e.target.files, pickFor); });
 $("#icsIn").addEventListener("change", e => { const f = e.target.files[0]; if (f) importICS(f); });
+$("#ttIn").addEventListener("change", e => { const f = e.target.files[0]; if (f) readTimetablePhoto(f); });
 $("#camIn").addEventListener("change", e => { if (pickFor) handleFiles(e.target.files, pickFor); });
 async function handleFiles(files, sid) {
   const list = [...(files || [])]; if (!list.length) return;
@@ -2168,7 +2170,7 @@ function taskRow(t) {
   </div>`;
 }
 function assistantBar(compact) {
-  const chips = ["🪄 Organízame la semana", "😮‍💨 Hoy tengo poco tiempo, reorganiza", "⚽ El jueves tengo fútbol de 18 a 20", "📝 Tengo que entregar una práctica el viernes"];
+  const chips = ["🪄 Organízame la semana", "📸 Leer mi horario de una foto", "😮‍💨 Hoy tengo poco tiempo, reorganiza", "⚽ El jueves tengo fútbol de 18 a 20", "📝 Tengo que entregar una práctica el viernes"];
   return `<section class="card" style="background:radial-gradient(120% 140% at 0% 0%,rgba(91,134,255,.18),transparent 60%),var(--sheet)">
     <form class="row" id="asForm" style="flex-wrap:nowrap"><span class="emo" style="font-size:24px">🤖</span><input class="input" id="asIn" data-keep placeholder="Dile a Pupitre qué hacer… «organízame la semana», «el martes tengo médico a las 10»" ${assistantBusy || agendaBusy ? "disabled" : ""}><button class="btn btn-p" type="submit" aria-label="Enviar" ${assistantBusy || agendaBusy ? "disabled" : ""}>${ic("send")}</button></form>
     ${assistantBusy ? `<div style="margin-top:10px">${thinkingHtml("Pensando qué hacer…")}</div>` : agendaBusy ? `<div style="margin-top:10px">${thinkingHtml("Organizando tu semana… (puede tardar un poco)")}</div>` : compact ? "" : `<div class="chips" style="margin-top:10px">${chips.map(c => `<button class="chip" type="button" data-act="as-chip" data-q="${esc(c.replace(/^\S+\s/, ""))}">${esc(c)}</button>`).join("")}</div>`}
@@ -2252,8 +2254,8 @@ function tasksView() {
 function horarioView() {
   const st = state.settings;
   return `<div class="stack" style="gap:12px">
-    <section class="card"><div class="card-h"><div><h2>${E("🏫")} Tu horario de clases</h2><p class="small muted">Se repite cada semana. Pupitre nunca pone estudio encima.</p></div><button class="btn btn-p btn-sm" data-act="new-class">${E("➕")} Clase</button></div>
-      ${state.timetable.length ? DOWL.map((d, i) => { const cs = state.timetable.filter(c => c.dow === i).sort((a, b) => toMin(a.start) - toMin(b.start)); return cs.length ? `<h3 style="margin:12px 0 4px">${d}</h3>${cs.map(c => { const s = subj(c.subjectId); return `<div class="blk" style="--c:${sColor(c.subjectId)}"><span class="emo">${s ? s.emoji : "🏫"}</span><div style="min-width:0"><div class="ttl">${esc(c.title || (s ? s.name : "Clase"))}</div><div class="tiny muted">${c.start}–${c.end}${c.room ? " · 📍 " + esc(c.room) : ""}</div></div><button class="icon-btn emo" style="width:34px;height:34px;font-size:15px" data-act="edit-class" data-id="${c.id}" aria-label="Editar">✏️</button></div>`; }).join("")}` : ""; }).join("") : `<div class="empty"><span class="emo big">🏫</span><p>Añade tus clases (o díselo al asistente: «los lunes tengo Proceso integral de 8 a 10») para que el plan respete tu horario.</p></div>`}
+    <section class="card"><div class="card-h"><div><h2>${E("🏫")} Tu horario de clases</h2><p class="small muted">Se repite cada semana. Pupitre nunca pone estudio encima.</p></div><div class="row"><button class="btn btn-m btn-sm" data-act="tt-photo">${E("📸")} Leer de una foto</button><button class="btn btn-p btn-sm" data-act="new-class">${E("➕")} Clase</button></div></div>
+      ${state.timetable.length ? DOWL.map((d, i) => { const cs = state.timetable.filter(c => c.dow === i).sort((a, b) => toMin(a.start) - toMin(b.start)); return cs.length ? `<h3 style="margin:12px 0 4px">${d}</h3>${cs.map(c => { const s = subj(c.subjectId); return `<div class="blk" style="--c:${sColor(c.subjectId)}"><span class="emo">${s ? s.emoji : "🏫"}</span><div style="min-width:0"><div class="ttl">${esc(c.title || (s ? s.name : "Clase"))}</div><div class="tiny muted">${c.start}–${c.end}${c.room ? " · 📍 " + esc(c.room) : ""}</div></div><button class="icon-btn emo" style="width:34px;height:34px;font-size:15px" data-act="edit-class" data-id="${c.id}" aria-label="Editar">✏️</button></div>`; }).join("")}` : ""; }).join("") : `<div class="empty"><span class="emo big">🏫</span><p>Haz una foto o una captura a tu horario y toca <b>📸 Leer de una foto</b>: la IA te crea todas las clases. También puedes añadirlas a mano o decírselo al asistente («los lunes tengo Proceso integral de 8 a 10»).</p><button class="btn btn-m" data-act="tt-photo">${E("📸")} Leer horario de una foto</button></div>`}
     </section>
     <section class="card"><div class="card-h"><h2>${E("⚙️")} Cómo quieres estudiar</h2></div>
       <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:10px">
@@ -2358,6 +2360,30 @@ function focusBlock(id) {
   const b = state.plan.find(x => x.id === id); if (!b) return;
   if (timer.running) { toast("⏱️ Ya tienes una sesión en marcha"); go("foco"); return; }
   Object.assign(timer, { subjectId: b.subjectId || null, topicId: null, blockId: b.id, phase: "focus", remaining: null }); saveTimer(); go("foco");
+}
+
+/* ===== Horario desde una foto ===== */
+async function readTimetablePhoto(file) {
+  if (!sample) { toast("🔑 Pega tu clave de Gemini en ⚙️ Ajustes"); settingsModal(); return; }
+  toast("📸 Leyendo tu horario…"); agendaBusy = true; render();
+  try {
+    const prompt = `Esta imagen es el horario semanal de clases de un alumno (${state.profile.school || "estudiante"}). Léelo con cuidado y devuelve TODAS las clases de la semana.
+- dow: día de la semana, 0 = lunes … 6 = domingo.
+- start y end en formato HH:MM de 24 horas.
+- title: nombre de la asignatura tal como aparece (si viene abreviado o con código, pon el nombre completo si lo deduces).
+- room: aula si aparece; si no, vacío.
+- subjectId: si coincide con una de estas asignaturas del alumno, pon su id; si no, vacío: ${state.subjects.map(x => `${x.id}=${x.name}`).join("; ") || "(ninguna)"}.
+Si dos franjas seguidas son de la misma asignatura, júntalas en una sola clase. Ignora recreos y descansos.
+Responde SOLO con JSON: [{"dow":0,"start":"08:00","end":"10:00","title":"","room":"","subjectId":""}]`;
+    const arr = await sample.json(prompt, { images: [file] });
+    const list = (Array.isArray(arr) ? arr : []).filter(c => c && c.dow >= 0 && c.dow <= 6 && isT(c.start) && isT(c.end) && toMin(c.end) > toMin(c.start))
+      .map(c => ({ id: uid(), dow: +c.dow, start: normT(c.start), end: normT(c.end), title: String(c.title || "").slice(0, 80), room: String(c.room || "").slice(0, 30), subjectId: subj(c.subjectId) ? c.subjectId : "" }));
+    if (!list.length) throw { code: "empty_completion", message: "no he encontrado clases en la foto" };
+    snapshot();
+    const had = state.timetable.length; state.timetable = list;
+    lastAction = { title: `Horario leído: ${list.length} clases`, text: had ? `He sustituido tu horario anterior (${had} clases). Revísalo por si algo no se leyó bien.` : "Revísalo por si algo no se leyó bien. Toca cualquier clase para corregirla.", list: DOWL.map((d, i) => { const cs = list.filter(c => c.dow === i); return cs.length ? `<b>${d}:</b> ${cs.map(c => `${c.start}–${c.end} ${esc(c.title)}`).join(", ")}` : ""; }).filter(Boolean) };
+    ui.agTab = "horario"; agendaBusy = false; commit(); if (S.view !== "plan") go("plan");
+  } catch (e) { agendaBusy = false; render(); toast("⚠️ No se pudo leer el horario: " + aiErr(e)); }
 }
 
 /* ===== Calendarios .ics (Google Calendar, iPhone, Outlook) ===== */
@@ -2597,7 +2623,7 @@ document.addEventListener("click", e => {
     case "task-edit": { const t = state.tasks.find(x => x.id === id); if (t) taskModal(t); break; }
     case "new-class": classModal(null); break;
     case "edit-class": { const c = state.timetable.find(x => x.id === id); if (c) classModal(c); break; }
-    case "as-chip": runAssistant(a.dataset.q); break;
+    case "as-chip": if (/horario de una foto/i.test(a.dataset.q)) { const fi = $("#ttIn"); fi.value = ""; fi.click(); } else runAssistant(a.dataset.q); break;
     case "ag-organize": organizeWeek(); break;
     case "ag-apply": applyProposal(); break;
     case "act-undo": undoLast(); break;
@@ -2610,6 +2636,7 @@ document.addEventListener("click", e => {
     case "mo-next": ui.monthOffset = (ui.monthOffset || 0) + 1; render(); break;
     case "mo-now": ui.monthOffset = 0; render(); break;
     case "ics-export": exportICS(); break;
+    case "tt-photo": { const fi = $("#ttIn"); fi.value = ""; fi.click(); break; }
     case "ics-import": { const fi = $("#icsIn"); fi.value = ""; fi.click(); break; }
     case "new-block": blockModal(null, a.dataset.date); break;
     case "edit-block": { const b = state.plan.find(x => x.id === id); if (b) blockModal(b); break; }
@@ -2679,7 +2706,7 @@ function exampleState() {
 }
 
 /* ================= actualizaciones ================= */
-const APP_VERSION = "2026.11.04-5";
+const APP_VERSION = "2026.11.04-6";
 let updateReady = false;
 async function checkUpdate() {
   try {
