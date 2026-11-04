@@ -566,7 +566,7 @@ const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); retu
 function blankState() {
   return { v: 2, updatedAt: Date.now(), example: false,
     profile: { name: "", goalMin: 120, school: "" },
-    settings: { focus: 25, short: 5, long: 15, longEvery: 4, sound: true, avail: [120, 120, 120, 120, 90, 180, 60], startTime: "17:00", weekendStart: "10:30", dayEnd: "22:00", gridStart: "07:00", gridEnd: "23:00" },
+    settings: { focus: 25, short: 5, long: 15, longEvery: 4, sound: true, avail: [120, 120, 120, 120, 90, 180, 60], startTime: "17:00", weekendStart: "10:30", dayEnd: "22:00", gridStart: "07:00", gridEnd: "23:00", autoApply: true },
     subjects: [], sessions: [], plan: [], tutor: {}, timetable: [], tasks: [] };
 }
 function migrate(s) {
@@ -874,6 +874,7 @@ function viewHoy() {
       <div class="card stat"><span class="stat-ic emo">📄</span><div><b>${S.docs.length}</b><small>documentos · ${S.chats.length} chats IA</small></div></div>
     </div>
     ${sample ? assistantBar(true) : ""}
+    ${actionBanner()}
     ${!sample ? `<div class="banner" style="background:var(--accent-soft);border-color:rgba(91,134,255,.4)"><span>${E("🔑")} <b>Activa la IA gratis:</b> saca tu clave de Gemini en Google AI Studio y pégala en Ajustes. Son 2 minutos.</span><button class="btn btn-sm btn-p" data-act="open-settings">Poner clave</button></div>` : ""}
     ${lastChat && subj(lastChat.subjectId) ? `<a class="card row" href="#chat-${lastChat.id}" style="text-decoration:none;flex-wrap:nowrap"><span class="semo" style="--c:${sColor(lastChat.subjectId)}">${E(sEmo(lastChat.subjectId))}</span><div style="flex:1;min-width:0"><span class="tiny muted">💬 Seguir con tu último chat · ${ago(lastChat.updatedAt)}</span><div style="font-weight:700;overflow-wrap:anywhere">${esc(lastChat.title || "Chat")}</div></div><span class="btn btn-sm">Abrir</span></a>` : ""}
     ${dueTot ? `<section class="card"><div class="card-h"><h2>${E("🔁")} Repaso de hoy</h2><span class="pill mk">${dueTot} ${dueTot === 1 ? "tarjeta" : "tarjetas"}</span></div><div class="chips">${dueAll.map(({ s, n }) => `<button class="chip" style="--c:${s.color}" data-act="go-review" data-s="${s.id}">${E(s.emoji)}<span>${esc(s.name.split(" ").slice(0, 3).join(" "))} · ${n}</span></button>`).join("")}</div><p class="tiny muted" style="margin-top:10px">5 minutos de repaso al día valen más que una tarde entera antes del examen.</p></section>` : ""}
@@ -1959,7 +1960,23 @@ function planDays() {
 
 /* ===== Organizador de la semana con IA ===== */
 let agendaProposal = null, agendaBusy = false, wkScroll = null;
-async function organizeWeek(note = "") {
+let undoSnap = null, lastAction = null;
+function snapshot() { undoSnap = JSON.stringify({ plan: state.plan, tasks: state.tasks, timetable: state.timetable, exams: state.subjects.map(x => [x.id, x.exams]) }); }
+function undoLast() {
+  if (!undoSnap) return; const u = JSON.parse(undoSnap);
+  state.plan = u.plan; state.tasks = u.tasks; state.timetable = u.timetable;
+  for (const [id, ex] of u.exams) { const x = subj(id); if (x) x.exams = ex; }
+  undoSnap = null; lastAction = null; commit(); toast("↩️ Deshecho. Todo como estaba.");
+}
+function actionBanner() {
+  if (!lastAction) return "";
+  return `<section class="card" style="border-color:rgba(61,220,151,.45);background:linear-gradient(135deg,var(--ok-soft),transparent 70%),var(--sheet)">
+    <div class="row between" style="align-items:flex-start;flex-wrap:nowrap"><div style="min-width:0"><b>🤖 ${esc(lastAction.title)}</b>${lastAction.text ? `<p class="small" style="margin-top:4px">${esc(lastAction.text)}</p>` : ""}${lastAction.list && lastAction.list.length ? `<ul class="small muted" style="margin:6px 0 0;padding-left:18px">${lastAction.list.map(x => `<li>${x}</li>`).join("")}</ul>` : ""}</div>
+    <button class="x-btn" data-act="act-close" aria-label="Cerrar">${ic("x")}</button></div>
+    <div class="row" style="margin-top:10px">${undoSnap ? `<button class="btn btn-sm" data-act="act-undo">↩️ Deshacer</button>` : ""}<a class="btn btn-sm btn-g" href="#plan">🗓️ Ver agenda</a></div>
+  </section>`;
+}
+async function organizeWeek(note = "", keepSnap = false) {
   if (!sample) { toast("🔑 Pega tu clave de Gemini en ⚙️ Ajustes"); settingsModal(); return; }
   if (!state.subjects.length && !state.tasks.length) { toast("📚 Añade antes tus asignaturas o tareas"); return; }
   const days = planDays();
@@ -2000,7 +2017,14 @@ Responde SOLO con JSON: {"resumen":"2-4 frases explicando la estrategia de la se
     const r = await sample.json(prompt);
     const blocks = fitBlocks((r && Array.isArray(r.bloques)) ? r.bloques : [], days);
     if (!blocks.length) throw { code: "no_slots" };
-    agendaProposal = { blocks, resumen: String((r && r.resumen) || ""), days };
+    const resumen = String((r && r.resumen) || "");
+    if (state.settings.autoApply) {
+      if (!keepSnap) snapshot();
+      const set = new Set(days); state.plan = state.plan.filter(b => !(b.ai && !b.done && set.has(b.date))).concat(blocks);
+      const tot = blocks.reduce((a, b) => a + b.min, 0);
+      lastAction = { title: `Semana organizada: ${blocks.length} bloques · ${fmtMin(tot)}`, text: resumen, list: (lastAction && keepSnap ? lastAction.list : []) };
+      agendaProposal = null; commit(false); toast("✅ Semana organizada");
+    } else agendaProposal = { blocks, resumen, days };
   } catch (e) { toast(e && e.code === "no_slots" ? "😮 No hay huecos libres en tu agenda. Revisa el horario de estudio en 🏫 Horario." : "⚠️ " + aiErr(e)); }
   agendaBusy = false; render();
 }
@@ -2058,7 +2082,13 @@ Responde SOLO con JSON: {"reply":"respuesta corta en español","ops":[]}`;
     const r = await sample.json(prompt);
     const ops = (r && Array.isArray(r.ops) ? r.ops : []).filter(validOp);
     assistantBusy = false; render();
-    assistantModal(String((r && r.reply) || ""), ops);
+    const reply = String((r && r.reply) || "");
+    if (state.settings.autoApply) {
+      if (!ops.length) { assistantModal(reply, []); return; }
+      snapshot();
+      lastAction = { title: reply || "Hecho", text: "", list: ops.filter(o => o.op !== "organize").map(opDesc) };
+      applyOps(ops, true);
+    } else assistantModal(reply, ops);
   } catch (e) { assistantBusy = false; render(); toast("⚠️ " + aiErr(e)); }
 }
 function findItem(id) { return state.plan.find(x => x.id === id); }
@@ -2099,7 +2129,7 @@ function assistantModal(reply, ops) {
     go2.onclick = () => { const sel = ops.filter((o, i) => { const c = $(`[data-op="${i}"]`, root); return c && c.checked; }); closeModal(); applyOps(sel); };
   });
 }
-function applyOps(ops) {
+function applyOps(ops, auto) {
   let organize = null, n = 0;
   for (const o of ops) {
     const it = o.id ? findItem(o.id) : null;
@@ -2116,7 +2146,7 @@ function applyOps(ops) {
     }
   }
   if (n) { commit(); toast(`✅ Hecho: ${n} ${n === 1 ? "cambio" : "cambios"}`); }
-  if (organize) organizeWeek(organize.note || "");
+  if (organize) organizeWeek(organize.note || "", !!auto);
 }
 
 /* ===== Vistas ===== */
@@ -2170,6 +2200,7 @@ function viewPlan() {
   return `<div class="stack" style="gap:16px">
     <div class="row between"><div><h1>${E("🗓️")} Agenda</h1><p class="muted">${tab === "tareas" ? `${state.tasks.filter(t => t.status !== "done").length} tareas pendientes` : tab === "horario" ? "Tu horario fijo y cómo quieres estudiar" : tab === "mes" ? "" : `${label} · ${fmtDay(days[0])} – ${fmtDay(days[6])} · 📚 ${fmtMin(doneMin)} de ${fmtMin(allMin)} hechos`}</p></div>${["semana", "lista"].includes(tab) ? wkNav : ""}</div>
     ${assistantBar(false)}
+    ${actionBanner()}
     ${proposalBanner()}
     <div class="seg" role="tablist">${[["semana", "📅 Semana"], ["lista", "📋 Lista"], ["mes", "🗓️ Mes"], ["tareas", "✅ Tareas"], ["horario", "🏫 Horario"]].map(([k, l]) => `<button data-agtab="${k}" aria-pressed="${tab === k}">${l}</button>`).join("")}</div>
     ${body}
@@ -2232,6 +2263,7 @@ function horarioView() {
       </div>
       <div class="field" style="margin-top:12px"><span>Máximo de minutos de estudio cada día</span><div class="avail">${DOW.map((d, i) => `<label>${d}<input class="input num" type="number" min="0" max="600" step="15" data-avail="${i}" value="${st.avail[i]}"></label>`).join("")}</div></div>
       <p class="tiny muted" style="margin-top:8px">Pon 0 el día que quieras librar 😎</p>
+      <label class="row" style="flex-wrap:nowrap;margin-top:12px"><input type="checkbox" data-setb="autoApply" ${st.autoApply ? "checked" : ""} style="width:18px;height:18px;accent-color:var(--accent)"><span class="small">🤖 <b>Aplicar los cambios del asistente sin preguntar</b> (siempre puedes deshacer)</span></label>
     </section>
     <section class="card"><div class="card-h"><div><h2>${E("📲")} Google Calendar y otros calendarios</h2><p class="small muted">Pasa tu agenda a Google Calendar o al calendario del iPhone, o trae aquí un calendario que ya tengas.</p></div></div>
       <div class="row"><button class="btn btn-p" data-act="ics-export">${E("📤")} Exportar a calendario (.ics)</button><button class="btn" data-act="ics-import">${E("📥")} Importar calendario (.ics)</button></div>
@@ -2251,6 +2283,7 @@ function bindPlan() {
   }
   const tf = $("#taskForm"); tf && tf.addEventListener("submit", e => { e.preventDefault(); const v = $("#taskIn").value.trim(); if (!v) return; $("#taskIn").value = ""; const t = { id: uid(), title: v.slice(0, 120), due: "", est: 45, subjectId: "", prio: 2, status: "todo", createdAt: Date.now() }; state.tasks.push(t); commit(); taskModal(t, true); });
   $$("[data-avail]").forEach(el => el.onchange = () => { state.settings.avail[+el.dataset.avail] = Math.max(0, Math.min(600, Math.round(+el.value || 0))); commit(false); toast("✅ Guardado"); });
+  $$("[data-setb]").forEach(el => el.onchange = () => { state.settings[el.dataset.setb] = el.checked; commit(false); toast(el.checked ? "🤖 El asistente aplicará los cambios directamente" : "🤖 El asistente te preguntará antes"); });
   $$("[data-set]").forEach(el => el.onchange = () => { if (isT(el.value)) { state.settings[el.dataset.set] = el.value; commit(false); toast("✅ Guardado"); } });
   const lst = ui.scrollDay && $("#day-" + ui.scrollDay); if (lst) { lst.scrollIntoView({ block: "start" }); ui.scrollDay = null; }
 }
@@ -2567,7 +2600,10 @@ document.addEventListener("click", e => {
     case "as-chip": runAssistant(a.dataset.q); break;
     case "ag-organize": organizeWeek(); break;
     case "ag-apply": applyProposal(); break;
+    case "act-undo": undoLast(); break;
+    case "act-close": lastAction = null; render(); break;
     case "ag-redo": agendaProposal = null; organizeWeek("Dame una alternativa distinta a la anterior"); break;
+    case "ag-organize2": organizeWeek(); break;
     case "ag-discard": agendaProposal = null; render(); break;
     case "goto-day": { const k = a.dataset.d; ui.weekOffset = Math.round((mondayOf(parseD(k)) - mondayOf(new Date())) / (7 * 864e5)); ui.agTab = "lista"; ui.scrollDay = k; saveUi(); render(); break; }
     case "mo-prev": ui.monthOffset = (ui.monthOffset || 0) - 1; render(); break;
@@ -2643,7 +2679,7 @@ function exampleState() {
 }
 
 /* ================= actualizaciones ================= */
-const APP_VERSION = "2026.11.04-4";
+const APP_VERSION = "2026.11.04-5";
 let updateReady = false;
 async function checkUpdate() {
   try {
