@@ -613,7 +613,7 @@ async function geminiCall(input, opts = {}, json = false) {
   const cfg = aiCfg(); if (!cfg.key) throw { code: "no_key" };
   const first = (cfg.model || "gemini-flash-latest").replace(/^models\//, "");
   const chain = [first, ...FALLBACK_MODELS.filter(m => m !== first)];
-  let lastErr = null;
+  let lastErr = null, timeouts = 0;
   for (let i = 0; i < chain.length; i++) {
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
@@ -625,6 +625,7 @@ async function geminiCall(input, opts = {}, json = false) {
         if (e && e.code === "cancelled") throw e;
         if (e && e.text) throw e;
         if (e && e.code === "bad_model") break;
+        if (e && e.code === "timeout") { timeouts++; if (timeouts >= 2) throw e; if (opts.onStatus) opts.onStatus("Tarda mucho, probando un modelo más rápido…"); break; }
         if (!isBusy(e)) throw e;
         if (e.code === "rate_limited") break;
         if (opts.onStatus) opts.onStatus(attempt === 0 ? "Gemini va saturado, reintentando…" : `Probando otro modelo…`);
@@ -649,7 +650,7 @@ async function geminiOnce(model, input, opts = {}, json = false) {
   if (fast) body.generationConfig.thinkingConfig = { thinkingBudget: json ? 512 : 0 };
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:streamGenerateContent?alt=sse`;
   const ctl = new AbortController(); let timedOut = false;
-  const to = setTimeout(() => { timedOut = true; ctl.abort(); }, 120000);
+  const to = setTimeout(() => { timedOut = true; ctl.abort(); }, 75000);
   if (opts.signal) { if (opts.signal.aborted) ctl.abort(); else opts.signal.addEventListener("abort", () => ctl.abort()); }
   const abortCode = () => timedOut ? "timeout" : "cancelled";
   let res;
@@ -1238,7 +1239,7 @@ async function ocrDoc(d, quiet) {
 /* ---------- IA: helpers ---------- */
 function aiErr(e) {
   const c = e && e.code; const extra = e && e.message && !["cancelled", "no_key"].includes(c) ? ` (${String(e.message).slice(0, 160)})` : "";
-  return ({ not_granted: "Has denegado el acceso a la IA. Actívalo en los permisos del artefacto.", rate_limited: "Has llegado al límite gratis de Gemini por ahora. Espera un minuto (o hasta mañana si es el límite diario).", prompt_too_large: "Demasiado texto a la vez. Quita algún documento del contexto.", invalid_json: "La respuesta no salió en el formato esperado. Dale otra vez.", cancelled: "Parado.", refused: "La IA no ha querido responder a eso. Reformula la pregunta.", images_unavailable: "No se pudo enviar la imagen.", no_key: "Falta tu clave de Gemini: pégala en ⚙️ Ajustes.", bad_key: "La clave de Gemini no es válida. Revísala en ⚙️ Ajustes.", bad_model: "Ese modelo de Gemini no está disponible con tu clave. Pulsa «Probar clave» en ⚙️ Ajustes.", network: "Sin conexión a internet. Prueba otra vez cuando tengas señal.", empty_completion: "La IA no ha devuelto nada. Prueba otra vez.", overloaded: "Gemini está saturado ahora mismo y he probado varios modelos sin suerte. Espera 1-2 minutos y vuelve a intentarlo.", timeout: "Gemini ha tardado más de 2 minutos. Prueba otra vez o elige otro modelo en ⚙️ Ajustes → Probar clave.", upstream_error: "Gemini ha dado un error." }[c] || "No se pudo contactar con la IA. Prueba de nuevo en un momento.") + extra;
+  return ({ not_granted: "Has denegado el acceso a la IA. Actívalo en los permisos del artefacto.", rate_limited: "Has llegado al límite gratis de Gemini por ahora. Espera un minuto (o hasta mañana si es el límite diario).", prompt_too_large: "Demasiado texto a la vez. Quita algún documento del contexto.", invalid_json: "La respuesta no salió en el formato esperado. Dale otra vez.", cancelled: "Parado.", refused: "La IA no ha querido responder a eso. Reformula la pregunta.", images_unavailable: "No se pudo enviar la imagen.", no_key: "Falta tu clave de Gemini: pégala en ⚙️ Ajustes.", bad_key: "La clave de Gemini no es válida. Revísala en ⚙️ Ajustes.", bad_model: "Ese modelo de Gemini no está disponible con tu clave. Pulsa «Probar clave» en ⚙️ Ajustes.", network: "Sin conexión a internet. Prueba otra vez cuando tengas señal.", empty_completion: "La IA no ha devuelto nada. Prueba otra vez.", overloaded: "Gemini está saturado ahora mismo y he probado varios modelos sin suerte. Espera 1-2 minutos y vuelve a intentarlo.", timeout: "Gemini está tardando demasiado (puede que vaya saturado). Prueba otra vez en un momento o quita algún documento del contexto 📎.", upstream_error: "Gemini ha dado un error." }[c] || "No se pudo contactar con la IA. Prueba de nuevo en un momento.") + extra;
 }
 const thinkingHtml = (t = "Pensando…") => `<span class="thinking"><i></i><i></i><i></i> ${t}</span>`;
 const COURSE_CTX = () => { const sc = state.profile.school || ""; return /administr/i.test(sc) || !sc
@@ -1249,7 +1250,37 @@ function subjContext(s) {
   const tp = s.topics.map(t => `- ${t.title} [importancia ${W_TXT[t.w || 2]}${t.done ? ", ya dominado" : ""}]`).join("\n") || "(sin temas listados)";
   return `${s.kind === "proyecto" ? "Proyecto" : "Módulo"}: ${s.name}\nFechas: ${ex}\nTemas:\n${tp}`;
 }
-async function docsContext(ids, budget = 280000) {
+/* Contexto inteligente: si los documentos son largos, solo se envían los trozos relacionados con la pregunta */
+const STOPW = new Set("de la el los las un una unos unas y o u en a por para con que se del al lo es son su sus como mas pero sin sobre este esta esto estos me te mi tu yo le les nos ya muy hay ser fue han tiene puede cual cuales cuando donde porque".split(" "));
+const normW = w => w.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+const qTerms = q => [...new Set(normW(q).split(/[^a-z0-9ñ%]+/).filter(w => w.length > 2 && !STOPW.has(w)))];
+function chunkText(t, size = 1600) {
+  const out = []; let cur = "";
+  for (const para of t.split(/\n{2,}/)) {
+    if (cur && (cur.length + para.length) > size) { out.push(cur); cur = ""; }
+    cur = cur ? cur + "\n\n" + para : para;
+    while (cur.length > size * 1.6) { out.push(cur.slice(0, size)); cur = cur.slice(size); }
+  }
+  if (cur.trim()) out.push(cur); return out;
+}
+async function docsContextSmart(ids, query, budget = 40000) {
+  const metas = ids.map(id => S.docs.find(d => d.id === id)).filter(Boolean);
+  const texts = await Promise.all(metas.map(m => loadText(m.id).catch(() => "")));
+  const total = texts.reduce((a, t) => a + t.length, 0);
+  if (total <= budget) return docsContext(ids, budget);
+  const terms = qTerms(query); const map = {}; const chunks = [];
+  metas.forEach((m, di) => { if (!texts[di]) return; const label = "D" + (Object.keys(map).length + 1); map[label] = m.id;
+    chunkText(texts[di]).forEach((c, ci, arr) => { const n = normW(c); let score = 0; for (const w of terms) { const k = n.split(w).length - 1; if (k) score += Math.min(k, 4) * (w.length > 5 ? 2 : 1); } chunks.push({ label, title: m.title, type: m.type, ci, n: arr.length, c, score }); }); });
+  let picked;
+  if (chunks.some(x => x.score > 0)) picked = chunks.slice().sort((a, b) => b.score - a.score || a.ci - b.ci);
+  else { /* pregunta general: trozos repartidos por todo el documento */ const byDoc = {}; chunks.forEach(x => (byDoc[x.label] = byDoc[x.label] || []).push(x)); picked = []; let i = 0, more = true; while (more) { more = false; for (const k in byDoc) { const arr = byDoc[k]; const step = Math.max(1, Math.floor(arr.length / 12)); const x = arr[i * step]; if (x) { picked.push(x); more = true; } } i++; } }
+  const sel = []; let used = 0;
+  for (const x of picked) { if (used + x.c.length > budget) continue; sel.push(x); used += x.c.length; if (used > budget * 0.97) break; }
+  const out = []; const labels = [...new Set(sel.map(x => x.label))].sort((a, b) => +a.slice(1) - +b.slice(1));
+  for (const L of labels) { const xs = sel.filter(x => x.label === L).sort((a, b) => a.ci - b.ci); out.push(`### [${L}] «${xs[0].title}» (${DOC_LBL[xs[0].type] || "doc"}, fragmentos relevantes)\n${xs.map(x => x.c).join("\n[…]\n")}`); }
+  return { text: out.join("\n\n"), n: labels.length, map };
+}
+async function docsContext(ids, budget = 120000) {
   const metas = ids.map(id => S.docs.find(d => d.id === id)).filter(Boolean);
   const texts = await Promise.all(metas.map(m => loadText(m.id).catch(() => "")));
   const items = metas.map((m, i) => ({ m, t: texts[i] || "" })).filter(x => x.t).sort((a, b) => a.t.length - b.t.length);
@@ -1338,7 +1369,7 @@ async function sendChat(cid, text) {
   streaming = true; aiCtl = new AbortController();
   let answer = "", cites = {}, status = "Pensando…"; const t0 = Date.now(); const tick2 = setInterval(() => { if (!answer) bubble.innerHTML = thinkingHtml(`${status} ${Math.round((Date.now() - t0) / 1000)} s`); }, 1000);
   try {
-    const dc = await docsContext(c.ctx || []); const images = await ctxImages(c.ctx || []); cites = dc.map;
+    const dc = await docsContextSmart(c.ctx || [], text + " " + ((msgs[msgs.length - 3] || {}).content || ""), 40000); const images = await ctxImages(c.ctx || []); cites = dc.map;
     const rules = `Eres el tutor particular de ${state.profile.name || "un estudiante"}${s ? ` para «${s.name}»` : ""}. ${COURSE_CTX()}
 Estilo: directo, claro, sin rodeos. Prioriza lo que más cuenta para el examen (80/20). Usa listas, **negritas** en lo clave, fórmulas y ejemplos numéricos. Algún emoji para marcar secciones (📌 clave, ⚠️ error típico, 🧮 ejemplo) sin abusar. Casos prácticos: planteamiento y solución paso a paso. 80-350 palabras salvo que pidan más.
 ${dc.n ? "Basa tus respuestas en los documentos del alumno. Cada documento tiene una etiqueta como [D1]. Cuando uses información de un documento, pon su etiqueta justo al final de la frase, por ejemplo: «El tipo general es el 21 % [D1].» Si algo no está en los documentos, dilo y responde con tu conocimiento." : ""}
@@ -1547,7 +1578,7 @@ async function aiSummary() {
   const s = subj(S.param), t = tut(s.id); const out = $("#sumOut"); out.innerHTML = thinkingHtml("Destilando lo importante…");
   aiCtl = new AbortController();
   try {
-    const src = await studySource(s, 300000);
+    const src = await studySource(s, 120000);
     const prompt = `Actúa como un profesor experto que prepara a un alumno para sacar la máxima nota estudiando lo mínimo. Haz un ESQUEMA 80/20 en español y en Markdown, con estas secciones exactas:
 ## 🎯 Lo que más cae
 Los 5-8 conceptos clave (el 20 % que da el 80 % de la nota), 1-2 líneas cada uno.
@@ -1573,7 +1604,7 @@ async function aiQuiz() {
   const topic = tid ? (s.topics.find(x => x.id === tid) || {}).title : "";
   const out = $("#quizOut"); out.innerHTML = thinkingHtml("Preparando el test…");
   try {
-    const src = await studySource(s, 200000);
+    const src = await studySource(s, 90000);
     const prompt = `Crea un test de 6 preguntas de opción múltiple (4 opciones, 1 correcta) en español, dificultad "${diff}", sobre ${topic ? `el tema «${topic}» de` : "lo más importante de"} este módulo. Si hay documentos del alumno, básate sobre todo en ellos. Incluye al menos una pregunta práctica con datos numéricos si la materia lo permite. Las incorrectas deben ser errores típicos plausibles. Varía la posición de la correcta.
 ${src}
 
@@ -1587,7 +1618,7 @@ Responde SOLO con JSON: [{"q":"pregunta","options":["A","B","C","D"],"answer":í
 async function aiCards() {
   const s = subj(S.param); const out = $("#cardsOut"); if (out) out.innerHTML = thinkingHtml("Creando tarjetas…");
   try {
-    const src = await studySource(s, 200000); const have = deckOf(s.id);
+    const src = await studySource(s, 90000); const have = deckOf(s.id);
     const prompt = `Crea 12 tarjetas de memoria en español con lo que el alumno tiene que saberse de memoria de este módulo: definiciones clave, fórmulas, plazos, porcentajes, clasificaciones. Prioriza lo que más cae en examen y lo que aparece en sus documentos. Pregunta corta; respuesta concisa (máx. 40 palabras, puede usar **negrita**).${have.length ? `\nYa tiene estas tarjetas, NO las repitas:\n${have.slice(-80).map(c => "- " + c.q).join("\n")}` : ""}
 ${src}
 
@@ -1712,7 +1743,7 @@ async function genStudio(kind) {
   if (studioBusy) return; studioBusy = true; render();
   const out = () => $("#studioOut");
   try {
-    const src = await studySource(s, 300000);
+    const src = await studySource(s, 120000);
     const item = { subjectId: s.id, kind, createdAt: Date.now(), updatedAt: Date.now() };
     if (kind === "podcast") {
       const r = await sample.json(`Escribe el GUION de un pódcast educativo en español de España entre dos profesores, Laura (A) y Dani (B), que explican este contenido a un alumno de FP de forma amena, clara y con ejemplos cotidianos. Duración 5-8 minutos (900-1300 palabras), 24-40 intervenciones cortas (1-3 frases cada una). Empieza presentando el tema, cubre lo más importante para el examen (80/20), incluye algún ejemplo con números si aplica, haz que uno pregunte las dudas típicas y el otro las resuelva, y termina con un resumen de 3 ideas clave. Las frases se van a leer en voz alta: nada de Markdown, emojis, paréntesis ni símbolos raros; escribe porcentajes y siglas como se pronuncian si ayuda.\n${src}\n\nResponde SOLO con JSON: {"title":"título corto","lines":[{"s":"A","t":"frase"}]}`);
@@ -2143,7 +2174,7 @@ function exampleState() {
 }
 
 /* ================= actualizaciones ================= */
-const APP_VERSION = "2026.11.04-1";
+const APP_VERSION = "2026.11.04-2";
 let updateReady = false;
 async function checkUpdate() {
   try {
