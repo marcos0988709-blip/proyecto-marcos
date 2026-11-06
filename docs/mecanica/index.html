@@ -1178,19 +1178,34 @@ function aiSubjectsModal() {
 }
 
 /* ---------- Documentos ---------- */
-const PDFJS = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
-const PDFW = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-const MAMMOTH = "https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js";
+/* Lectores de PDF y Word incluidos en la propia app (no dependen de webs externas) */
+const VENDOR = "../vendor/";
+const PDFJS = VENDOR + "pdf.min.js";
+const PDFW = new URL(VENDOR + "pdf.worker.min.js", location.href).href;
+const MAMMOTH = VENDOR + "mammoth.browser.min.js";
+const withTimeout = (pr, ms, msg) => Promise.race([pr, new Promise((_, rej) => setTimeout(() => rej({ msg }), ms))]);
 const scripts = {};
 function loadScript(src) { return scripts[src] = scripts[src] || new Promise((res, rej) => { const t = document.createElement("script"); t.src = src; t.onload = res; t.onerror = () => { delete scripts[src]; rej(new Error("no se pudo cargar el lector")); }; document.head.appendChild(t); }); }
 async function pdfText(f) {
-  await loadScript(PDFW); await loadScript(PDFJS);
+  await withTimeout(loadScript(PDFJS), 30000, "no se pudo cargar el lector de PDF");
   const lib = window.pdfjsLib; lib.GlobalWorkerOptions.workerSrc = PDFW;
-  const pdf = await lib.getDocument({ data: new Uint8Array(await f.arrayBuffer()) }).promise; const out = [];
-  for (let i = 1; i <= pdf.numPages; i++) { const tc = await (await pdf.getPage(i)).getTextContent(); out.push(tc.items.map(it => it.str + (it.hasEOL ? "\n" : " ")).join("")); }
+  let pdf;
+  try { pdf = await withTimeout(lib.getDocument({ data: new Uint8Array(await f.arrayBuffer()) }).promise, 60000, "el PDF tarda demasiado en abrirse"); }
+  catch (e) { if (e && e.name === "PasswordException") throw { msg: "el PDF tiene contraseña" }; throw e && e.msg ? e : { msg: "el PDF está dañado o no se puede abrir" }; }
+  const out = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    if (pdf.numPages > 3 && (i === 1 || i % 5 === 0)) toast(`📕 Leyendo ${f.name}… página ${i} de ${pdf.numPages}`);
+    try { const tc = await withTimeout((await pdf.getPage(i)).getTextContent(), 20000, "página lenta"); out.push(tc.items.map(it => it.str + (it.hasEOL ? "\n" : " ")).join("")); } catch (e) {}
+  }
+  try { pdf.destroy(); } catch (e) {}
   return out.join("\n\n").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
 }
-async function docxText(f) { await loadScript(MAMMOTH); const r = await window.mammoth.extractRawText({ arrayBuffer: await f.arrayBuffer() }); return (r.value || "").trim(); }
+/* PDF escaneado (sin texto): se lo pasamos a Gemini para que lo lea */
+async function pdfTextAI(f) {
+  const r = await geminiCall("Transcribe todo el contenido de este PDF (apuntes o temario) en español y en Markdown, conservando títulos, listas, tablas, fórmulas y ejemplos. Responde solo con la transcripción.", { images: [f], _quiet: true });
+  return (r.text || "").trim();
+}
+async function docxText(f) { await withTimeout(loadScript(MAMMOTH), 30000, "no se pudo cargar el lector de Word"); const r = await window.mammoth.extractRawText({ arrayBuffer: await f.arrayBuffer() }); return (r.value || "").trim(); }
 let pickFor = null;
 function openFilePicker(sid) { pickFor = sid; const fi = $("#fileIn"); fi.value = ""; fi.click(); }
 $("#fileIn").addEventListener("change", e => { if (pickFor) handleFiles(e.target.files, pickFor); });
@@ -1204,7 +1219,10 @@ async function handleFiles(files, sid) {
     toast(`⏳ Procesando ${f.name}…`);
     try {
       const ext = (f.name.split(".").pop() || "").toLowerCase(); let type = "file", text = "";
-      if (f.type === "application/pdf" || ext === "pdf") { type = "pdf"; text = await pdfText(f); }
+      if (f.type === "application/pdf" || ext === "pdf") {
+        type = "pdf"; text = await pdfText(f);
+        if (text.replace(/\s/g, "").length < 50 && sample && f.size < 18 * 1048576) { toast(`👁️ ${f.name} es un PDF escaneado: la IA lo está leyendo…`); try { text = await pdfTextAI(f); } catch (e) { toast("⚠️ La IA no pudo leer el PDF escaneado: " + aiErr(e)); } }
+      }
       else if (ext === "docx") { type = "docx"; text = await docxText(f); }
       else if ((f.type || "").startsWith("image/")) type = "image";
       else if (/^(txt|md|csv|json)$/.test(ext) || (f.type || "").startsWith("text/")) { type = "text"; text = await f.text(); }
@@ -1216,7 +1234,7 @@ async function handleFiles(files, sid) {
       await sPut("docs", id, { subjectId: sid, title: f.name.replace(/\.[^.]+$/, "").slice(0, 120), type, fileId, size: f.size, chars: text.length, parts, createdAt: now, updatedAt: now });
       ok++;
       if (type === "image" && sample) await ocrDoc({ id, subjectId: sid, title: f.name.replace(/\.[^.]+$/, "").slice(0, 120), type, fileId, size: f.size, chars: 0, parts: 0, createdAt: now, updatedAt: now }, true);
-      if (type === "pdf" && !text) toast(`⚠️ ${f.name}: es un PDF escaneado sin texto. Súbelo como foto para que la IA lo lea.`);
+      if (type === "pdf" && !text) toast(`⚠️ ${f.name}: es un PDF escaneado sin texto${sample ? "" : ". Pon tu clave de Gemini en ⚙️ Ajustes y vuelve a subirlo para que la IA lo lea"}.`);
     } catch (e) { toast(e && e.code === "quota" ? "💾 El móvil no tiene más espacio para Pupitre. Libera espacio o borra documentos viejos." : `❌ ${f.name}: ${(e && (e.msg || e.message)) || "no se pudo subir"}`); }
   }
   if (ok) toast(`✅ ${ok} ${ok === 1 ? "documento subido" : "documentos subidos"}`);
@@ -2736,7 +2754,7 @@ function exampleState() {
 }
 
 /* ================= actualizaciones ================= */
-const APP_VERSION = "2026.11.04-7";
+const APP_VERSION = "2026.11.06-1";
 let updateReady = false;
 async function checkUpdate() {
   try {
