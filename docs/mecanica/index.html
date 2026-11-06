@@ -427,6 +427,9 @@ textarea.input{resize:vertical;min-height:110px;line-height:1.55}
 .ck input{width:18px;height:18px;accent-color:var(--accent);margin-top:3px;flex:none}
 .ck input:checked+span{text-decoration:line-through;color:var(--faint)}
 .note-view{min-height:40vh}
+.ai-busy{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 10px);z-index:70;display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:14px;background:rgba(11,11,14,.96);border:1px solid var(--accent);box-shadow:var(--glow);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);max-width:calc(100% - 32px)}
+.ai-busy b{display:block;font-size:.88rem}
+.ai-busy small{display:block;color:var(--muted);font-size:.76rem}
 hr.sep{border:0;border-top:1px solid var(--line);width:100%;margin:0}
 </style>
 </head>
@@ -656,7 +659,24 @@ const blobToB64 = b => new Promise((res, rej) => { const r = new FileReader(); r
 const FALLBACK_MODELS = ["gemini-flash-latest", "gemini-flash-lite-latest", "gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash"];
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const isBusy = e => e && (e.code === "overloaded" || e.code === "rate_limited" || (e.code === "upstream_error" && /high demand|overload|unavailable|try again|internal/i.test(e.message || "")));
+/* Indicador fijo: se ve siempre que la IA está trabajando */
+const AIB = { n: 0, t0: 0, chars: 0, status: "", iv: null };
+function aiBusyUI() {
+  let el = $("#aiBusy");
+  if (!AIB.n) { if (el) el.remove(); clearInterval(AIB.iv); AIB.iv = null; return; }
+  if (!el) { el = document.createElement("div"); el.id = "aiBusy"; el.className = "ai-busy"; el.setAttribute("role", "status"); document.body.appendChild(el); }
+  const secs = Math.round((Date.now() - AIB.t0) / 1000);
+  el.innerHTML = `<span class="thinking"><i></i><i></i><i></i></span><span><b>🤖 IA trabajando · ${secs} s</b><small>${esc(AIB.status || (AIB.chars ? `Escribiendo… ${AIB.chars.toLocaleString("es-ES")} letras` : secs > 20 ? "Pensando… los tests, simulacros y planes tardan más" : "Pensando…"))}</small></span>`;
+}
 async function geminiCall(input, opts = {}, json = false) {
+  if (!AIB.n) { AIB.t0 = Date.now(); AIB.chars = 0; AIB.status = ""; }
+  AIB.n++; aiBusyUI(); if (!AIB.iv) AIB.iv = setInterval(aiBusyUI, 1000);
+  const userStatus = opts.onStatus;
+  const o2 = { ...opts, onStatus: t => { AIB.status = t; aiBusyUI(); if (userStatus) userStatus(t); } };
+  try { return await geminiCallInner(input, o2, json); }
+  finally { AIB.n = Math.max(0, AIB.n - 1); if (!AIB.n) { AIB.status = ""; } aiBusyUI(); }
+}
+async function geminiCallInner(input, opts = {}, json = false) {
   const cfg = aiCfg(); if (!cfg.key) throw { code: "no_key" };
   const first = (cfg.model || "gemini-flash-latest").replace(/^models\//, "");
   const chain = [first, ...FALLBACK_MODELS.filter(m => m !== first)];
@@ -697,7 +717,7 @@ async function geminiOnce(model, input, opts = {}, json = false) {
   if (fast) body.generationConfig.thinkingConfig = { thinkingBudget: json ? 512 : 0 };
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:streamGenerateContent?alt=sse`;
   const ctl = new AbortController(); let timedOut = false;
-  const to = setTimeout(() => { timedOut = true; ctl.abort(); }, 75000);
+  const to = setTimeout(() => { timedOut = true; ctl.abort(); }, json ? 150000 : 90000);
   if (opts.signal) { if (opts.signal.aborted) ctl.abort(); else opts.signal.addEventListener("abort", () => ctl.abort()); }
   const abortCode = () => timedOut ? "timeout" : "cancelled";
   let res;
@@ -720,7 +740,7 @@ async function geminiOnce(model, input, opts = {}, json = false) {
         if (j.promptFeedback && j.promptFeedback.blockReason) throw { code: "refused" };
         const parts = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts) || [];
         const delta = parts.map(p => p.thought ? "" : (p.text || "")).join("");
-        if (delta) { text += delta; if (opts.onText) { try { opts.onText({ text, delta }); } catch (e) {} } }
+        if (delta) { text += delta; AIB.chars += delta.length; if (AIB.status && !/saturado|modelo|rápido/.test(AIB.status)) AIB.status = ""; if (opts.onText) { try { opts.onText({ text, delta }); } catch (e) {} } }
       }
     }
   } catch (e) { clearTimeout(to); if (e && e.code) throw { ...e, text }; if (e && e.name === "AbortError") throw { code: abortCode(), text }; throw { code: "network", text, message: String(e && e.message || e) }; }
@@ -2754,7 +2774,7 @@ function exampleState() {
 }
 
 /* ================= actualizaciones ================= */
-const APP_VERSION = "2026.11.06-1";
+const APP_VERSION = "2026.11.06-2";
 let updateReady = false;
 async function checkUpdate() {
   try {
