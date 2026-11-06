@@ -1983,7 +1983,7 @@ const normT = t => toHHMM(toMin(t));
 
 function itemsOn(k) {
   const out = []; const dw = dowOf(k);
-  for (const c of state.timetable) if (c.dow === dw) out.push({ id: "tt-" + c.id, ref: c.id, kind: "class", date: k, start: c.start, min: Math.max(15, toMin(c.end) - toMin(c.start)), title: c.title || (subj(c.subjectId) || {}).name || "Clase", subjectId: c.subjectId, room: c.room, fixed: true });
+  for (const c of state.timetable) if (c.dow === dw) out.push({ id: "tt-" + c.id, ref: c.id, kind: c.type === "event" ? "event" : "class", weekly: true, date: k, start: c.start, min: Math.max(15, toMin(c.end) - toMin(c.start)), title: c.title || (subj(c.subjectId) || {}).name || "Clase", subjectId: c.subjectId, room: c.room, fixed: true });
   for (const b of state.plan) if (b.date === k) out.push({ ...b, kind: b.kind || "study" });
   return out.sort((a, b) => (b.allDay ? 1 : 0) - (a.allDay ? 1 : 0) || toMin(a.start) - toMin(b.start));
 }
@@ -2108,19 +2108,32 @@ async function runAssistant(text) {
   assistantBusy = true; render();
   const mon = mondayOf(new Date()); const ks = Array.from({ length: 14 }, (_, i) => dkey(addDays(mon, i)));
   const items = ks.flatMap(k => itemsOn(k).map(x => `- id=${x.id} | ${k} ${DOWL[dowOf(k)]} | ${x.allDay ? "todo el día" : x.start + "-" + toHHMM(toMin(x.start) + x.min)} | ${KIND[x.kind].n}${x.ai ? " (IA)" : ""}${x.done ? " (hecho)" : ""} | ${x.title}`)).join("\n") || "(vacía)";
-  const n = new Date();
-  const prompt = `Eres el asistente de agenda de Pupitre, cercano y directo. Hoy es ${dkey()} (${DOWL[dowOf(dkey())]}) y son las ${toHHMM(n.getHours() * 60 + n.getMinutes())}. Convierte la petición del alumno en acciones sobre su agenda.
+  const n = new Date(); const todayK = dkey(); const thisMon = dkey(mondayOf(n));
+  const cal = Array.from({ length: 21 }, (_, i) => { const d = addDays(n, i); const k = dkey(d); const wk = dkey(mondayOf(d)) === thisMon ? "esta semana" : dkey(mondayOf(d)) === dkey(addDays(mondayOf(n), 7)) ? "la semana que viene" : "dentro de 2 semanas"; return `- ${k} = ${DOWL[dowOf(k)].toLowerCase()} ${d.getDate()} (${i === 0 ? "HOY" : i === 1 ? "MAÑANA" : i === 2 ? "PASADO MAÑANA" : wk})`; }).join("\n");
+  const weekly = state.timetable.map(c => `- id=tt-${c.id} | cada ${DOWL[c.dow].toLowerCase()} ${c.start}-${c.end} | ${c.type === "event" ? "evento" : "clase"} | ${c.title || (subj(c.subjectId) || {}).name || ""}`).join("\n") || "(nada)";
+  const prompt = `Eres el asistente de agenda de Pupitre, cercano y directo. Ahora son las ${toHHMM(n.getHours() * 60 + n.getMinutes())}. Convierte la petición del alumno en acciones EXACTAS sobre su agenda.
+CALENDARIO (usa SIEMPRE estas fechas, no las calcules tú):
+${cal}
+- «el jueves» = el próximo jueves de la lista (si hoy es jueves, es HOY). «el jueves que viene» o «la semana que viene» = el de la semana que viene.
+HORAS:
+- Escribe siempre en formato 24 h (HH:MM).
+- Si dice una hora sin aclarar mañana o tarde («a las 6», «de 6 a 8», «a las 5»), para planes, deporte, quedar, trabajo o estudiar entre la 1 y las 11 es POR LA TARDE (18:00, 18:00-20:00, 17:00). Solo es por la mañana si lo dice («de la mañana») o si es algo típico de mañana (médico a las 9, clase a las 8).
+- Pon SIEMPRE la hora de fin en "end". Si no la dice, usa una duración razonable (fútbol o gimnasio 90 min, médico 60, estudio 50, quedar 120).
+- Si dice que algo es «todos los …», «cada …» o «los lunes y miércoles», es SEMANAL: usa add_recurring, no add_event.
 Acciones posibles (usa solo estas):
-- {"op":"add_event","date":"AAAA-MM-DD","start":"HH:MM","min":número,"title":"texto"}  → planes fijos: fútbol, trabajo, médico, quedar…
-- {"op":"add_block","date":"AAAA-MM-DD","start":"HH:MM","min":número,"subjectId":"id o vacío","title":"texto"}  → un bloque de estudio concreto
+- {"op":"add_event","date":"AAAA-MM-DD","start":"HH:MM","end":"HH:MM","title":"texto"}  → plan de un día concreto: fútbol, trabajo, médico, quedar…
+- {"op":"add_recurring","dows":[0-6] (0 = lunes),"start":"HH:MM","end":"HH:MM","title":"texto"}  → plan que se repite cada semana (entreno, trabajo fijo…)
+- {"op":"add_block","date":"AAAA-MM-DD","start":"HH:MM","end":"HH:MM","subjectId":"id o vacío","title":"texto"}  → un bloque de estudio concreto
 - {"op":"move","id":"id","date":"AAAA-MM-DD","start":"HH:MM"}
 - {"op":"delete","id":"id"}
 - {"op":"done","id":"id"}
 - {"op":"add_task","title":"texto","due":"AAAA-MM-DD o vacío","est":minutos,"subjectId":"id o vacío","prio":1|2|3}
-- {"op":"add_class","dow":0-6 (0 = lunes),"start":"HH:MM","end":"HH:MM","subjectId":"id o vacío","title":"texto","room":"aula o vacío"}  → clase que se repite cada semana
+- {"op":"add_class","dows":[0-6] (0 = lunes),"start":"HH:MM","end":"HH:MM","subjectId":"id o vacío","title":"texto","room":"aula o vacío"}  → clase del instituto que se repite cada semana
 - {"op":"add_exam","subjectId":"id","date":"AAAA-MM-DD","title":"texto"}
 - {"op":"organize","note":"preferencias"}  → si pide organizar, planificar o reorganizar la semana o los días. Ponla al final.
-Las clases (ids que empiezan por tt-) no se mueven ni se borran con move o delete. Resuelve fechas relativas («mañana», «el jueves», «la semana que viene») a partir de hoy. Si la petición es una duda que no cambia la agenda, contesta en "reply" con "ops": [].
+Lo que se repite cada semana (ids tt-…) no se mueve con move; sí se puede quitar con delete (se quita de todas las semanas). Haz SOLO lo que pide el alumno, nada más. Si la petición es una duda que no cambia la agenda, contesta en "reply" con "ops": []. En "reply" resume en una frase lo que has puesto, con día y hora.
+LO QUE SE REPITE CADA SEMANA:
+${weekly}
 AGENDA (esta semana y la siguiente):
 ${items}
 ASIGNATURAS: ${state.subjects.map(s => `${s.id}=${s.name}`).join("; ") || "(ninguna)"}
@@ -2144,26 +2157,32 @@ function findItem(id) { return state.plan.find(x => x.id === id); }
 function validOp(o) {
   if (!o || !o.op) return false;
   switch (o.op) {
-    case "add_event": case "add_block": return isK(o.date) && isT(o.start) && o.title;
+    case "add_event": case "add_block": return isK(o.date) && isT(o.start) && o.title && (isT(o.end) || +o.min > 0);
+    case "add_recurring": return opDows(o).length && isT(o.start) && isT(o.end) && toMin(o.end) > toMin(o.start) && o.title;
     case "move": return findItem(o.id) && (isK(o.date) || isT(o.start));
-    case "delete": case "done": return !!findItem(o.id);
+    case "delete": return !!findItem(o.id) || (String(o.id || "").startsWith("tt-") && state.timetable.some(c => "tt-" + c.id === o.id));
+    case "done": return !!findItem(o.id);
     case "add_task": return !!o.title;
-    case "add_class": return o.dow >= 0 && o.dow <= 6 && isT(o.start) && isT(o.end) && toMin(o.end) > toMin(o.start);
+    case "add_class": return opDows(o).length && isT(o.start) && isT(o.end) && toMin(o.end) > toMin(o.start);
     case "add_exam": return !!subj(o.subjectId) && isK(o.date);
     case "organize": return true;
   }
   return false;
 }
+const opDows = o => [...new Set((Array.isArray(o.dows) ? o.dows : [o.dow]).map(Number).filter(d => d >= 0 && d <= 6))];
+const opMin = (o, def) => isT(o.end) && toMin(o.end) > toMin(o.start) ? toMin(o.end) - toMin(o.start) : Math.round(+o.min || def);
+const dowsTxt = o => opDows(o).map(d => DOWL[d].toLowerCase()).join(", ");
 function opDesc(o) {
   const t = esc(o.title || ""); const it = o.id ? findItem(o.id) : null;
   switch (o.op) {
-    case "add_event": return `📌 <b>${t}</b> · ${fmtDay(o.date)} ${normT(o.start)} (${Math.round(+o.min || 60)} min)`;
-    case "add_block": return `📚 <b>${t}</b> · ${fmtDay(o.date)} ${normT(o.start)} (${Math.round(+o.min || 50)} min)`;
+    case "add_event": return `📌 <b>${t}</b> · ${fmtDay(o.date)} de ${normT(o.start)} a ${toHHMM(toMin(o.start) + opMin(o, 60))}`;
+    case "add_recurring": return `📌 <b>${t}</b> · cada ${dowsTxt(o)} de ${normT(o.start)} a ${normT(o.end)}`;
+    case "add_block": return `📚 <b>${t}</b> · ${fmtDay(o.date)} de ${normT(o.start)} a ${toHHMM(toMin(o.start) + opMin(o, 50))}`;
     case "move": return `↔️ Mover <b>${esc(it.title || "")}</b> a ${fmtDay(o.date || it.date)} ${normT(o.start || it.start)}`;
-    case "delete": return `🗑️ Quitar <b>${esc(it.title || "")}</b> (${fmtDay(it.date)} ${it.start})`;
+    case "delete": { if (!it) { const c = state.timetable.find(x => "tt-" + x.id === o.id) || {}; return `🗑️ Quitar <b>${esc(c.title || (subj(c.subjectId) || {}).name || "")}</b> de todos los ${DOWL[c.dow || 0].toLowerCase()}`; } return `🗑️ Quitar <b>${esc(it.title || "")}</b> (${fmtDay(it.date)} ${it.start})`; }
     case "done": return `✅ Marcar como hecho <b>${esc(it.title || "")}</b>`;
     case "add_task": return `✅ Tarea: <b>${t}</b>${isK(o.due) ? " · entrega " + fmtDay(o.due) : ""}`;
-    case "add_class": return `🏫 Clase cada ${DOWL[o.dow].toLowerCase()} ${normT(o.start)}–${normT(o.end)}: <b>${t || esc((subj(o.subjectId) || {}).name || "")}</b>`;
+    case "add_class": return `🏫 Clase cada ${dowsTxt(o)} ${normT(o.start)}–${normT(o.end)}: <b>${t || esc((subj(o.subjectId) || {}).name || "")}</b>`;
     case "add_exam": return `🚨 Examen de <b>${esc(subj(o.subjectId).name)}</b> · ${fmtDay(o.date)}${t ? " · " + t : ""}`;
     case "organize": return `🪄 Organizar la semana con IA${o.note ? ": " + esc(o.note) : ""}`;
   }
@@ -2183,13 +2202,14 @@ function applyOps(ops, auto) {
   for (const o of ops) {
     const it = o.id ? findItem(o.id) : null;
     switch (o.op) {
-      case "add_event": state.plan.push({ id: uid(), date: o.date, start: normT(o.start), min: Math.max(10, Math.min(720, Math.round(+o.min || 60))), title: String(o.title).slice(0, 90), kind: "event", done: false }); n++; break;
-      case "add_block": state.plan.push({ id: uid(), date: o.date, start: normT(o.start), min: Math.max(15, Math.min(180, Math.round(+o.min || 50))), title: String(o.title).slice(0, 90), subjectId: subj(o.subjectId) ? o.subjectId : "", kind: "study", done: false }); n++; break;
+      case "add_event": state.plan.push({ id: uid(), date: o.date, start: normT(o.start), min: Math.max(10, Math.min(720, opMin(o, 60))), title: String(o.title).slice(0, 90), kind: "event", done: false }); n++; break;
+      case "add_recurring": for (const d of opDows(o)) state.timetable.push({ id: uid(), type: "event", dow: d, start: normT(o.start), end: normT(o.end), subjectId: "", title: String(o.title).slice(0, 80), room: "" }); n++; break;
+      case "add_block": state.plan.push({ id: uid(), date: o.date, start: normT(o.start), min: Math.max(15, Math.min(180, opMin(o, 50))), title: String(o.title).slice(0, 90), subjectId: subj(o.subjectId) ? o.subjectId : "", kind: "study", done: false }); n++; break;
       case "move": if (it) { if (isK(o.date)) it.date = o.date; if (isT(o.start)) it.start = normT(o.start); it.ai = false; n++; } break;
-      case "delete": state.plan = state.plan.filter(x => x.id !== o.id); n++; break;
+      case "delete": if (String(o.id).startsWith("tt-")) state.timetable = state.timetable.filter(c => "tt-" + c.id !== o.id); else state.plan = state.plan.filter(x => x.id !== o.id); n++; break;
       case "done": if (it) { it.done = true; n++; } break;
       case "add_task": state.tasks.push({ id: uid(), title: String(o.title).slice(0, 120), due: isK(o.due) ? o.due : "", est: Math.max(10, Math.min(600, Math.round(+o.est || 45))), subjectId: subj(o.subjectId) ? o.subjectId : "", prio: [1, 2, 3].includes(+o.prio) ? +o.prio : 2, status: "todo", createdAt: Date.now() }); n++; break;
-      case "add_class": state.timetable.push({ id: uid(), dow: +o.dow, start: normT(o.start), end: normT(o.end), subjectId: subj(o.subjectId) ? o.subjectId : "", title: String(o.title || "").slice(0, 80), room: String(o.room || "").slice(0, 30) }); n++; break;
+      case "add_class": for (const d of opDows(o)) state.timetable.push({ id: uid(), dow: d, start: normT(o.start), end: normT(o.end), subjectId: subj(o.subjectId) ? o.subjectId : "", title: String(o.title || "").slice(0, 80), room: String(o.room || "").slice(0, 30) }); n++; break;
       case "add_exam": subj(o.subjectId).exams.push({ id: uid(), title: String(o.title || "Examen").slice(0, 80), date: o.date }); n++; break;
       case "organize": organize = o; break;
     }
@@ -2205,7 +2225,7 @@ function agendaRow(x) {
   return `<div class="blk ${x.done ? "done" : ""}" style="--c:${ev ? "#A4A8B6" : sColor(x.subjectId)}">
     ${cls || ev ? `<span class="emo" style="width:23px;text-align:center;font-size:18px">${KIND[x.kind].e}</span>` : `<button class="check" role="checkbox" aria-checked="${!!x.done}" aria-label="Hecho" data-act="toggle-block" data-id="${x.id}">${ic("check")}</button>`}
     <div style="min-width:0"><div class="ttl">${s && !cls ? E(s.emoji) + " " : ""}${esc(x.title || (s ? s.name : "Estudio"))}</div><div class="tiny muted">${time}${s ? " · " + esc(s.name) : ""}${x.room ? " · 📍 " + esc(x.room) : ""}${x.taskId ? " · ✅ tarea" : ""}${x.ai ? " · 🪄" : ""}</div></div>
-    <div class="row" style="gap:6px">${!cls && !ev && !x.done ? `<button class="icon-btn" style="width:34px;height:34px" aria-label="Empezar" data-act="focus-block" data-id="${x.id}">${ic("play")}</button>` : ""}<button class="icon-btn emo" style="width:34px;height:34px;font-size:15px" data-act="${cls ? "edit-class" : "edit-block"}" data-id="${cls ? x.ref : x.id}" aria-label="Editar">✏️</button></div>
+    <div class="row" style="gap:6px">${!cls && !ev && !x.done ? `<button class="icon-btn" style="width:34px;height:34px" aria-label="Empezar" data-act="focus-block" data-id="${x.id}">${ic("play")}</button>` : ""}<button class="icon-btn emo" style="width:34px;height:34px;font-size:15px" data-act="${cls || x.weekly ? "edit-class" : "edit-block"}" data-id="${cls || x.weekly ? x.ref : x.id}" aria-label="Editar">✏️</button></div>
   </div>`;
 }
 function taskRow(t) {
@@ -2261,7 +2281,7 @@ function weekGrid(days) {
   const nowM = new Date().getHours() * 60 + new Date().getMinutes();
   const evHtml = (x, isProp) => {
     const top = Math.max(0, (toMin(x.start) - st) / 60 * GRID_H), h = Math.max(18, x.min / 60 * GRID_H - 2); const s = subj(x.subjectId);
-    return `<button class="ev ${x.kind} ${isProp ? "prop" : ""} ${x.done ? "done" : ""}" style="top:${top}px;height:${h}px;--c:${x.kind === "event" ? "#A4A8B6" : sColor(x.subjectId)}" ${isProp ? "" : `data-act="${x.kind === "class" ? "edit-class" : "edit-block"}" data-id="${x.kind === "class" ? x.ref : x.id}"`}><b>${s && x.kind !== "event" ? s.emoji + " " : x.kind === "event" ? "📌 " : ""}${esc(x.title || (s ? s.name : "Estudio"))}</b>${h > 30 ? `<span>${x.start}–${toHHMM(toMin(x.start) + x.min)}${x.room ? " · " + esc(x.room) : ""}</span>` : ""}</button>`;
+    return `<button class="ev ${x.kind} ${isProp ? "prop" : ""} ${x.done ? "done" : ""}" style="top:${top}px;height:${h}px;--c:${x.kind === "event" ? "#A4A8B6" : sColor(x.subjectId)}" ${isProp ? "" : `data-act="${x.kind === "class" || x.weekly ? "edit-class" : "edit-block"}" data-id="${x.kind === "class" || x.weekly ? x.ref : x.id}"`}><b>${s && x.kind !== "event" ? s.emoji + " " : x.kind === "event" ? "📌 " : ""}${esc(x.title || (s ? s.name : "Estudio"))}</b>${h > 30 ? `<span>${x.start}–${toHHMM(toMin(x.start) + x.min)}${x.room ? " · " + esc(x.room) : ""}</span>` : ""}</button>`;
   };
   return `<div class="wk" id="wkGrid"><div class="wk-in" style="--gh:${GRID_H}px">
     <div class="wk-corner"></div>${days.map(k => `<div class="wk-dh ${k === today ? "today" : ""}"><span>${DOWL[dowOf(k)].slice(0, 3)}</span><b>${parseD(k).getDate()}</b></div>`).join("")}
@@ -2302,7 +2322,7 @@ function horarioView() {
   const st = state.settings;
   return `<div class="stack" style="gap:12px">
     <section class="card"><div class="card-h"><div><h2>${E("🏫")} Tu horario de clases</h2><p class="small muted">Se repite cada semana. Pupitre nunca pone estudio encima.</p></div><div class="row">${PRESET === "aif" ? `<button class="btn btn-sm" data-act="tt-esit">${E("🏫")} Mi horario de ESiT</button>` : ""}<button class="btn btn-m btn-sm" data-act="tt-photo">${E("📸")} Leer de una foto</button><button class="btn btn-p btn-sm" data-act="new-class">${E("➕")} Clase</button></div></div>
-      ${state.timetable.length ? DOWL.map((d, i) => { const cs = state.timetable.filter(c => c.dow === i).sort((a, b) => toMin(a.start) - toMin(b.start)); return cs.length ? `<h3 style="margin:12px 0 4px">${d}</h3>${cs.map(c => { const s = subj(c.subjectId); return `<div class="blk" style="--c:${sColor(c.subjectId)}"><span class="emo">${s ? s.emoji : "🏫"}</span><div style="min-width:0"><div class="ttl">${esc(c.title || (s ? s.name : "Clase"))}</div><div class="tiny muted">${c.start}–${c.end}${c.room ? " · 📍 " + esc(c.room) : ""}</div></div><button class="icon-btn emo" style="width:34px;height:34px;font-size:15px" data-act="edit-class" data-id="${c.id}" aria-label="Editar">✏️</button></div>`; }).join("")}` : ""; }).join("") : `<div class="empty"><span class="emo big">🏫</span><p>Haz una foto o una captura a tu horario y toca <b>📸 Leer de una foto</b>: la IA te crea todas las clases. También puedes añadirlas a mano o decírselo al asistente («los lunes tengo Proceso integral de 8 a 10»).</p><div class="row" style="justify-content:center">${PRESET === "aif" ? `<button class="btn btn-p" data-act="tt-esit">${E("🏫")} Cargar mi horario de ESiT (1r AdFi)</button>` : ""}<button class="btn btn-m" data-act="tt-photo">${E("📸")} Leer horario de una foto</button></div></div>`}
+      ${state.timetable.length ? DOWL.map((d, i) => { const cs = state.timetable.filter(c => c.dow === i).sort((a, b) => toMin(a.start) - toMin(b.start)); return cs.length ? `<h3 style="margin:12px 0 4px">${d}</h3>${cs.map(c => { const s = subj(c.subjectId); return `<div class="blk" style="--c:${c.type === "event" ? "#A4A8B6" : sColor(c.subjectId)}"><span class="emo">${c.type === "event" ? "📌" : s ? s.emoji : "🏫"}</span><div style="min-width:0"><div class="ttl">${esc(c.title || (s ? s.name : "Clase"))}</div><div class="tiny muted">${c.start}–${c.end}${c.room ? " · 📍 " + esc(c.room) : ""}</div></div><button class="icon-btn emo" style="width:34px;height:34px;font-size:15px" data-act="edit-class" data-id="${c.id}" aria-label="Editar">✏️</button></div>`; }).join("")}` : ""; }).join("") : `<div class="empty"><span class="emo big">🏫</span><p>Haz una foto o una captura a tu horario y toca <b>📸 Leer de una foto</b>: la IA te crea todas las clases. También puedes añadirlas a mano o decírselo al asistente («los lunes tengo Proceso integral de 8 a 10»).</p><div class="row" style="justify-content:center">${PRESET === "aif" ? `<button class="btn btn-p" data-act="tt-esit">${E("🏫")} Cargar mi horario de ESiT (1r AdFi)</button>` : ""}<button class="btn btn-m" data-act="tt-photo">${E("📸")} Leer horario de una foto</button></div></div>`}
     </section>
     <section class="card"><div class="card-h"><h2>${E("⚙️")} Cómo quieres estudiar</h2></div>
       <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:10px">
@@ -2773,7 +2793,7 @@ function exampleState() {
 }
 
 /* ================= actualizaciones ================= */
-const APP_VERSION = "2026.11.06-2";
+const APP_VERSION = "2026.11.06-3";
 let updateReady = false;
 async function checkUpdate() {
   try {
