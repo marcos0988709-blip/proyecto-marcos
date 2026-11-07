@@ -149,6 +149,24 @@ export function createApp(db) {
   route('POST', '/drafts/:id/play', ({ user, params }) => drafts.play(db, store, user.id, params.id), { auth: true });
   route('POST', '/drafts/:id/forfeit', ({ user, params }) => drafts.forfeit(db, store, user.id, params.id), { auth: true });
 
+  /** Ejecuta una petición sin depender de node:http (lo usa también la app web offline). */
+  const dispatch = async ({ method, path, body = {}, authorization }) => {
+    try {
+      const url = new URL(path, 'http://localhost');
+      const r = routes.find((x) => x.method === method && x.re.test(url.pathname));
+      if (!r) throw new HttpError(404, `Ruta no encontrada: ${method} ${url.pathname}`);
+      const m = url.pathname.match(r.re);
+      const params = Object.fromEntries(r.keys.map((k, i) => [k, decodeURIComponent(m[i + 1])]));
+      const user = r.auth ? users.authenticate(db, authorization) : null;
+      const data = await r.handler({ params, q: url.searchParams, body: body ?? {}, user });
+      return { status: 200, data };
+    } catch (err) {
+      if (err instanceof HttpError) return { status: err.status, data: { error: err.message, details: err.details } };
+      console.error(err);
+      return { status: 500, data: { error: 'Error interno' } };
+    }
+  };
+
   const handler = async (req, res) => {
     const send = (status, data) => {
       res.writeHead(status, {
@@ -159,30 +177,18 @@ export function createApp(db) {
       });
       res.end(status === 204 ? undefined : JSON.stringify(data));
     };
-    try {
-      if (req.method === 'OPTIONS') return send(204);
-      const url = new URL(req.url, 'http://localhost');
-      const r = routes.find((x) => x.method === req.method && x.re.test(url.pathname));
-      if (!r) throw new HttpError(404, `Ruta no encontrada: ${req.method} ${url.pathname}`);
-      const m = url.pathname.match(r.re);
-      const params = Object.fromEntries(r.keys.map((k, i) => [k, decodeURIComponent(m[i + 1])]));
-      let body = {};
-      if (req.method === 'POST') {
-        let raw = '';
-        for await (const chunk of req) {
-          raw += chunk;
-          if (raw.length > 1e6) throw new HttpError(413, 'Body demasiado grande');
-        }
-        try { body = raw ? JSON.parse(raw) : {}; } catch { throw new HttpError(400, 'JSON inválido'); }
+    if (req.method === 'OPTIONS') return send(204);
+    let body = {};
+    if (req.method === 'POST') {
+      let raw = '';
+      for await (const chunk of req) {
+        raw += chunk;
+        if (raw.length > 1e6) return send(413, { error: 'Body demasiado grande' });
       }
-      const user = r.auth ? users.authenticate(db, req.headers.authorization) : null;
-      const data = await r.handler({ params, q: url.searchParams, body, user });
-      send(200, data);
-    } catch (err) {
-      if (err instanceof HttpError) return send(err.status, { error: err.message, details: err.details });
-      console.error(err);
-      send(500, { error: 'Error interno' });
+      try { body = raw ? JSON.parse(raw) : {}; } catch { return send(400, { error: 'JSON inválido' }); }
     }
+    const { status, data } = await dispatch({ method: req.method, path: req.url, body, authorization: req.headers.authorization });
+    send(status, data);
   };
-  return { handler, store };
+  return { handler, dispatch, store };
 }

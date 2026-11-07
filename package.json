@@ -10,7 +10,12 @@
   "scripts": {
     "start": "node --no-warnings src/server.js",
     "seed": "node --no-warnings scripts/seed.js",
-    "test": "node --no-warnings --test test/*.test.js"
+    "test": "node --no-warnings --test test/*.test.js",
+    "build:web": "node scripts/build-web.js"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "esbuild": "0.23.1",
+    "sql.js": "1.10.3"
+  }
 }

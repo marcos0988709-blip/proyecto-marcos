@@ -13,6 +13,15 @@ npm start         # http://localhost:3000  (PORT para cambiarlo)
 npm test          # tests end-to-end
 ```
 
+## App web (móvil)
+
+```bash
+npm install          # solo herramientas de build (esbuild, sql.js)
+npm run build:web    # → dist/fut14-cards.html
+```
+
+Un único HTML que lleva dentro el mismo motor del juego (rutas, sobres, SBCs, drafts) sobre SQLite en WebAssembly. Funciona sin servidor y guarda la partida en el navegador. Desde Inicio puedes importar tu CSV de jugadores, darte monedas de prueba o reiniciar.
+
 ## Cargar tu propia base de jugadores (p. ej. temporada 13/14)
 
 ```bash

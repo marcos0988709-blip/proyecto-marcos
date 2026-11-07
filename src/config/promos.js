@@ -18,7 +18,7 @@ export const PROMOS = [
   { version: 'record_breaker', select: 'random', count: 25, minRating: 78, boost: [3, 5] },
   { version: 'halloween', select: 'random', count: 25, minRating: 75, boost: [3, 6] },
   { version: 'winter', select: 'random', count: 25, minRating: 75, boost: [3, 5] },
-  { version: 'future_stars', select: 'young', count: 25, minRating: 64, maxAge: 22, boost: [8, 12] },
+  { version: 'future_stars', select: 'young', count: 25, minRating: 64, maxAge: 22, boost: [5, 9] },
   { version: 'flashback', select: 'veteran', count: 15, minRating: 76, minAge: 31, boost: [4, 6] },
   { version: 'hero', select: 'random', count: 15, minRating: 74, boost: [6, 9] },
   { version: 'tots', select: 'best_xi_league', boost: [5, 8] },

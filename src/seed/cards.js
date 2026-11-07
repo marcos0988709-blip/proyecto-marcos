@@ -6,7 +6,8 @@ const STATS = ['pac', 'sho', 'pas', 'dri', 'def', 'phy'];
 
 function boosted(player, version, boost, rnd) {
   const delta = boost ? randInt(boost[0], boost[1], rnd) : 0;
-  const card = { player_id: player.id, version, rating: clamp(player.rating + delta, 1, 99) };
+  // Solo el TOTY puede llegar a 99; el resto de especiales se queda en 97 como máximo
+  const card = { player_id: player.id, version, rating: clamp(player.rating + delta, 1, version === 'toty' ? 99 : Math.max(97, player.rating)) };
   for (const s of STATS) card[s] = player[s] == null ? null : clamp(player[s] + (delta ? delta + randInt(0, 2, rnd) : 0), 1, 99);
   return card;
 }
