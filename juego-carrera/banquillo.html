@@ -412,7 +412,23 @@ function calView(){
 function clubView(){
   return`<div class="grid2"><div class="panel"><h2>Historial</h2>${S.history.length?`<table><thead><tr><th>Temporada</th><th class="r">Pos</th><th class="r">Pts</th><th>Campeón</th><th>Objetivo</th></tr></thead><tbody>${S.history.map(h=>`<tr><td>${h.season}</td><td class="r num">${h.pos}º</td><td class="r num">${h.pts}</td><td>${esc(h.champ)}</td><td><span class="chip ${h.ok?"good":"bad"}">${h.ok?"Cumplido":"Fallado"}</span></td></tr>`).join("")}</tbody></table>`:`<p class="muted" style="margin:0">Tu primera temporada aún está en juego.</p>`}</div>
   <div class="panel"><h2>Partida</h2><p class="muted" style="margin:0">La partida se guarda sola en este navegador después de cada acción.</p>
-  ${ui.newConfirm?`<div class="row"><span>Se borrará la carrera actual.</span><button data-a="reset" class="on">Sí, empezar de cero</button><button data-a="nonew">Cancelar</button></div>`:`<div class="row"><button data-a="askreset">Nueva carrera</button></div>`}</div></div>`;
+  ${ui.newConfirm?`<div class="row"><span>Se borrará la carrera actual.</span><button data-a="reset" class="on">Sí, empezar de cero</button><button data-a="nonew">Cancelar</button></div>`:`<div class="row"><button data-a="askreset">Nueva carrera</button></div>`}</div></div>${editorHTML()}`;
+}
+function editorHTML(){
+  const cid=ui.edClub??S.club,c=club(cid),sq=squad(cid).sort((a,b)=>POS.indexOf(a.pos)-POS.indexOf(b.pos)||b.ovr-a.ovr);
+  return`<div class="panel"><div class="row"><h2 style="flex:1">Editor</h2><label for="edc" class="muted">Club</label><select id="edc" data-ec="1">${S.clubs.map(x=>`<option value="${x.id}" ${x.id===cid?"selected":""}>${esc(x.name)}</option>`).join("")}</select></div>
+  <p class="muted" style="margin:0">Pon tus propios nombres, posiciones, edades, medias y potenciales. Cada cambio se guarda al salir de la casilla. Plantilla entre 16 y 30 jugadores.</p>
+  <div class="row"><label for="ecn" class="muted">Nombre</label><input id="ecn" data-ed="club:name:${cid}" value="${esc(c.name)}" maxlength="28" style="flex:1;min-width:160px">
+  <label for="ecs" class="muted">Siglas</label><input id="ecs" data-ed="club:short:${cid}" value="${esc(c.short)}" maxlength="3" style="width:64px">
+  <label for="ecc" class="muted">Color</label><input id="ecc" type="color" data-ed="club:color:${cid}" value="${c.color}" style="width:48px;padding:2px"></div>
+  <div class="scroll"><table><thead><tr><th>Jugador</th><th>Pos</th><th>Edad</th><th>Media</th><th>Potencial</th><th></th></tr></thead><tbody>
+  ${sq.map(p=>`<tr><td><input id="en${p.id}" data-ed="p:name:${p.id}" value="${esc(p.name)}" maxlength="30" aria-label="Nombre" style="min-width:150px"></td>
+  <td><select id="ep${p.id}" data-ed="p:pos:${p.id}" aria-label="Posición">${POS.map(x=>`<option ${p.pos===x?"selected":""}>${x}</option>`).join("")}</select></td>
+  <td><input id="ea${p.id}" type="number" min="15" max="45" data-ed="p:age:${p.id}" value="${p.age}" aria-label="Edad" style="width:68px"></td>
+  <td><input id="eo${p.id}" type="number" min="30" max="99" data-ed="p:ovr:${p.id}" value="${p.ovr}" aria-label="Media" style="width:68px"></td>
+  <td><input id="et${p.id}" type="number" min="30" max="99" data-ed="p:pot:${p.id}" value="${p.pot}" aria-label="Potencial" style="width:68px"></td>
+  <td><button class="sm" data-a="delp" data-v="${p.id}" ${sq.length<=16?"disabled":""}>Quitar</button></td></tr>`).join("")}</tbody></table></div>
+  <div class="row"><button data-a="addp" data-v="${cid}" ${sq.length>=30?"disabled":""}>Añadir jugador</button></div></div>`;
 }
 
 /* ---------- partido en directo ---------- */
@@ -466,10 +482,24 @@ document.addEventListener("click",e=>{
     case"buy":buy(id);break;
     case"askreset":ui.newConfirm=true;render();break;
     case"nonew":ui.newConfirm=false;render();break;
+    case"addp":{const cid=+v;if(squad(cid).length>=30)break;const p=newPlayer(cid,"MED",60,22);p.name="Nuevo jugador";p.ovr=60;p.pot=70;S.players.push(p);save();render();document.getElementById("en"+p.id)?.focus();break}
+    case"delp":{const p=P();if(!p||squad(p.club).length<=16)break;S.players=S.players.filter(x=>x!==p);delete S.offers[p.id];save();render();break}
     case"reset":try{localStorage.removeItem(SAVE)}catch(e){}S=null;ui.newConfirm=false;ui.tab="inicio";render();break;
   }
 });
 document.addEventListener("input",e=>{const f=e.target.dataset.f;if(!f)return;ui[f]=e.target.value;const id=e.target.id,pos=e.target.selectionStart;render();const el=document.getElementById(id);if(el){el.focus();try{if(pos!=null)el.setSelectionRange(pos,pos)}catch(_){}}});
 
+document.addEventListener("change",e=>{
+  const t=e.target;if(!S)return;
+  if(t.dataset.ec){ui.edClub=+t.value;render();return}
+  const d=t.dataset.ed;if(!d)return;const[k,f,id]=d.split(":");
+  const o=k==="club"?club(+id):S.players.find(p=>p.id===+id);if(!o)return;
+  let v=t.value;
+  if(f==="age"||f==="ovr"||f==="pot"){v=Math.round(+v);if(!isFinite(v)||t.value===""){t.value=o[f];return}v=f==="age"?clamp(v,15,45):clamp(v,30,99)}
+  else if(f==="name"||f==="short"){v=v.trim();if(f==="short")v=v.toUpperCase().slice(0,3);if(!v){t.value=o[f];return}}
+  o[f]=v;t.value=v;
+  if(k==="p"){if(o.pot<o.ovr){o.pot=o.ovr;const pt=document.getElementById("et"+o.id);if(pt)pt.value=o.pot}save()}
+  else{save();render()}
+});
 S=load();render();
 </script>
