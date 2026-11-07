@@ -34,7 +34,8 @@ function bestXI(pool) {
 export function buildCards(players, rnd) {
   const cards = [];
   const active = players.filter((p) => !p.is_legend);
-  const scale = Math.max(1, active.length / 1500);
+  // Las cantidades de promos se escalan al tamaño de la base (calibradas para ~1.500 jugadores)
+  const scale = Math.max(0.25, active.length / 1500);
 
   for (const p of players) {
     if (p.is_legend) { cards.push(boosted(p, 'legend', null, rnd)); continue; }
@@ -45,7 +46,7 @@ export function buildCards(players, rnd) {
   for (const promo of PROMOS) {
     let selected = [];
     const eligible = active.filter((p) => p.rating >= (promo.minRating ?? 0));
-    const count = Math.round((promo.count ?? 0) * scale);
+    const count = Math.max(1, Math.round((promo.count ?? 0) * scale));
     switch (promo.select) {
       case 'random':
         selected = shuffle(eligible, rnd).slice(0, count);
@@ -68,7 +69,7 @@ export function buildCards(players, rnd) {
         break;
       case 'best_xi_league': {
         const byLeague = Map.groupBy(active, (p) => p.league);
-        for (const [, leaguePlayers] of byLeague) if (leaguePlayers.length >= 40) selected.push(...bestXI(leaguePlayers));
+        for (const [, leaguePlayers] of byLeague) if (leaguePlayers.length >= 25) selected.push(...bestXI(leaguePlayers));
         break;
       }
     }

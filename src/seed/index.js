@@ -1,6 +1,9 @@
 import { tx } from '../db.js';
 import { seededRandom } from '../lib/rng.js';
 import { buildCards } from './cards.js';
+import { makeStats } from './demo.js';
+
+const STATS = ['pac', 'sho', 'pas', 'dri', 'def', 'phy'];
 
 /** Sustituye jugadores y cartas por los dados (los usuarios se mantienen, sus cartas se borran). */
 export function seedDatabase(db, players, { seed = 14 } = {}) {
@@ -9,6 +12,8 @@ export function seedDatabase(db, players, { seed = 14 } = {}) {
     db.exec('DELETE FROM user_cards; DELETE FROM drafts; DELETE FROM sbc_progress; DELETE FROM cards; DELETE FROM players;');
     const insP = db.prepare(`INSERT INTO players (name, nation, league, club, position, alt_positions, age, rating, pac, sho, pas, dri, def, phy, is_legend)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+    // Si el CSV no trae estadísticas, se generan a partir de la media y la posición
+    players = players.map((p) => (STATS.every((s) => p[s] == null) ? { ...p, ...makeStats(p.position, p.rating, rnd) } : p));
     const withIds = players.map((p) => {
       const r = insP.run(p.name, p.nation, p.league, p.club, p.position, p.alt_positions ?? '', p.age ?? null, p.rating,
         p.pac ?? null, p.sho ?? null, p.pas ?? null, p.dri ?? null, p.def ?? null, p.phy ?? null, p.is_legend ? 1 : 0);

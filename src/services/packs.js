@@ -30,6 +30,10 @@ export function rollPack(store, packId, rnd = secureRandom) {
         const min = slot.minRating ?? 0;
         card = store.draw(store.pool(`v:${version}:${min}`, (c) => c.version === version && c.rating >= min), rnd);
       }
+      if (!card && slot.versions) {
+        // La base no tiene cartas de esa versión (p. ej. sin bronces): usar la carta base más baja disponible
+        card = store.draw(store.pool('base:any', (c) => !c.special && !c.isLegend, 0.85), rnd);
+      }
       if (card) out.push(card);
     }
   }

@@ -3,11 +3,15 @@ import { openDb } from './db.js';
 import { createApp } from './app.js';
 import { seedDatabase } from './seed/index.js';
 import { generateDemoPlayers } from './seed/demo.js';
+import { loadPlayersFromCsv } from './seed/csv.js';
+import { existsSync } from 'node:fs';
 
 const db = openDb();
 if (db.prepare('SELECT COUNT(*) n FROM players').get().n === 0) {
-  console.log('Base de datos vacía → cargando datos de demo (usa `npm run seed -- tu.csv` para los tuyos).');
-  seedDatabase(db, generateDemoPlayers());
+  const csv = new URL('../data/fifa14-players.csv', import.meta.url);
+  const players = existsSync(csv) ? loadPlayersFromCsv(csv).players : generateDemoPlayers();
+  console.log(`Base de datos vacía → cargando ${players.length} jugadores.`);
+  seedDatabase(db, players);
 }
 const { handler, store } = createApp(db);
 const port = Number(process.env.PORT ?? 3000);

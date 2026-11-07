@@ -22,6 +22,10 @@ npm run build:web    # → dist/fut14-cards.html
 
 Un único HTML que lleva dentro el mismo motor del juego (rutas, sobres, SBCs, drafts) sobre SQLite en WebAssembly. Funciona sin servidor y guarda la partida en el navegador. Desde Inicio puedes importar tu CSV de jugadores, darte monedas de prueba o reiniciar.
 
+## Base incluida: temporada 13/14
+
+`data/fifa14-players.csv` trae 465 jugadores reales de las plantillas 2013/14 (LaLiga, Premier, Serie A, Bundesliga, Ligue 1, Portugal, Turquía, Rusia, Eredivisie) y 25 leyendas. Es la base por defecto del servidor y de la app web. Nombres, clubes, nacionalidades y posiciones son datos públicos; **las medias son aproximaciones propias** (no la base oficial) y las estadísticas se generan a partir de la media y la posición. No incluye fotos.
+
 ## Cargar tu propia base de jugadores (p. ej. temporada 13/14)
 
 ```bash

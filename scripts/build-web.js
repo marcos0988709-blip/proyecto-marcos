@@ -13,7 +13,7 @@ const result = await build({
   platform: 'browser',
   target: 'es2022',
   write: false,
-  loader: { '.wasm': 'binary' },
+  loader: { '.wasm': 'binary', '.csv': 'text' },
   alias: {
     'node:sqlite': r('../web/shims/sqlite.js'),
     'node:crypto': r('../web/shims/crypto.js'),

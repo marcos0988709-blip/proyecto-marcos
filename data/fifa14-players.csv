@@ -1,0 +1,491 @@
+name,nation,league,club,position,alt_positions,age,rating,is_legend
+Iker Casillas,España,LaLiga,Real Madrid,GK,,32,86,0
+Diego López,España,LaLiga,Real Madrid,GK,,32,84,0
+Sergio Ramos,España,LaLiga,Real Madrid,CB,,27,86,0
+Pepe,Portugal,LaLiga,Real Madrid,CB,CDM,30,84,0
+Raphaël Varane,Francia,LaLiga,Real Madrid,CB,,20,79,0
+Marcelo,Brasil,LaLiga,Real Madrid,LB,LM,25,82,0
+Fábio Coentrão,Portugal,LaLiga,Real Madrid,LB,,25,79,0
+Dani Carvajal,España,LaLiga,Real Madrid,RB,,21,77,0
+Álvaro Arbeloa,España,LaLiga,Real Madrid,RB,,30,78,0
+Xabi Alonso,España,LaLiga,Real Madrid,CDM,CM,31,85,0
+Luka Modrić,Croacia,LaLiga,Real Madrid,CM,CAM,27,85,0
+Sami Khedira,Alemania,LaLiga,Real Madrid,CDM,CM,26,81,0
+Asier Illarramendi,España,LaLiga,Real Madrid,CDM,,23,78,0
+Isco,España,LaLiga,Real Madrid,CAM,LM,21,83,0
+Ángel Di María,Argentina,LaLiga,Real Madrid,RM,LW|RW,25,84,0
+Gareth Bale,Gales,LaLiga,Real Madrid,RW,LW|RM,24,86,0
+Cristiano Ronaldo,Portugal,LaLiga,Real Madrid,LW,ST,28,92,0
+Karim Benzema,Francia,LaLiga,Real Madrid,ST,,25,85,0
+Álvaro Morata,España,LaLiga,Real Madrid,ST,,20,72,0
+Jesé,España,LaLiga,Real Madrid,LW,ST,20,72,0
+Víctor Valdés,España,LaLiga,FC Barcelona,GK,,31,85,0
+José Manuel Pinto,España,LaLiga,FC Barcelona,GK,,37,74,0
+Gerard Piqué,España,LaLiga,FC Barcelona,CB,,26,84,0
+Carles Puyol,España,LaLiga,FC Barcelona,CB,RB,35,83,0
+Javier Mascherano,Argentina,LaLiga,FC Barcelona,CB,CDM,29,83,0
+Marc Bartra,España,LaLiga,FC Barcelona,CB,,22,74,0
+Jordi Alba,España,LaLiga,FC Barcelona,LB,LM,24,83,0
+Dani Alves,Brasil,LaLiga,FC Barcelona,RB,RM,30,84,0
+Martín Montoya,España,LaLiga,FC Barcelona,RB,,22,74,0
+Sergio Busquets,España,LaLiga,FC Barcelona,CDM,,25,84,0
+Alex Song,Camerún,LaLiga,FC Barcelona,CDM,CB,25,80,0
+Xavi,España,LaLiga,FC Barcelona,CM,,33,88,0
+Andrés Iniesta,España,LaLiga,FC Barcelona,CM,CAM|LW,29,88,0
+Cesc Fàbregas,España,LaLiga,FC Barcelona,CAM,CM,26,85,0
+Sergi Roberto,España,LaLiga,FC Barcelona,CM,,21,70,0
+Lionel Messi,Argentina,LaLiga,FC Barcelona,RW,ST|CAM,26,94,0
+Neymar,Brasil,LaLiga,FC Barcelona,LW,ST,21,84,0
+Pedro,España,LaLiga,FC Barcelona,RW,LW,26,82,0
+Alexis Sánchez,Chile,LaLiga,FC Barcelona,RW,ST,24,82,0
+Cristian Tello,España,LaLiga,FC Barcelona,LW,LM,22,75,0
+Thibaut Courtois,Bélgica,LaLiga,Atlético de Madrid,GK,,21,82,0
+Diego Godín,Uruguay,LaLiga,Atlético de Madrid,CB,,27,82,0
+Miranda,Brasil,LaLiga,Atlético de Madrid,CB,,29,82,0
+Toby Alderweireld,Bélgica,LaLiga,Atlético de Madrid,CB,RB,24,78,0
+Filipe Luís,Brasil,LaLiga,Atlético de Madrid,LB,,28,81,0
+Juanfran,España,LaLiga,Atlético de Madrid,RB,,28,80,0
+Gabi,España,LaLiga,Atlético de Madrid,CDM,CM,30,80,0
+Tiago,Portugal,LaLiga,Atlético de Madrid,CM,CDM,32,79,0
+Mario Suárez,España,LaLiga,Atlético de Madrid,CDM,,26,78,0
+Koke,España,LaLiga,Atlético de Madrid,CM,LM,21,80,0
+Arda Turan,Turquía,LaLiga,Atlético de Madrid,LM,CAM,26,82,0
+Raúl García,España,LaLiga,Atlético de Madrid,CM,CAM,27,77,0
+Diego Costa,Brasil,LaLiga,Atlético de Madrid,ST,,24,79,0
+David Villa,España,LaLiga,Atlético de Madrid,ST,LW,31,83,0
+Adrián López,España,LaLiga,Atlético de Madrid,ST,LW,25,77,0
+Diego Alves,Brasil,LaLiga,Valencia CF,GK,,28,81,0
+Ricardo Costa,Portugal,LaLiga,Valencia CF,CB,,32,76,0
+Jérémy Mathieu,Francia,LaLiga,Valencia CF,LB,CB,29,79,0
+João Pereira,Portugal,LaLiga,Valencia CF,RB,,29,77,0
+Javi Fuego,España,LaLiga,Valencia CF,CDM,,29,76,0
+Dani Parejo,España,LaLiga,Valencia CF,CM,CAM,24,79,0
+Ever Banega,Argentina,LaLiga,Valencia CF,CM,CAM,25,80,0
+Andrés Guardado,México,LaLiga,Valencia CF,LM,LB,26,79,0
+Sofiane Feghouli,Argelia,LaLiga,Valencia CF,RM,RW,23,80,0
+Pablo Piatti,Argentina,LaLiga,Valencia CF,LM,LW,24,76,0
+Hélder Postiga,Portugal,LaLiga,Valencia CF,ST,,31,76,0
+Paco Alcácer,España,LaLiga,Valencia CF,ST,,20,69,0
+Beto,Portugal,LaLiga,Sevilla FC,GK,,31,78,0
+Federico Fazio,Argentina,LaLiga,Sevilla FC,CB,,26,77,0
+Daniel Carriço,Portugal,LaLiga,Sevilla FC,CB,CDM,25,74,0
+Alberto Moreno,España,LaLiga,Sevilla FC,LB,,21,74,0
+Coke,España,LaLiga,Sevilla FC,RB,,26,75,0
+Stéphane Mbia,Camerún,LaLiga,Sevilla FC,CDM,CB,27,76,0
+Ivan Rakitić,Croacia,LaLiga,Sevilla FC,CM,CAM,25,82,0
+Vitolo,España,LaLiga,Sevilla FC,LM,LW,23,76,0
+José Antonio Reyes,España,LaLiga,Sevilla FC,RM,LM,30,78,0
+Kevin Gameiro,Francia,LaLiga,Sevilla FC,ST,,26,80,0
+Carlos Bacca,Colombia,LaLiga,Sevilla FC,ST,,26,76,0
+Gorka Iraizoz,España,LaLiga,Athletic Club,GK,,32,78,0
+Aymeric Laporte,Francia,LaLiga,Athletic Club,CB,,19,72,0
+Mikel San José,España,LaLiga,Athletic Club,CB,CDM,24,76,0
+Andoni Iraola,España,LaLiga,Athletic Club,RB,,31,79,0
+Ander Iturraspe,España,LaLiga,Athletic Club,CDM,,24,76,0
+Ander Herrera,España,LaLiga,Athletic Club,CM,CAM,23,79,0
+Óscar de Marcos,España,LaLiga,Athletic Club,RM,RB,24,75,0
+Markel Susaeta,España,LaLiga,Athletic Club,RM,RW,25,78,0
+Iker Muniain,España,LaLiga,Athletic Club,LW,LM,20,80,0
+Ibai Gómez,España,LaLiga,Athletic Club,LW,LM,24,76,0
+Aritz Aduriz,España,LaLiga,Athletic Club,ST,,32,79,0
+Claudio Bravo,Chile,LaLiga,Real Sociedad,GK,,30,80,0
+Iñigo Martínez,España,LaLiga,Real Sociedad,CB,,22,77,0
+Rubén Pardo,España,LaLiga,Real Sociedad,CM,,20,73,0
+Xabi Prieto,España,LaLiga,Real Sociedad,CAM,RM,30,78,0
+Antoine Griezmann,Francia,LaLiga,Real Sociedad,LW,ST,22,79,0
+Carlos Vela,México,LaLiga,Real Sociedad,ST,RW,24,80,0
+David De Gea,España,Premier League,Manchester United,GK,,22,82,0
+Nemanja Vidić,Serbia,Premier League,Manchester United,CB,,31,85,0
+Rio Ferdinand,Inglaterra,Premier League,Manchester United,CB,,34,82,0
+Jonny Evans,Irlanda del Norte,Premier League,Manchester United,CB,,25,79,0
+Phil Jones,Inglaterra,Premier League,Manchester United,CB,RB,21,78,0
+Chris Smalling,Inglaterra,Premier League,Manchester United,CB,,23,77,0
+Patrice Evra,Francia,Premier League,Manchester United,LB,,32,82,0
+Rafael,Brasil,Premier League,Manchester United,RB,,23,79,0
+Michael Carrick,Inglaterra,Premier League,Manchester United,CDM,CM,32,84,0
+Marouane Fellaini,Bélgica,Premier League,Manchester United,CM,CDM,25,81,0
+Tom Cleverley,Inglaterra,Premier League,Manchester United,CM,,24,77,0
+Ryan Giggs,Gales,Premier League,Manchester United,CM,LM,39,79,0
+Shinji Kagawa,Japón,Premier League,Manchester United,CAM,LM,24,82,0
+Antonio Valencia,Ecuador,Premier League,Manchester United,RM,RB,28,82,0
+Ashley Young,Inglaterra,Premier League,Manchester United,LM,RM,28,79,0
+Nani,Portugal,Premier League,Manchester United,RW,LW,26,82,0
+Adnan Januzaj,Bélgica,Premier League,Manchester United,LW,RW,18,68,0
+Wayne Rooney,Inglaterra,Premier League,Manchester United,ST,CAM,27,86,0
+Robin van Persie,Países Bajos,Premier League,Manchester United,ST,,30,88,0
+Javier Hernández,México,Premier League,Manchester United,ST,,25,81,0
+Danny Welbeck,Inglaterra,Premier League,Manchester United,ST,LW,22,76,0
+Joe Hart,Inglaterra,Premier League,Manchester City,GK,,26,85,0
+Vincent Kompany,Bélgica,Premier League,Manchester City,CB,,27,85,0
+Matija Nastasić,Serbia,Premier League,Manchester City,CB,,20,79,0
+Martín Demichelis,Argentina,Premier League,Manchester City,CB,,32,79,0
+Joleon Lescott,Inglaterra,Premier League,Manchester City,CB,,31,79,0
+Gaël Clichy,Francia,Premier League,Manchester City,LB,,28,80,0
+Aleksandar Kolarov,Serbia,Premier League,Manchester City,LB,LM,27,79,0
+Pablo Zabaleta,Argentina,Premier League,Manchester City,RB,,28,82,0
+Yaya Touré,Costa de Marfil,Premier League,Manchester City,CM,CDM,30,86,0
+Fernandinho,Brasil,Premier League,Manchester City,CDM,CM,28,81,0
+Javi García,España,Premier League,Manchester City,CDM,,26,79,0
+David Silva,España,Premier League,Manchester City,CAM,LM,27,87,0
+Samir Nasri,Francia,Premier League,Manchester City,LM,CAM,26,83,0
+Jesús Navas,España,Premier League,Manchester City,RM,RW,27,82,0
+James Milner,Inglaterra,Premier League,Manchester City,RM,CM,27,79,0
+Sergio Agüero,Argentina,Premier League,Manchester City,ST,,25,86,0
+Edin Džeko,Bosnia,Premier League,Manchester City,ST,,27,82,0
+Álvaro Negredo,España,Premier League,Manchester City,ST,,28,82,0
+Stevan Jovetić,Montenegro,Premier League,Manchester City,ST,CAM,23,81,0
+Petr Čech,Chequia,Premier League,Chelsea,GK,,31,86,0
+John Terry,Inglaterra,Premier League,Chelsea,CB,,32,84,0
+Gary Cahill,Inglaterra,Premier League,Chelsea,CB,,27,81,0
+David Luiz,Brasil,Premier League,Chelsea,CB,CDM,26,81,0
+Branislav Ivanović,Serbia,Premier League,Chelsea,RB,CB,29,82,0
+César Azpilicueta,España,Premier League,Chelsea,RB,LB,24,80,0
+Ashley Cole,Inglaterra,Premier League,Chelsea,LB,,32,83,0
+Frank Lampard,Inglaterra,Premier League,Chelsea,CM,CAM,35,84,0
+Ramires,Brasil,Premier League,Chelsea,CM,RM,26,82,0
+John Obi Mikel,Nigeria,Premier League,Chelsea,CDM,,26,78,0
+Oscar,Brasil,Premier League,Chelsea,CAM,,21,83,0
+Juan Mata,España,Premier League,Chelsea,CAM,RM,25,86,0
+Kevin De Bruyne,Bélgica,Premier League,Chelsea,CAM,RM,22,75,0
+Eden Hazard,Bélgica,Premier League,Chelsea,LW,LM|CAM,22,86,0
+André Schürrle,Alemania,Premier League,Chelsea,LW,LM,22,81,0
+Willian,Brasil,Premier League,Chelsea,RW,RM|CAM,25,82,0
+Fernando Torres,España,Premier League,Chelsea,ST,,29,83,0
+Samuel Eto'o,Camerún,Premier League,Chelsea,ST,,32,82,0
+Demba Ba,Senegal,Premier League,Chelsea,ST,,28,80,0
+Wojciech Szczęsny,Polonia,Premier League,Arsenal,GK,,23,80,0
+Per Mertesacker,Alemania,Premier League,Arsenal,CB,,28,82,0
+Laurent Koscielny,Francia,Premier League,Arsenal,CB,,28,81,0
+Thomas Vermaelen,Bélgica,Premier League,Arsenal,CB,LB,27,81,0
+Kieran Gibbs,Inglaterra,Premier League,Arsenal,LB,,23,78,0
+Bacary Sagna,Francia,Premier League,Arsenal,RB,,30,81,0
+Mikel Arteta,España,Premier League,Arsenal,CDM,CM,31,83,0
+Mathieu Flamini,Francia,Premier League,Arsenal,CDM,,29,77,0
+Jack Wilshere,Inglaterra,Premier League,Arsenal,CM,CAM,21,80,0
+Aaron Ramsey,Gales,Premier League,Arsenal,CM,,22,78,0
+Santi Cazorla,España,Premier League,Arsenal,CAM,LM,28,85,0
+Mesut Özil,Alemania,Premier League,Arsenal,CAM,,24,86,0
+Tomáš Rosický,Chequia,Premier League,Arsenal,CAM,CM,32,80,0
+Lukas Podolski,Alemania,Premier League,Arsenal,LM,ST,28,82,0
+Theo Walcott,Inglaterra,Premier League,Arsenal,RM,ST,24,81,0
+Alex Oxlade-Chamberlain,Inglaterra,Premier League,Arsenal,RM,CM,19,76,0
+Olivier Giroud,Francia,Premier League,Arsenal,ST,,26,81,0
+Simon Mignolet,Bélgica,Premier League,Liverpool,GK,,25,80,0
+Daniel Agger,Dinamarca,Premier League,Liverpool,CB,,28,82,0
+Martin Škrtel,Eslovaquia,Premier League,Liverpool,CB,,28,81,0
+Mamadou Sakho,Francia,Premier League,Liverpool,CB,,23,79,0
+Glen Johnson,Inglaterra,Premier League,Liverpool,RB,,28,81,0
+José Enrique,España,Premier League,Liverpool,LB,,27,78,0
+Steven Gerrard,Inglaterra,Premier League,Liverpool,CM,CDM,33,84,0
+Lucas Leiva,Brasil,Premier League,Liverpool,CDM,,26,79,0
+Jordan Henderson,Inglaterra,Premier League,Liverpool,CM,,23,76,0
+Joe Allen,Gales,Premier League,Liverpool,CM,,23,77,0
+Philippe Coutinho,Brasil,Premier League,Liverpool,CAM,LW,21,80,0
+Raheem Sterling,Inglaterra,Premier League,Liverpool,RW,RM,18,72,0
+Luis Suárez,Uruguay,Premier League,Liverpool,ST,,26,86,0
+Daniel Sturridge,Inglaterra,Premier League,Liverpool,ST,,24,80,0
+Iago Aspas,España,Premier League,Liverpool,ST,,26,76,0
+Hugo Lloris,Francia,Premier League,Tottenham Hotspur,GK,,26,84,0
+Jan Vertonghen,Bélgica,Premier League,Tottenham Hotspur,CB,LB,26,82,0
+Michael Dawson,Inglaterra,Premier League,Tottenham Hotspur,CB,,29,78,0
+Younès Kaboul,Francia,Premier League,Tottenham Hotspur,CB,,27,78,0
+Kyle Walker,Inglaterra,Premier League,Tottenham Hotspur,RB,,23,80,0
+Danny Rose,Inglaterra,Premier League,Tottenham Hotspur,LB,,23,74,0
+Sandro,Brasil,Premier League,Tottenham Hotspur,CDM,,24,79,0
+Mousa Dembélé,Bélgica,Premier League,Tottenham Hotspur,CM,,26,81,0
+Paulinho,Brasil,Premier League,Tottenham Hotspur,CM,,25,80,0
+Christian Eriksen,Dinamarca,Premier League,Tottenham Hotspur,CAM,,21,80,0
+Gylfi Sigurðsson,Islandia,Premier League,Tottenham Hotspur,CAM,LM,23,78,0
+Erik Lamela,Argentina,Premier League,Tottenham Hotspur,RW,RM,21,80,0
+Aaron Lennon,Inglaterra,Premier League,Tottenham Hotspur,RM,,26,79,0
+Andros Townsend,Inglaterra,Premier League,Tottenham Hotspur,RM,LM,22,74,0
+Roberto Soldado,España,Premier League,Tottenham Hotspur,ST,,28,83,0
+Jermain Defoe,Inglaterra,Premier League,Tottenham Hotspur,ST,,30,79,0
+Emmanuel Adebayor,Togo,Premier League,Tottenham Hotspur,ST,,29,80,0
+Tim Howard,Estados Unidos,Premier League,Everton,GK,,34,82,0
+Phil Jagielka,Inglaterra,Premier League,Everton,CB,,30,80,0
+Sylvain Distin,Francia,Premier League,Everton,CB,,35,78,0
+Leighton Baines,Inglaterra,Premier League,Everton,LB,,28,83,0
+Séamus Coleman,Irlanda,Premier League,Everton,RB,,24,76,0
+Gareth Barry,Inglaterra,Premier League,Everton,CDM,,32,79,0
+James McCarthy,Irlanda,Premier League,Everton,CM,,22,77,0
+Leon Osman,Inglaterra,Premier League,Everton,CM,,32,77,0
+Ross Barkley,Inglaterra,Premier League,Everton,CAM,,19,72,0
+Steven Pienaar,Sudáfrica,Premier League,Everton,LM,CAM,31,80,0
+Kevin Mirallas,Bélgica,Premier League,Everton,RM,ST,25,80,0
+Gerard Deulofeu,España,Premier League,Everton,RW,,19,74,0
+Romelu Lukaku,Bélgica,Premier League,Everton,ST,,20,79,0
+Gianluigi Buffon,Italia,Serie A,Juventus,GK,,35,88,0
+Giorgio Chiellini,Italia,Serie A,Juventus,CB,LB,28,86,0
+Andrea Barzagli,Italia,Serie A,Juventus,CB,,32,85,0
+Leonardo Bonucci,Italia,Serie A,Juventus,CB,,26,83,0
+Stephan Lichtsteiner,Suiza,Serie A,Juventus,RB,RM,29,83,0
+Kwadwo Asamoah,Ghana,Serie A,Juventus,LM,LB,24,81,0
+Andrea Pirlo,Italia,Serie A,Juventus,CM,CDM,34,87,0
+Arturo Vidal,Chile,Serie A,Juventus,CM,CDM,26,86,0
+Claudio Marchisio,Italia,Serie A,Juventus,CM,,27,83,0
+Paul Pogba,Francia,Serie A,Juventus,CM,CDM,20,78,0
+Sebastian Giovinco,Italia,Serie A,Juventus,CAM,ST,26,78,0
+Carlos Tevez,Argentina,Serie A,Juventus,ST,,29,85,0
+Fernando Llorente,España,Serie A,Juventus,ST,,28,84,0
+Mirko Vučinić,Montenegro,Serie A,Juventus,ST,LW,29,82,0
+Pepe Reina,España,Serie A,Napoli,GK,,30,84,0
+Raúl Albiol,España,Serie A,Napoli,CB,,27,80,0
+Paolo Cannavaro,Italia,Serie A,Napoli,CB,,32,79,0
+Federico Fernández,Argentina,Serie A,Napoli,CB,,24,76,0
+Christian Maggio,Italia,Serie A,Napoli,RB,RM,31,79,0
+Pablo Armero,Colombia,Serie A,Napoli,LB,LM,27,78,0
+Gökhan İnler,Suiza,Serie A,Napoli,CM,CDM,29,81,0
+Valon Behrami,Suiza,Serie A,Napoli,CDM,,28,78,0
+Marek Hamšík,Eslovaquia,Serie A,Napoli,CAM,CM,26,85,0
+José Callejón,España,Serie A,Napoli,RM,RW,26,80,0
+Lorenzo Insigne,Italia,Serie A,Napoli,LW,LM,22,78,0
+Dries Mertens,Bélgica,Serie A,Napoli,LW,LM,26,79,0
+Gonzalo Higuaín,Argentina,Serie A,Napoli,ST,,25,85,0
+Goran Pandev,Macedonia,Serie A,Napoli,ST,,30,79,0
+Christian Abbiati,Italia,Serie A,AC Milan,GK,,36,79,0
+Philippe Mexès,Francia,Serie A,AC Milan,CB,,31,79,0
+Cristián Zapata,Colombia,Serie A,AC Milan,CB,,26,78,0
+Daniele Bonera,Italia,Serie A,AC Milan,CB,,32,76,0
+Ignazio Abate,Italia,Serie A,AC Milan,RB,,26,79,0
+Mattia De Sciglio,Italia,Serie A,AC Milan,LB,,20,76,0
+Riccardo Montolivo,Italia,Serie A,AC Milan,CM,CDM,28,82,0
+Nigel de Jong,Países Bajos,Serie A,AC Milan,CDM,,28,81,0
+Andrea Poli,Italia,Serie A,AC Milan,CM,,23,75,0
+Kaká,Brasil,Serie A,AC Milan,CAM,,31,83,0
+Stephan El Shaarawy,Italia,Serie A,AC Milan,LW,ST,20,82,0
+Robinho,Brasil,Serie A,AC Milan,LW,ST,29,81,0
+Mario Balotelli,Italia,Serie A,AC Milan,ST,,23,84,0
+Giampaolo Pazzini,Italia,Serie A,AC Milan,ST,,29,80,0
+Samir Handanović,Eslovenia,Serie A,Inter,GK,,29,85,0
+Hugo Campagnaro,Argentina,Serie A,Inter,CB,,33,80,0
+Andrea Ranocchia,Italia,Serie A,Inter,CB,,25,78,0
+Walter Samuel,Argentina,Serie A,Inter,CB,,35,78,0
+Juan Jesus,Brasil,Serie A,Inter,CB,LB,22,76,0
+Javier Zanetti,Argentina,Serie A,Inter,RB,CDM,40,80,0
+Yuto Nagatomo,Japón,Serie A,Inter,LB,LM,27,78,0
+Esteban Cambiasso,Argentina,Serie A,Inter,CDM,,33,81,0
+Fredy Guarín,Colombia,Serie A,Inter,CM,CAM,27,81,0
+Saphir Taïder,Argelia,Serie A,Inter,CM,,21,73,0
+Ricky Álvarez,Argentina,Serie A,Inter,CAM,,25,77,0
+Rodrigo Palacio,Argentina,Serie A,Inter,ST,,31,83,0
+Diego Milito,Argentina,Serie A,Inter,ST,,34,82,0
+Mauro Icardi,Argentina,Serie A,Inter,ST,,20,73,0
+Morgan De Sanctis,Italia,Serie A,AS Roma,GK,,36,81,0
+Medhi Benatia,Marruecos,Serie A,AS Roma,CB,,26,82,0
+Leandro Castán,Brasil,Serie A,AS Roma,CB,,26,79,0
+Maicon,Brasil,Serie A,AS Roma,RB,,32,81,0
+Federico Balzaretti,Italia,Serie A,AS Roma,LB,,31,77,0
+Daniele De Rossi,Italia,Serie A,AS Roma,CDM,CB,30,84,0
+Miralem Pjanić,Bosnia,Serie A,AS Roma,CM,CAM,23,82,0
+Kevin Strootman,Países Bajos,Serie A,AS Roma,CM,,23,82,0
+Francesco Totti,Italia,Serie A,AS Roma,CAM,ST,37,83,0
+Adem Ljajić,Serbia,Serie A,AS Roma,CAM,LW,22,77,0
+Alessandro Florenzi,Italia,Serie A,AS Roma,RM,RB,22,75,0
+Gervinho,Costa de Marfil,Serie A,AS Roma,LW,RW,26,79,0
+Mattia Destro,Italia,Serie A,AS Roma,ST,,22,78,0
+Neto,Brasil,Serie A,Fiorentina,GK,,24,74,0
+Gonzalo Rodríguez,Argentina,Serie A,Fiorentina,CB,,29,81,0
+Stefan Savić,Montenegro,Serie A,Fiorentina,CB,,22,77,0
+Manuel Pasqual,Italia,Serie A,Fiorentina,LB,,31,77,0
+David Pizarro,Chile,Serie A,Fiorentina,CM,CDM,33,80,0
+Borja Valero,España,Serie A,Fiorentina,CM,CAM,28,82,0
+Alberto Aquilani,Italia,Serie A,Fiorentina,CM,,29,79,0
+Juan Cuadrado,Colombia,Serie A,Fiorentina,RM,RB,25,80,0
+Joaquín,España,Serie A,Fiorentina,RM,,32,79,0
+Giuseppe Rossi,Italia,Serie A,Fiorentina,ST,,26,82,0
+Mario Gómez,Alemania,Serie A,Fiorentina,ST,,28,85,0
+Federico Marchetti,Italia,Serie A,Lazio,GK,,30,83,0
+Lorik Cana,Albania,Serie A,Lazio,CB,CDM,30,77,0
+Stefan Radu,Rumanía,Serie A,Lazio,LB,CB,26,78,0
+Lucas Biglia,Argentina,Serie A,Lazio,CDM,CM,27,80,0
+Hernanes,Brasil,Serie A,Lazio,CAM,CM,28,83,0
+Antonio Candreva,Italia,Serie A,Lazio,RM,,26,80,0
+Senad Lulić,Bosnia,Serie A,Lazio,LM,LB,27,78,0
+Miroslav Klose,Alemania,Serie A,Lazio,ST,,35,83,0
+Manuel Neuer,Alemania,Bundesliga,FC Bayern München,GK,,27,88,0
+Dante,Brasil,Bundesliga,FC Bayern München,CB,,29,84,0
+Jérôme Boateng,Alemania,Bundesliga,FC Bayern München,CB,,25,82,0
+Daniel Van Buyten,Bélgica,Bundesliga,FC Bayern München,CB,,35,80,0
+David Alaba,Austria,Bundesliga,FC Bayern München,LB,CM,21,83,0
+Philipp Lahm,Alemania,Bundesliga,FC Bayern München,RB,CDM,29,87,0
+Rafinha,Brasil,Bundesliga,FC Bayern München,RB,,28,78,0
+Bastian Schweinsteiger,Alemania,Bundesliga,FC Bayern München,CM,CDM,29,88,0
+Javi Martínez,España,Bundesliga,FC Bayern München,CDM,CB,25,84,0
+Thiago Alcântara,España,Bundesliga,FC Bayern München,CM,CAM,22,84,0
+Toni Kroos,Alemania,Bundesliga,FC Bayern München,CM,CAM,23,85,0
+Mario Götze,Alemania,Bundesliga,FC Bayern München,CAM,,21,84,0
+Thomas Müller,Alemania,Bundesliga,FC Bayern München,CAM,RM|ST,24,85,0
+Franck Ribéry,Francia,Bundesliga,FC Bayern München,LM,LW,30,90,0
+Arjen Robben,Países Bajos,Bundesliga,FC Bayern München,RM,RW,29,89,0
+Xherdan Shaqiri,Suiza,Bundesliga,FC Bayern München,RM,RW,21,80,0
+Mario Mandžukić,Croacia,Bundesliga,FC Bayern München,ST,,27,84,0
+Claudio Pizarro,Perú,Bundesliga,FC Bayern München,ST,,34,80,0
+Roman Weidenfeller,Alemania,Bundesliga,Borussia Dortmund,GK,,33,83,0
+Mats Hummels,Alemania,Bundesliga,Borussia Dortmund,CB,,24,86,0
+Neven Subotić,Serbia,Bundesliga,Borussia Dortmund,CB,,24,83,0
+Sokratis,Grecia,Bundesliga,Borussia Dortmund,CB,,25,80,0
+Marcel Schmelzer,Alemania,Bundesliga,Borussia Dortmund,LB,,25,80,0
+Łukasz Piszczek,Polonia,Bundesliga,Borussia Dortmund,RB,,28,82,0
+Sven Bender,Alemania,Bundesliga,Borussia Dortmund,CDM,,24,80,0
+İlkay Gündoğan,Alemania,Bundesliga,Borussia Dortmund,CM,CDM,22,83,0
+Nuri Şahin,Turquía,Bundesliga,Borussia Dortmund,CM,CDM,24,79,0
+Marco Reus,Alemania,Bundesliga,Borussia Dortmund,LM,CAM|LW,24,86,0
+Henrikh Mkhitaryan,Armenia,Bundesliga,Borussia Dortmund,CAM,,24,83,0
+Jakub Błaszczykowski,Polonia,Bundesliga,Borussia Dortmund,RM,RW,27,81,0
+Kevin Großkreutz,Alemania,Bundesliga,Borussia Dortmund,LM,RB,25,77,0
+Pierre-Emerick Aubameyang,Gabón,Bundesliga,Borussia Dortmund,RW,ST,24,80,0
+Robert Lewandowski,Polonia,Bundesliga,Borussia Dortmund,ST,,25,87,0
+Timo Hildebrand,Alemania,Bundesliga,FC Schalke 04,GK,,34,78,0
+Benedikt Höwedes,Alemania,Bundesliga,FC Schalke 04,CB,RB,25,81,0
+Joel Matip,Camerún,Bundesliga,FC Schalke 04,CB,CDM,22,77,0
+Atsuto Uchida,Japón,Bundesliga,FC Schalke 04,RB,,25,77,0
+Jermaine Jones,Estados Unidos,Bundesliga,FC Schalke 04,CDM,,31,77,0
+Roman Neustädter,Alemania,Bundesliga,FC Schalke 04,CDM,,25,77,0
+Kevin-Prince Boateng,Ghana,Bundesliga,FC Schalke 04,CAM,CM,26,80,0
+Julian Draxler,Alemania,Bundesliga,FC Schalke 04,CAM,LM,19,79,0
+Max Meyer,Alemania,Bundesliga,FC Schalke 04,CAM,,17,70,0
+Jefferson Farfán,Perú,Bundesliga,FC Schalke 04,RM,RW,28,83,0
+Klaas-Jan Huntelaar,Países Bajos,Bundesliga,FC Schalke 04,ST,,30,83,0
+Adam Szalai,Hungría,Bundesliga,FC Schalke 04,ST,,25,77,0
+Bernd Leno,Alemania,Bundesliga,Bayer Leverkusen,GK,,21,80,0
+Emir Spahić,Bosnia,Bundesliga,Bayer Leverkusen,CB,,32,79,0
+Ömer Toprak,Turquía,Bundesliga,Bayer Leverkusen,CB,,24,78,0
+Sebastian Boenisch,Polonia,Bundesliga,Bayer Leverkusen,LB,,26,74,0
+Lars Bender,Alemania,Bundesliga,Bayer Leverkusen,CDM,CM,24,81,0
+Simon Rolfes,Alemania,Bundesliga,Bayer Leverkusen,CDM,,31,78,0
+Gonzalo Castro,Alemania,Bundesliga,Bayer Leverkusen,CM,RB,26,79,0
+Sidney Sam,Alemania,Bundesliga,Bayer Leverkusen,RM,RW,25,79,0
+Son Heung-min,Corea del Sur,Bundesliga,Bayer Leverkusen,LW,LM,21,78,0
+Stefan Kießling,Alemania,Bundesliga,Bayer Leverkusen,ST,,29,82,0
+Diego Benaglio,Suiza,Bundesliga,VfL Wolfsburg,GK,,30,82,0
+Naldo,Brasil,Bundesliga,VfL Wolfsburg,CB,,31,80,0
+Ricardo Rodríguez,Suiza,Bundesliga,VfL Wolfsburg,LB,,21,76,0
+Luiz Gustavo,Brasil,Bundesliga,VfL Wolfsburg,CDM,,26,82,0
+Diego,Brasil,Bundesliga,VfL Wolfsburg,CAM,,28,82,0
+Ivan Perišić,Croacia,Bundesliga,VfL Wolfsburg,LM,LW,24,79,0
+Ivica Olić,Croacia,Bundesliga,VfL Wolfsburg,ST,,34,79,0
+Salvatore Sirigu,Italia,Ligue 1,Paris Saint-Germain,GK,,26,82,0
+Thiago Silva,Brasil,Ligue 1,Paris Saint-Germain,CB,,28,87,0
+Alex,Brasil,Ligue 1,Paris Saint-Germain,CB,,31,81,0
+Marquinhos,Brasil,Ligue 1,Paris Saint-Germain,CB,,19,77,0
+Maxwell,Brasil,Ligue 1,Paris Saint-Germain,LB,,32,80,0
+Christophe Jallet,Francia,Ligue 1,Paris Saint-Germain,RB,,29,77,0
+Thiago Motta,Italia,Ligue 1,Paris Saint-Germain,CDM,CM,31,83,0
+Blaise Matuidi,Francia,Ligue 1,Paris Saint-Germain,CM,CDM,26,82,0
+Marco Verratti,Italia,Ligue 1,Paris Saint-Germain,CM,,20,81,0
+Javier Pastore,Argentina,Ligue 1,Paris Saint-Germain,CAM,LM,24,83,0
+Lucas Moura,Brasil,Ligue 1,Paris Saint-Germain,RM,RW,21,81,0
+Ezequiel Lavezzi,Argentina,Ligue 1,Paris Saint-Germain,LW,ST,28,83,0
+Zlatan Ibrahimović,Suecia,Ligue 1,Paris Saint-Germain,ST,,31,90,0
+Edinson Cavani,Uruguay,Ligue 1,Paris Saint-Germain,ST,,26,87,0
+Danijel Subašić,Croacia,Ligue 1,AS Monaco,GK,,28,77,0
+Ricardo Carvalho,Portugal,Ligue 1,AS Monaco,CB,,35,80,0
+Éric Abidal,Francia,Ligue 1,AS Monaco,CB,LB,33,77,0
+Jérémy Toulalan,Francia,Ligue 1,AS Monaco,CDM,,29,80,0
+João Moutinho,Portugal,Ligue 1,AS Monaco,CM,,26,83,0
+James Rodríguez,Colombia,Ligue 1,AS Monaco,CAM,RM,22,82,0
+Yannick Carrasco,Bélgica,Ligue 1,AS Monaco,LW,LM,19,70,0
+Emmanuel Rivière,Francia,Ligue 1,AS Monaco,ST,,23,74,0
+Radamel Falcao,Colombia,Ligue 1,AS Monaco,ST,,27,88,0
+Steve Mandanda,Francia,Ligue 1,Olympique de Marseille,GK,,28,82,0
+Nicolas N'Koulou,Camerún,Ligue 1,Olympique de Marseille,CB,,23,80,0
+Rod Fanni,Francia,Ligue 1,Olympique de Marseille,RB,CB,31,77,0
+Jérémy Morel,Francia,Ligue 1,Olympique de Marseille,LB,,29,74,0
+Giannelli Imbula,Francia,Ligue 1,Olympique de Marseille,CM,CDM,20,76,0
+Mathieu Valbuena,Francia,Ligue 1,Olympique de Marseille,CAM,RM,28,81,0
+Dimitri Payet,Francia,Ligue 1,Olympique de Marseille,LM,CAM,26,81,0
+André Ayew,Ghana,Ligue 1,Olympique de Marseille,LM,LW,23,78,0
+Florian Thauvin,Francia,Ligue 1,Olympique de Marseille,RM,RW,20,75,0
+André-Pierre Gignac,Francia,Ligue 1,Olympique de Marseille,ST,,27,79,0
+Anthony Lopes,Portugal,Ligue 1,Olympique Lyonnais,GK,,22,75,0
+Samuel Umtiti,Francia,Ligue 1,Olympique Lyonnais,CB,,19,71,0
+Maxime Gonalons,Francia,Ligue 1,Olympique Lyonnais,CDM,,24,79,0
+Clément Grenier,Francia,Ligue 1,Olympique Lyonnais,CM,CAM,22,78,0
+Yoann Gourcuff,Francia,Ligue 1,Olympique Lyonnais,CAM,,27,79,0
+Alexandre Lacazette,Francia,Ligue 1,Olympique Lyonnais,ST,LW,22,77,0
+Bafétimbi Gomis,Francia,Ligue 1,Olympique Lyonnais,ST,,28,80,0
+Artur,Brasil,Liga Portugal,SL Benfica,GK,,32,78,0
+Luisão,Brasil,Liga Portugal,SL Benfica,CB,,32,79,0
+Ezequiel Garay,Argentina,Liga Portugal,SL Benfica,CB,,26,81,0
+Maxi Pereira,Uruguay,Liga Portugal,SL Benfica,RB,,29,79,0
+Siqueira,Brasil,Liga Portugal,SL Benfica,LB,,27,76,0
+Nemanja Matić,Serbia,Liga Portugal,SL Benfica,CDM,,25,80,0
+Enzo Pérez,Argentina,Liga Portugal,SL Benfica,CM,RM,27,78,0
+Nicolás Gaitán,Argentina,Liga Portugal,SL Benfica,LM,CAM,25,80,0
+Eduardo Salvio,Argentina,Liga Portugal,SL Benfica,RM,,23,78,0
+Lazar Marković,Serbia,Liga Portugal,SL Benfica,RW,,19,73,0
+Óscar Cardozo,Paraguay,Liga Portugal,SL Benfica,ST,,30,81,0
+Lima,Brasil,Liga Portugal,SL Benfica,ST,,29,78,0
+Rodrigo,España,Liga Portugal,SL Benfica,ST,,22,76,0
+Helton,Brasil,Liga Portugal,FC Porto,GK,,35,81,0
+Eliaquim Mangala,Francia,Liga Portugal,FC Porto,CB,,22,79,0
+Danilo,Brasil,Liga Portugal,FC Porto,RB,,22,77,0
+Alex Sandro,Brasil,Liga Portugal,FC Porto,LB,,22,77,0
+Fernando,Brasil,Liga Portugal,FC Porto,CDM,,26,80,0
+Lucho González,Argentina,Liga Portugal,FC Porto,CM,CAM,32,80,0
+Steven Defour,Bélgica,Liga Portugal,FC Porto,CM,,25,78,0
+Josué,Portugal,Liga Portugal,FC Porto,CM,,22,74,0
+Juan Quintero,Colombia,Liga Portugal,FC Porto,CAM,,20,75,0
+Silvestre Varela,Portugal,Liga Portugal,FC Porto,LW,RM,28,79,0
+Jackson Martínez,Colombia,Liga Portugal,FC Porto,ST,,26,82,0
+Rui Patrício,Portugal,Liga Portugal,Sporting CP,GK,,25,80,0
+William Carvalho,Portugal,Liga Portugal,Sporting CP,CDM,,21,71,0
+Adrien Silva,Portugal,Liga Portugal,Sporting CP,CM,,24,75,0
+Fredy Montero,Colombia,Liga Portugal,Sporting CP,ST,,26,76,0
+Fernando Muslera,Uruguay,Süper Lig,Galatasaray,GK,,27,82,0
+Emmanuel Eboué,Costa de Marfil,Süper Lig,Galatasaray,RB,,30,76,0
+Felipe Melo,Brasil,Süper Lig,Galatasaray,CDM,,30,80,0
+Selçuk İnan,Turquía,Süper Lig,Galatasaray,CM,,28,79,0
+Wesley Sneijder,Países Bajos,Süper Lig,Galatasaray,CAM,,29,84,0
+Burak Yılmaz,Turquía,Süper Lig,Galatasaray,ST,,28,81,0
+Didier Drogba,Costa de Marfil,Süper Lig,Galatasaray,ST,,35,84,0
+Volkan Demirel,Turquía,Süper Lig,Fenerbahçe,GK,,32,79,0
+Emre Belözoğlu,Turquía,Süper Lig,Fenerbahçe,CM,,32,78,0
+Raul Meireles,Portugal,Süper Lig,Fenerbahçe,CM,CDM,30,79,0
+Dirk Kuyt,Países Bajos,Süper Lig,Fenerbahçe,RM,ST,33,80,0
+Moussa Sow,Senegal,Süper Lig,Fenerbahçe,ST,,27,79,0
+Domenico Criscito,Italia,Premier Liga Rusa,Zenit,LB,,26,79,0
+Axel Witsel,Bélgica,Premier Liga Rusa,Zenit,CDM,CM,24,82,0
+Danny,Portugal,Premier Liga Rusa,Zenit,LM,CAM,30,80,0
+Hulk,Brasil,Premier Liga Rusa,Zenit,RW,ST,27,84,0
+Aleksandr Kerzhakov,Rusia,Premier Liga Rusa,Zenit,ST,,30,79,0
+Jasper Cillessen,Países Bajos,Eredivisie,Ajax,GK,,24,75,0
+Joël Veltman,Países Bajos,Eredivisie,Ajax,CB,,21,70,0
+Ricardo van Rhijn,Países Bajos,Eredivisie,Ajax,RB,,22,73,0
+Daley Blind,Países Bajos,Eredivisie,Ajax,LB,CDM,23,76,0
+Lasse Schöne,Dinamarca,Eredivisie,Ajax,CM,RM,27,76,0
+Siem de Jong,Países Bajos,Eredivisie,Ajax,CAM,ST,24,77,0
+Davy Klaassen,Países Bajos,Eredivisie,Ajax,CAM,,20,71,0
+Viktor Fischer,Dinamarca,Eredivisie,Ajax,LW,,19,74,0
+Kolbeinn Sigþórsson,Islandia,Eredivisie,Ajax,ST,,23,74,0
+Jetro Willems,Países Bajos,Eredivisie,PSV,LB,,19,74,0
+Georginio Wijnaldum,Países Bajos,Eredivisie,PSV,CM,CAM,22,78,0
+Memphis Depay,Países Bajos,Eredivisie,PSV,LW,,19,73,0
+Zakaria Bakkali,Bélgica,Eredivisie,PSV,RW,,17,69,0
+Tim Matavž,Eslovenia,Eredivisie,PSV,ST,,24,75,0
+Lev Yashin,Rusia,Leyendas,Leyendas,GK,,,92,1
+Peter Schmeichel,Dinamarca,Leyendas,Leyendas,GK,,,90,1
+Franz Beckenbauer,Alemania,Leyendas,Leyendas,CB,CDM,,92,1
+Paolo Maldini,Italia,Leyendas,Leyendas,CB,LB,,92,1
+Bobby Moore,Inglaterra,Leyendas,Leyendas,CB,,,90,1
+Fabio Cannavaro,Italia,Leyendas,Leyendas,CB,,,89,1
+Roberto Carlos,Brasil,Leyendas,Leyendas,LB,,,88,1
+Cafu,Brasil,Leyendas,Leyendas,RB,,,88,1
+Lothar Matthäus,Alemania,Leyendas,Leyendas,CDM,CM,,90,1
+Patrick Vieira,Francia,Leyendas,Leyendas,CDM,CM,,89,1
+Zinedine Zidane,Francia,Leyendas,Leyendas,CAM,CM,,93,1
+Diego Maradona,Argentina,Leyendas,Leyendas,CAM,ST,,94,1
+Michel Platini,Francia,Leyendas,Leyendas,CAM,,,92,1
+Ruud Gullit,Países Bajos,Leyendas,Leyendas,CAM,CM|ST,,91,1
+Dennis Bergkamp,Países Bajos,Leyendas,Leyendas,CAM,ST,,90,1
+Gheorghe Hagi,Rumanía,Leyendas,Leyendas,CAM,,,89,1
+Luís Figo,Portugal,Leyendas,Leyendas,RM,RW,,90,1
+Hristo Stoichkov,Bulgaria,Leyendas,Leyendas,LW,ST,,89,1
+Pelé,Brasil,Leyendas,Leyendas,ST,CAM,,95,1
+Ronaldo Nazário,Brasil,Leyendas,Leyendas,ST,,,94,1
+Johan Cruyff,Países Bajos,Leyendas,Leyendas,ST,CAM|LW,,93,1
+Marco van Basten,Países Bajos,Leyendas,Leyendas,ST,,,92,1
+Eusébio,Portugal,Leyendas,Leyendas,ST,,,91,1
+Eric Cantona,Francia,Leyendas,Leyendas,ST,CAM,,89,1
+Gary Lineker,Inglaterra,Leyendas,Leyendas,ST,,,87,1

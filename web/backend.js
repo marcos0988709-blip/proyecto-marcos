@@ -6,10 +6,10 @@ import { configure, currentDb } from './shims/sqlite.js';
 import { openDb } from '../src/db.js';
 import { createApp } from '../src/app.js';
 import { seedDatabase } from '../src/seed/index.js';
-import { generateDemoPlayers } from '../src/seed/demo.js';
 import { parseCsv, normalizePlayer } from '../src/seed/csv.js';
+import realPlayersCsv from '../data/fifa14-players.csv';
 
-const KEY = 'fut14-cards-save-v1';
+const KEY = 'fut14-cards-save-v2';
 
 const toB64 = (bytes) => {
   let s = '';
@@ -38,7 +38,7 @@ export async function startBackend() {
     configure(SQL, null);
     db = openDb(':memory:');
   }
-  if (db.prepare('SELECT COUNT(*) n FROM players').get().n === 0) seedDatabase(db, generateDemoPlayers());
+  if (db.prepare('SELECT COUNT(*) n FROM players').get().n === 0) seedDatabase(db, parseCsv(realPlayersCsv).map(normalizePlayer).filter(Boolean));
   let { dispatch } = createApp(db);
   let saveOk = true;
   const persist = () => {

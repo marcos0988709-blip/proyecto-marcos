@@ -41,7 +41,7 @@ const PROFILE = {
 };
 const ALT = { CB: ['CDM'], LB: ['LM'], RB: ['RM'], CDM: ['CM', 'CB'], CM: ['CDM', 'CAM'], CAM: ['CM'], LM: ['LW'], RM: ['RW'], LW: ['LM', 'ST'], RW: ['RM', 'ST'], ST: [] , GK: [] };
 
-function makeStats(position, rating, rnd) {
+export function makeStats(position, rating, rnd) {
   return Object.fromEntries(['pac', 'sho', 'pas', 'dri', 'def', 'phy'].map((k, i) => [k, clamp(rating + PROFILE[position][i] + randInt(-4, 4, rnd), 20, 99)]));
 }
 
