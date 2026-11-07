@@ -652,10 +652,13 @@ async function connect() {
 
 /* ================= IA: Gemini con la clave gratis del alumno ================= */
 const AI_KEY = "pupitre.gemini";
-const aiCfg = () => Object.assign({ key: "", model: "gemini-flash-latest", speed: "fast", noThink: false }, lsGet(AI_KEY) || {});
+/* Modelos comprobados con Gemini real (nov 2026): gemini-flash-latest va saturado y los 2.x ya no existen para cuentas nuevas */
+const DEFAULT_MODEL = "gemini-3.5-flash";
+const LEGACY_MODELS = /^(gemini-flash-latest|gemini-2\.\d.*|gemini-1\..*)$/;
+const aiCfg = () => { const c = Object.assign({ key: "", model: DEFAULT_MODEL, speed: "fast", noThink: false }, lsGet(AI_KEY) || {}); c.model = String(c.model || "").replace(/^models\//, ""); if (!c.model || LEGACY_MODELS.test(c.model)) c.model = DEFAULT_MODEL; return c; };
 const blobToB64 = b => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1]); r.onerror = rej; r.readAsDataURL(b); });
 /* Modelos de reserva: si uno está saturado, se prueba el siguiente */
-const FALLBACK_MODELS = ["gemini-flash-latest", "gemini-flash-lite-latest", "gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash"];
+const FALLBACK_MODELS = [DEFAULT_MODEL, "gemini-flash-lite-latest", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3.8-flash"];
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const isBusy = e => e && (e.code === "overloaded" || e.code === "rate_limited" || (e.code === "upstream_error" && /high demand|overload|unavailable|try again|internal/i.test(e.message || "")));
 /* Indicador fijo: se ve siempre que la IA está trabajando */
@@ -677,7 +680,7 @@ async function geminiCall(input, opts = {}, json = false) {
 }
 async function geminiCallInner(input, opts = {}, json = false) {
   const cfg = aiCfg(); if (!cfg.key) throw { code: "no_key" };
-  const first = (cfg.model || "gemini-flash-latest").replace(/^models\//, "");
+  const first = cfg.model;
   const chain = [first, ...FALLBACK_MODELS.filter(m => m !== first)];
   let lastErr = null, timeouts = 0;
   for (let i = 0; i < chain.length; i++) {
@@ -691,6 +694,7 @@ async function geminiCallInner(input, opts = {}, json = false) {
         if (e && e.code === "cancelled") throw e;
         if (e && e.text) throw e;
         if (e && e.code === "bad_model") break;
+        if (e && e.stalled) { if (opts.onStatus && i < chain.length - 1) opts.onStatus("Ese modelo no responde, probando otro…"); break; }
         if (e && e.code === "timeout") { timeouts++; if (timeouts >= 2) throw e; if (opts.onStatus) opts.onStatus("Tarda mucho, probando un modelo más rápido…"); break; }
         if (!isBusy(e)) throw e;
         if (e.code === "rate_limited") break;
@@ -718,19 +722,21 @@ async function geminiOnce(model, input, opts = {}, json = false) {
   const ctl = new AbortController(); let timedOut = false;
   const to = setTimeout(() => { timedOut = true; ctl.abort(); }, json ? 150000 : 90000);
   if (opts.signal) { if (opts.signal.aborted) ctl.abort(); else opts.signal.addEventListener("abort", () => ctl.abort()); }
-  const abortCode = () => timedOut ? "timeout" : "cancelled";
+  let stalled = false, gotData = false; const wd = setTimeout(() => { if (!gotData) { stalled = true; ctl.abort(); } }, 25000);
+  const abortCode = () => timedOut ? "timeout" : stalled ? "overloaded" : "cancelled";
   let res;
   try { res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": cfg.key }, body: JSON.stringify(body), signal: ctl.signal }); }
-  catch (e) { clearTimeout(to); if (e && e.name === "AbortError") throw { code: abortCode() }; throw { code: "network", message: String(e && e.message || e) }; }
+  catch (e) { clearTimeout(to); clearTimeout(wd); if (e && e.name === "AbortError") throw { code: abortCode(), stalled }; throw { code: "network", message: String(e && e.message || e) }; }
   if (!res.ok && res.status === 400 && fast) {
     const m = await res.clone().json().catch(() => ({})); const em = (m.error && m.error.message) || "";
     if (/think/i.test(em)) { clearTimeout(to); lsSet(AI_KEY, { ...aiCfg(), noThink: true }); return geminiOnce(model, input, { ...opts, _noThink: true }, json); }
   }
-  if (!res.ok) { clearTimeout(to); let msg = ""; try { msg = (await res.json()).error.message || ""; } catch (e) {} throw { code: res.status === 429 ? "rate_limited" : (res.status === 503 || res.status === 500 || res.status === 502 || res.status === 504) ? "overloaded" : (res.status === 401 || res.status === 403 || (res.status === 400 && /api key|API_KEY/i.test(msg))) ? "bad_key" : res.status === 404 ? "bad_model" : "upstream_error", message: msg }; }
+  if (!res.ok) { clearTimeout(to); clearTimeout(wd); let msg = ""; try { msg = (await res.json()).error.message || ""; } catch (e) {} throw { code: res.status === 429 ? "rate_limited" : (res.status === 503 || res.status === 500 || res.status === 502 || res.status === 504) ? "overloaded" : (res.status === 401 || res.status === 403 || (res.status === 400 && /api key|API_KEY/i.test(msg))) ? "bad_key" : res.status === 404 ? "bad_model" : "upstream_error", message: msg }; }
   const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = "", text = "";
+  const done2 = () => { clearTimeout(wd); };
   try {
     for (;;) {
-      const { value, done } = await reader.read(); if (done) break;
+      const { value, done } = await reader.read(); if (done) break; if (value && value.length && !gotData) { gotData = true; clearTimeout(wd); }
       buf += dec.decode(value, { stream: true }); let i;
       while ((i = buf.indexOf("\n")) >= 0) {
         const line = buf.slice(0, i).trim(); buf = buf.slice(i + 1);
@@ -742,8 +748,8 @@ async function geminiOnce(model, input, opts = {}, json = false) {
         if (delta) { text += delta; AIB.chars += delta.length; if (AIB.status && !/saturado|modelo|rápido/.test(AIB.status)) AIB.status = ""; if (opts.onText) { try { opts.onText({ text, delta }); } catch (e) {} } }
       }
     }
-  } catch (e) { clearTimeout(to); if (e && e.code) throw { ...e, text }; if (e && e.name === "AbortError") throw { code: abortCode(), text }; throw { code: "network", text, message: String(e && e.message || e) }; }
-  clearTimeout(to);
+  } catch (e) { clearTimeout(to); done2(); if (e && e.code) throw { ...e, text }; if (e && e.name === "AbortError") throw { code: abortCode(), stalled, text: stalled ? "" : text }; throw { code: "network", text, message: String(e && e.message || e) }; }
+  clearTimeout(to); done2();
   if (!text) {
     /* Plan B: algunos navegadores no leen bien el streaming; se pide la respuesta entera */
     const r2 = await fetch(url.replace(":streamGenerateContent?alt=sse", ":generateContent"), { method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": cfg.key }, body: JSON.stringify(body), signal: opts.signal }).catch(() => null);
@@ -2584,7 +2590,7 @@ function settingsModal() {
       <label class="field"><span>Clave de API</span><input class="input" id="stKey" type="password" autocomplete="off" value="${esc(cfg.key)}" placeholder="AIza…"></label>
       <label class="field"><span>Velocidad</span><select class="input" id="stSpeed"><option value="fast" ${cfg.speed !== "smart" ? "selected" : ""}>⚡ Rápida (contesta en segundos)</option><option value="smart" ${cfg.speed === "smart" ? "selected" : ""}>🧠 Más lista (piensa más, tarda más)</option></select></label>
       <label class="field"><span>Modelo</span><input class="input" id="stModel" list="modelList" value="${esc(cfg.model)}"><datalist id="modelList"></datalist></label>
-      <p class="tiny muted">💡 Si aún va lenta, pon de modelo <b>gemini-flash-lite-latest</b>: es el más rápido.</p>
+      <p class="tiny muted">💡 Recomendado: <b>gemini-3.5-flash</b>. Si va lenta, prueba <b>gemini-flash-lite-latest</b>, que es el más rápido.</p>
       <div class="row"><button class="btn btn-p btn-sm" id="aiSave">💾 Guardar clave</button><button class="btn btn-sm" id="aiTest">🧪 Probar clave</button>${cfg.key ? `<button class="btn btn-sm btn-g" id="aiDel">Quitar clave</button>` : ""}</div>
       <div id="aiMsg" class="small"></div>
       <p class="tiny muted">🔒 La clave se guarda solo en este móvil y solo se envía a Google. En el plan gratis, Google puede usar lo que envías para mejorar sus modelos: no metas datos personales.</p>
@@ -2606,7 +2612,7 @@ function settingsModal() {
     <hr class="sep">
     <div class="stack"><h3>☠️ Zona peligrosa</h3><div class="row"><button class="btn btn-sm btn-d" id="wipe">Borrar asignaturas, plan y sesiones</button></div><div id="wipeBox"></div></div>`, root => {
     const msg = t => { $("#aiMsg", root).innerHTML = t; };
-    const saveKey = () => { const m = $("#stModel", root).value.trim() || "gemini-flash-latest"; const prev = aiCfg(); lsSet(AI_KEY, { key: $("#stKey", root).value.trim(), model: m, speed: $("#stSpeed", root).value, noThink: prev.model === m ? prev.noThink : false }); setupAI(); };
+    const saveKey = () => { const m = $("#stModel", root).value.trim() || DEFAULT_MODEL; const prev = aiCfg(); lsSet(AI_KEY, { key: $("#stKey", root).value.trim(), model: m, speed: $("#stSpeed", root).value, noThink: prev.model === m ? prev.noThink : false }); setupAI(); };
     $("#aiSave", root).onclick = () => { saveKey(); msg(sample ? "✅ Clave guardada. Pulsa «Probar clave» para comprobarla." : "Clave borrada."); render(); };
     const del = $("#aiDel", root); del && (del.onclick = () => { lsSet(AI_KEY, { key: "", model: aiCfg().model }); setupAI(); closeModal(); render(); toast("🔑 Clave quitada"); });
     $("#aiTest", root).onclick = async () => {
@@ -2618,7 +2624,7 @@ function settingsModal() {
         const models = ((await r.json()).models || []).filter(m => (m.supportedGenerationMethods || []).includes("generateContent")).map(m => m.name.replace(/^models\//, ""));
         $("#modelList", root).innerHTML = models.map(m => `<option value="${esc(m)}">`).join("");
         const cur = $("#stModel", root).value.trim();
-        if (cur !== "gemini-flash-latest" && !models.includes(cur)) { const pick = models.includes("gemini-flash-latest") ? "gemini-flash-latest" : (models.filter(m => /flash/.test(m) && !/lite|tts|image|live|audio/.test(m)).sort().pop() || models[0]); if (pick) { $("#stModel", root).value = pick; saveKey(); } }
+        if (!models.includes(cur) || LEGACY_MODELS.test(cur)) { const pick = models.includes(DEFAULT_MODEL) ? DEFAULT_MODEL : (models.filter(m => /flash/.test(m) && !/lite|tts|image|live|audio|preview/.test(m) && !LEGACY_MODELS.test(m)).sort().pop() || models[0]); if (pick) { $("#stModel", root).value = pick; saveKey(); } }
         const t = await geminiCall("Responde solo con: ¡Listo para estudiar! 📚", { _quiet: true });
         msg(`✅ Funciona. Modelo: <b>${esc(aiCfg().model)}</b>. Respuesta: ${esc(t.text.trim().slice(0, 80))}`); render();
       } catch (e) { msg("❌ " + aiErr(e)); }
@@ -2793,7 +2799,7 @@ function exampleState() {
 }
 
 /* ================= actualizaciones ================= */
-const APP_VERSION = "2026.11.06-3";
+const APP_VERSION = "2026.11.07-1";
 let updateReady = false;
 async function checkUpdate() {
   try {
