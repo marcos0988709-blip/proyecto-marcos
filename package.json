@@ -1,0 +1,16 @@
+{
+  "name": "fut14-cards-api",
+  "version": "1.0.0",
+  "description": "API de juego de cartas de fútbol estilo pack-opener: base de datos de jugadores, cartas especiales, sobres, SBCs y drafts.",
+  "type": "module",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "start": "node --no-warnings src/server.js",
+    "seed": "node --no-warnings scripts/seed.js",
+    "test": "node --no-warnings --test test/*.test.js"
+  },
+  "license": "MIT"
+}
