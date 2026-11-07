@@ -428,7 +428,44 @@ function editorHTML(){
   <td><input id="eo${p.id}" type="number" min="30" max="99" data-ed="p:ovr:${p.id}" value="${p.ovr}" aria-label="Media" style="width:68px"></td>
   <td><input id="et${p.id}" type="number" min="30" max="99" data-ed="p:pot:${p.id}" value="${p.pot}" aria-label="Potencial" style="width:68px"></td>
   <td><button class="sm" data-a="delp" data-v="${p.id}" ${sq.length<=16?"disabled":""}>Quitar</button></td></tr>`).join("")}</tbody></table></div>
-  <div class="row"><button data-a="addp" data-v="${cid}" ${sq.length>=30?"disabled":""}>Añadir jugador</button></div></div>`;
+  <div class="row"><button data-a="addp" data-v="${cid}" ${sq.length>=30?"disabled":""}>Añadir jugador</button></div></div>
+  <div class="panel"><h2>Importar plantilla</h2>
+  <p class="muted" style="margin:0">Una línea por jugador: <span class="num">Nombre;Posición;Edad;Media;Potencial</span>. También vale pegar columnas desde Excel. Posiciones: POR, DEF, MED, DEL (o PT, DFC, LD, LI, MC, MCD, MCO, MI, MD, DC, ED, EI). Primera línea opcional: <span class="num">CLUB: Nombre;SIG;#color</span>. Entre 16 y 30 jugadores. Sustituye toda la plantilla de <b>${esc(c.name)}</b>.</p>
+  <label for="imp" class="muted">Texto de la plantilla</label>
+  <textarea id="imp" rows="10" spellcheck="false" style="width:100%;font:13px/1.5 var(--mono);color:var(--fg);background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:10px;resize:vertical" placeholder="CLUB: Mi Equipo;MIE;#3366ff&#10;Nombre Apellido;POR;27;80;82&#10;Otro Jugador;DFC;24;76;84">${esc(ui.imp||"")}</textarea>
+  ${ui.impErr?`<div style="display:grid;gap:4px">${ui.impErr.map(e=>`<span class="chip bad" style="justify-self:start">${esc(e)}</span>`).join("")}</div>`:""}
+  <div class="row">${ui.impConfirm===cid?`<button class="on" data-a="import" data-v="${cid}">Confirmar: sustituir plantilla</button><button data-a="impcancel">Cancelar</button>`:`<button class="btn-main" data-a="preimport" data-v="${cid}">Importar</button>`}
+  <button data-a="export" data-v="${cid}">Cargar plantilla actual</button><button data-a="copyimp">Copiar texto</button></div></div>`;
+}
+const ALIAS={POR:"POR",PT:"POR",GK:"POR",DEF:"DEF",DFC:"DEF",LD:"DEF",LI:"DEF",CAD:"DEF",CAI:"DEF",CB:"DEF",LB:"DEF",RB:"DEF",MED:"MED",MC:"MED",MCD:"MED",MCO:"MED",MI:"MED",MD:"MED",CM:"MED",CDM:"MED",CAM:"MED",LM:"MED",RM:"MED",DEL:"DEL",DC:"DEL",ED:"DEL",EI:"DEL",SD:"DEL",ST:"DEL",CF:"DEL",LW:"DEL",RW:"DEL"};
+function parseSquad(text){
+  const errs=[],ps=[];let cl=null;
+  text.split(/\r?\n/).forEach((raw,i)=>{const l=raw.trim();if(!l)return;
+    if(/^club\s*:/i.test(l)){cl=l.replace(/^club\s*:/i,"").split(";").map(s=>s.trim());return}
+    const f=l.split(/[;\t]/).map(s=>s.trim());
+    if(f.length<4||!f[0]){errs.push(`Línea ${i+1}: faltan datos (Nombre;Posición;Edad;Media;Potencial)`);return}
+    const pos=ALIAS[f[1].toUpperCase()],age=+f[2],ovr=+f[3],pot=f[4]?+f[4]:ovr;
+    if(!pos){errs.push(`Línea ${i+1}: la posición "${f[1]}" no es válida`);return}
+    if(![age,ovr,pot].every(Number.isFinite)){errs.push(`Línea ${i+1}: edad, media y potencial deben ser números`);return}
+    const o=clamp(Math.round(ovr),30,99);
+    ps.push({name:f[0].slice(0,30),pos,age:clamp(Math.round(age),15,45),ovr:o,pot:clamp(Math.max(Math.round(pot),o),30,99)});
+  });
+  if(!errs.length&&(ps.length<16||ps.length>30))errs.push(`Hacen falta entre 16 y 30 jugadores; has pegado ${ps.length}.`);
+  return{errs,ps,cl};
+}
+function importSquad(cid){
+  const{errs,ps,cl}=parseSquad(ui.imp||"");ui.impConfirm=null;
+  if(errs.length){ui.impErr=errs.slice(0,6);render();return}
+  squad(cid).forEach(p=>delete S.offers[p.id]);
+  S.players=S.players.filter(p=>p.club!==cid);
+  ps.forEach(d=>{const p=newPlayer(cid,d.pos,60,d.age);Object.assign(p,d);S.players.push(p)});
+  const c=club(cid);
+  if(cl){if(cl[0])c.name=cl[0].slice(0,28);if(cl[1])c.short=cl[1].toUpperCase().slice(0,3);if(/^#[0-9a-f]{6}$/i.test(cl[2]||""))c.color=cl[2]}
+  ui.impErr=null;save();render();toast(`Plantilla importada: ${ps.length} jugadores en ${c.name}.`);
+}
+function exportSquad(cid){
+  const c=club(cid);
+  return[`CLUB: ${c.name};${c.short};${c.color}`,...squad(cid).sort((a,b)=>POS.indexOf(a.pos)-POS.indexOf(b.pos)||b.ovr-a.ovr).map(p=>`${p.name};${p.pos};${p.age};${p.ovr};${p.pot}`)].join("\n");
 }
 
 /* ---------- partido en directo ---------- */
@@ -484,14 +521,20 @@ document.addEventListener("click",e=>{
     case"nonew":ui.newConfirm=false;render();break;
     case"addp":{const cid=+v;if(squad(cid).length>=30)break;const p=newPlayer(cid,"MED",60,22);p.name="Nuevo jugador";p.ovr=60;p.pot=70;S.players.push(p);save();render();document.getElementById("en"+p.id)?.focus();break}
     case"delp":{const p=P();if(!p||squad(p.club).length<=16)break;S.players=S.players.filter(x=>x!==p);delete S.offers[p.id];save();render();break}
+    case"preimport":{const r=parseSquad(ui.imp||"");if(r.errs.length){ui.impErr=r.errs.slice(0,6);ui.impConfirm=null}else{ui.impErr=null;ui.impConfirm=+v}render();break}
+    case"import":importSquad(+v);break;
+    case"impcancel":ui.impConfirm=null;render();break;
+    case"export":ui.imp=exportSquad(+v);ui.impErr=null;ui.impConfirm=null;render();break;
+    case"copyimp":{const ta=document.getElementById("imp");navigator.clipboard?.writeText(ta.value).then(()=>toast("Texto copiado."),()=>{ta.select();toast("Selecciona y copia con Ctrl+C.")})??(ta.select(),toast("Selecciona y copia con Ctrl+C."));break}
     case"reset":try{localStorage.removeItem(SAVE)}catch(e){}S=null;ui.newConfirm=false;ui.tab="inicio";render();break;
   }
 });
+document.addEventListener("input",e=>{if(e.target.id==="imp"){ui.imp=e.target.value;return}});
 document.addEventListener("input",e=>{const f=e.target.dataset.f;if(!f)return;ui[f]=e.target.value;const id=e.target.id,pos=e.target.selectionStart;render();const el=document.getElementById(id);if(el){el.focus();try{if(pos!=null)el.setSelectionRange(pos,pos)}catch(_){}}});
 
 document.addEventListener("change",e=>{
   const t=e.target;if(!S)return;
-  if(t.dataset.ec){ui.edClub=+t.value;render();return}
+  if(t.dataset.ec){ui.edClub=+t.value;ui.impErr=null;ui.impConfirm=null;render();return}
   const d=t.dataset.ed;if(!d)return;const[k,f,id]=d.split(":");
   const o=k==="club"?club(+id):S.players.find(p=>p.id===+id);if(!o)return;
   let v=t.value;
