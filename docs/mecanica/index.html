@@ -717,7 +717,7 @@ async function geminiOnce(model, input, opts = {}, json = false) {
   if (opts.images && opts.images.length) { const lastUser = [...contents].reverse().find(c => c.role === "user"); for (const b of opts.images) lastUser.parts.push({ inline_data: { mime_type: b.type || "image/jpeg", data: await blobToB64(b) } }); }
   const body = { contents, generationConfig: { temperature: json ? 0.4 : 0.7, ...(json ? { responseMimeType: "application/json" } : {}) } };
   if (opts.tools) body.tools = opts.tools;
-  const fast = cfg.speed !== "smart" && !cfg.noThink && !opts._noThink;
+  const fast = cfg.speed !== "smart" && !(cfg.noThinkModels || []).includes(model) && !opts._noThink;
   if (fast) body.generationConfig.thinkingConfig = { thinkingBudget: json ? 512 : 0 };
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:streamGenerateContent?alt=sse`;
   const ctl = new AbortController(); let timedOut = false;
@@ -730,7 +730,8 @@ async function geminiOnce(model, input, opts = {}, json = false) {
   catch (e) { clearTimeout(to); clearTimeout(wd); if (e && e.name === "AbortError") throw { code: abortCode(), stalled }; throw { code: "network", message: String(e && e.message || e) }; }
   if (!res.ok && res.status === 400 && fast) {
     const m = await res.clone().json().catch(() => ({})); const em = (m.error && m.error.message) || "";
-    if (/think/i.test(em)) { clearTimeout(to); lsSet(AI_KEY, { ...aiCfg(), noThink: true }); return geminiOnce(model, input, { ...opts, _noThink: true }, json); }
+    /* Algunos modelos (p. ej. los «lite») rechazan la opción de pensar menos: se repite sin ella y se recuerda para ese modelo */
+    if (!/api key|API_KEY/i.test(em)) { clearTimeout(to); clearTimeout(wd); const c = aiCfg(); lsSet(AI_KEY, { ...c, noThinkModels: [...new Set([...(c.noThinkModels || []), model])] }); return geminiOnce(model, input, { ...opts, _noThink: true }, json); }
   }
   if (!res.ok) { clearTimeout(to); clearTimeout(wd); let msg = ""; try { msg = (await res.json()).error.message || ""; } catch (e) {} throw { code: res.status === 429 ? "rate_limited" : (res.status === 503 || res.status === 500 || res.status === 502 || res.status === 504) ? "overloaded" : (res.status === 401 || res.status === 403 || (res.status === 400 && /api key|API_KEY/i.test(msg))) ? "bad_key" : res.status === 404 ? "bad_model" : "upstream_error", message: msg }; }
   const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = "", text = "";
@@ -2800,7 +2801,7 @@ function exampleState() {
 }
 
 /* ================= actualizaciones ================= */
-const APP_VERSION = "2026.11.07-1";
+const APP_VERSION = "2026.11.07-2";
 let updateReady = false;
 async function checkUpdate() {
   try {
