@@ -580,7 +580,7 @@ const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); retu
 function blankState() {
   return { v: 2, updatedAt: Date.now(), example: false,
     profile: { name: "", goalMin: 120, school: "" },
-    settings: { focus: 25, short: 5, long: 15, longEvery: 4, sound: true, avail: [120, 120, 120, 120, 90, 180, 60], startTime: "17:00", weekendStart: "10:30", dayEnd: "22:00", gridStart: "07:00", gridEnd: "23:00", autoApply: true },
+    settings: { focus: 25, short: 5, long: 15, longEvery: 4, sound: true, avail: [120, 120, 120, 120, 90, 180, 60], startTime: "17:00", weekendStart: "10:30", dayEnd: "22:00", gridStart: "07:00", gridEnd: "23:00", autoApply: true, hiddenNav: [] },
     subjects: [], sessions: [], plan: [], tutor: {}, timetable: [], tasks: [], habits: [], habitChecks: {} };
 }
 function migrate(s) {
@@ -590,6 +590,7 @@ function migrate(s) {
   for (const k of ["subjects", "sessions", "plan", "timetable", "tasks"]) if (!Array.isArray(s[k])) s[k] = [];
   if (!s.tutor || typeof s.tutor !== "object") s.tutor = {};
   if (!Array.isArray(s.habits)) s.habits = [];
+  if (!Array.isArray(s.settings.hiddenNav)) s.settings.hiddenNav = [];
   if (!s.habitChecks || typeof s.habitChecks !== "object") s.habitChecks = {};
   s.subjects.forEach(x => { x.exams = x.exams || []; x.topics = x.topics || []; x.kind = x.kind || "asignatura"; if (!x.emoji) { const t = CURSO.find(c => c.key === x.tpl || c.name === x.name); x.emoji = t ? t.emoji : (x.kind === "proyecto" ? "🚀" : "📘"); } });
   return s;
@@ -806,7 +807,8 @@ function go(h) { if (location.hash.slice(1) === h) render(); else location.hash 
 window.addEventListener("hashchange", () => { const was = S.view + S.param; readHash(); if (pod && was !== S.view + S.param) podStop(); render(true); window.scrollTo(0, 0); });
 function renderNav() {
   const cur = { asig: "asignaturas", doc: "asignaturas", studio: "asignaturas", chat: "tutor" }[S.view] || S.view;
-  const html = NAV.map(([k, l, e]) => `<a class="nav-a" href="#${k}" ${cur === k ? 'aria-current="page"' : ""}>${E(e)}<span>${l}</span></a>`).join("");
+  const hidden = new Set((state && state.settings && state.settings.hiddenNav) || []);
+  const html = NAV.filter(([k]) => !hidden.has(k)).map(([k, l, e]) => `<a class="nav-a" href="#${k}" ${cur === k ? 'aria-current="page"' : ""}>${E(e)}<span>${l}</span></a>`).join("");
   $("#sidenav").innerHTML = html; $("#bnav").innerHTML = html;
 }
 
@@ -821,6 +823,7 @@ function render(anim) {
   const same = lastRoute === route && !anim;
   const a = document.activeElement; const keep = {}; const focus = same && a && a.id ? { id: a.id, s: a.selectionStart, e: a.selectionEnd } : null;
   if (same) $$("[data-keep]").forEach(el => keep[el.id] = el.value);
+  if ((state.settings.hiddenNav || []).includes(S.view)) { go("hoy"); return; }
   const fn = { hoy: viewHoy, foco: viewFoco, asignaturas: viewAsignaturas, asig: viewAsig, doc: viewDoc, chat: viewChat, studio: viewStudio, plan: viewPlan, tutor: viewTutor, progreso: viewProgreso }[S.view] || viewHoy;
   v.innerHTML = (state.example ? `<div class="banner" style="margin-bottom:18px"><span>${E("👀")} <b>Datos de ejemplo.</b> Así se ve Pupitre en pleno curso. Bórralos cuando quieras empezar con lo tuyo.</span><button class="btn btn-sm" data-act="clear-example">Empezar con mis datos</button></div>` : "") + `<div class="${same ? "" : "view-in"}">${fn()}</div>`;
   lastRoute = route;
@@ -2639,6 +2642,9 @@ function settingsModal() {
       <label class="field"><span>Centro y curso</span><input class="input" id="stSchool" value="${esc(state.profile.school)}" maxlength="90"></label>
       <label class="field"><span>Objetivo diario de foco (minutos)</span><input class="input num" type="number" id="stGoal" min="15" max="720" step="15" value="${state.profile.goalMin}"></label>
       <label class="row" style="flex-wrap:nowrap"><input type="checkbox" id="stSound" ${state.settings.sound ? "checked" : ""} style="width:18px;height:18px;accent-color:var(--accent)"><span>🔔 Sonido al terminar cada bloque</span></label>
+      <h3 style="margin-top:4px">🎛️ Modo simple</h3>
+      <p class="small muted">Oculta las secciones que no uses para ver el menú más limpio.</p>
+      <div class="stack" style="gap:8px">${[["foco","⏱️ Foco (temporizador Pomodoro)"],["progreso","📈 Progreso (estadísticas y niveles)"]].map(([k2,l2]) => `<label class="row" style="flex-wrap:nowrap"><input type="checkbox" id="hideNav_${k2}" ${(state.settings.hiddenNav||[]).includes(k2) ? "checked" : ""} style="width:18px;height:18px;accent-color:var(--accent)"><span>${l2}</span></label>`).join("")}</div>
       <div class="row" style="justify-content:flex-end"><button class="btn btn-p" type="submit">Guardar</button></div>
     </form>
     <hr class="sep">
@@ -2667,7 +2673,7 @@ function settingsModal() {
       } catch (e) { msg("❌ " + aiErr(e)); }
     };
     $("#stSpeed", root).onchange = () => { saveKey(); toast($("#stSpeed", root).value === "smart" ? "🧠 Modo más listo" : "⚡ Modo rápido"); };
-    $("#setForm", root).addEventListener("submit", e => { e.preventDefault(); saveKey(); state.profile.name = $("#stName", root).value.trim(); state.profile.school = $("#stSchool", root).value.trim(); state.profile.goalMin = Math.max(15, Math.min(720, Math.round(+$("#stGoal", root).value || 120))); state.settings.sound = $("#stSound", root).checked; closeModal(); commit(); toast(sample ? "✅ Ajustes guardados · IA activada 🤖" : "✅ Ajustes guardados"); });
+    $("#setForm", root).addEventListener("submit", e => { e.preventDefault(); saveKey(); state.profile.name = $("#stName", root).value.trim(); state.profile.school = $("#stSchool", root).value.trim(); state.profile.goalMin = Math.max(15, Math.min(720, Math.round(+$("#stGoal", root).value || 120))); state.settings.sound = $("#stSound", root).checked; state.settings.hiddenNav = ["foco","progreso"].filter(k => { const el = $("#hideNav_"+k, root); return el && el.checked; }); closeModal(); commit(); toast(sample ? "✅ Ajustes guardados · IA activada 🤖" : "✅ Ajustes guardados"); });
     $("#exp", root).onclick = exportAll;
     $("#impBtn", root).onclick = () => $("#impFile", root).click();
     $("#impFile", root).onchange = e => { const f = e.target.files[0]; if (f) importAll(f); };
@@ -2800,7 +2806,7 @@ document.addEventListener("click", e => {
     case "pdf-summary": {
       const s3 = subj(S.param); const t3 = tut(s3 ? s3.id : "");
       if (!t3 || !t3.summary) { toast("⚠️ Genera el esquema primero"); break; }
-      const html3 = \`<!DOCTYPE html><html><head><meta charset="utf-8"><title>\${s3 ? esc(s3.name) : "Esquema"} – 80/20</title><style>body{font-family:system-ui,sans-serif;max-width:820px;margin:32px auto;padding:16px 24px;line-height:1.65;color:#111}h2{border-bottom:2px solid #5b86ff;padding-bottom:4px;color:#2a3a7a}h3{color:#3a4a9a}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:6px 10px;text-align:left}@media print{body{margin:10px}}</style></head><body><h1>\${s3 ? s3.emoji+" "+esc(s3.name) : "Esquema"} – Esquema 80/20</h1><p style="color:#888;font-size:.85em">Pupitre · \${new Date().toLocaleDateString("es-ES")}</p>\${md(t3.summary)}</body></html>\`;
+      const html3 = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${s3 ? esc(s3.name) : "Esquema"} – 80/20</title><style>body{font-family:system-ui,sans-serif;max-width:820px;margin:32px auto;padding:16px 24px;line-height:1.65;color:#111}h2{border-bottom:2px solid #5b86ff;padding-bottom:4px;color:#2a3a7a}h3{color:#3a4a9a}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:6px 10px;text-align:left}@media print{body{margin:10px}}</style></head><body><h1>${s3 ? s3.emoji+" "+esc(s3.name) : "Esquema"} – Esquema 80/20</h1><p style="color:#888;font-size:.85em">Pupitre · ${new Date().toLocaleDateString("es-ES")}</p>${md(t3.summary)}</body></html>`;
       const w3 = window.open("","_blank","width=900,height=700");
       if (w3) { w3.document.write(html3); w3.document.close(); setTimeout(() => w3.print(), 450); }
       break;
@@ -2860,7 +2866,7 @@ function exampleState() {
 }
 
 /* ================= actualizaciones ================= */
-const APP_VERSION = "2026.11.08-1";
+const APP_VERSION = "2026.11.08-2";
 let updateReady = false;
 async function checkUpdate() {
   try {
