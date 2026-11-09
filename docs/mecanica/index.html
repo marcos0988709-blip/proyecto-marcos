@@ -1439,9 +1439,24 @@ async function ctxImages(ids) {
   const imgs = ids.map(id => S.docs.find(d => d.id === id)).filter(d => d && d.type === "image" && d.fileId && !d.chars).slice(0, imgLimits.maxCount || 0);
   const out = []; for (const d of imgs) { try { out.push(await blobOf(d)); } catch (e) {} } return out;
 }
+/* La IA a veces escribe fórmulas en LaTeX ($...$): se pasan a texto legible */
+const SUP = { 0: "⁰", 1: "¹", 2: "²", 3: "³", 4: "⁴", 5: "⁵", 6: "⁶", 7: "⁷", 8: "⁸", 9: "⁹", n: "ⁿ", i: "ⁱ", t: "ᵗ", "+": "⁺", "-": "⁻" };
+const SUB = { 0: "₀", 1: "₁", 2: "₂", 3: "₃", 4: "₄", 5: "₅", 6: "₆", 7: "₇", 8: "₈", 9: "₉", n: "ₙ", i: "ᵢ", t: "ₜ" };
+const TEXW = { cdot: "·", times: "×", div: "÷", le: "≤", leq: "≤", ge: "≥", geq: "≥", neq: "≠", ne: "≠", approx: "≈", pm: "±", to: "→", rightarrow: "→", Rightarrow: "⇒", infty: "∞", sum: "Σ", Delta: "Δ", alpha: "α", beta: "β", pi: "π", sigma: "σ", mu: "μ", euro: "€", ldots: "…", dots: "…", cdots: "…", quad: " ", qquad: " ", left: "", right: "" };
+function texToText(t) {
+  let s = t.replace(/\\(?:text|mathrm|textbf|mathbf|operatorname|textit|mathit)\s*\{([^{}]*)\}/g, "$1");
+  for (let k = 0; k < 4; k++) s = s.replace(/\\[dt]?frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}/g, (m, a, b) => `(${a}) ÷ (${b})`);
+  s = s.replace(/\\sqrt\s*\{([^{}]*)\}/g, "√($1)");
+  s = s.replace(/\\([A-Za-z]+)/g, (m, w) => w in TEXW ? TEXW[w] : w).replace(/\\[,;:! ]/g, " ").replace(/\\([%$&_#])/g, "$1");
+  const conv = (map, v, pre) => [...v].every(c => map[c]) ? [...v].map(c => map[c]).join("") : pre + (v.length > 1 ? "(" + v + ")" : v);
+  s = s.replace(/\^\{([^{}]*)\}|\^(\S)/g, (m, a, b) => conv(SUP, a != null ? a : b, "^")).replace(/_\{([^{}]*)\}|_([A-Za-z0-9])/g, (m, a, b) => conv(SUB, a != null ? a : b, "_"));
+  return s.replace(/[{}]/g, "").replace(/\s{2,}/g, " ").trim();
+}
+const delatex = l => l.replace(/\$(?!\s)([^$\n]+?)\$/g, (m, a) => /[\\^_{}=+\-*/]|^[A-Za-z]$/.test(a) ? texToText(a) : m);
 function md(src, opts = {}) {
-  const lines = String(src || "").replace(/\r/g, "").split("\n"); let out = "", list = null, inCode = false, code = [], tbl = [], ck = 0;
-  const inline = t => esc(t).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/(^|[^*])\*([^*\s][^*]*)\*/g, "$1<em>$2</em>");
+  const oneLine = (m, a) => "$" + a.replace(/\s*\n\s*/g, " ").trim() + "$";
+  const lines = String(src || "").replace(/\r/g, "").replace(/\$\$([\s\S]+?)\$\$/g, oneLine).replace(/\\\[([\s\S]+?)\\\]/g, oneLine).replace(/\\\(([\s\S]+?)\\\)/g, oneLine).split("\n"); let out = "", list = null, inCode = false, code = [], tbl = [], ck = 0;
+  const inline = t => esc(delatex(t)).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/(^|[^*])\*([^*\s][^*]*)\*/g, "$1<em>$2</em>");
   const closeList = () => { if (list) { out += `</${list}>`; list = null; } };
   const flushTbl = () => { if (!tbl.length) return; const cells = r => r.trim().replace(/^\||\|$/g, "").split("|").map(c => c.trim()); const [h, ...b] = tbl.filter(r => !/^[\s|:-]+$/.test(r)); if (h) out += `<div class="tbl"><table><thead><tr>${cells(h).map(c => `<th>${inline(c)}</th>`).join("")}</tr></thead><tbody>${b.map(r => `<tr>${cells(r).map(c => `<td>${inline(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`; tbl = []; };
   for (const l of lines) {
@@ -1517,7 +1532,7 @@ async function sendChat(cid, text) {
   try {
     const dc = await docsContextSmart(c.ctx || [], text + " " + ((msgs[msgs.length - 3] || {}).content || ""), 40000); const images = await ctxImages(c.ctx || []); cites = dc.map;
     const rules = `Eres el tutor particular de ${state.profile.name || "un estudiante"}${s ? ` para «${s.name}»` : ""}. ${COURSE_CTX()}
-Estilo: directo, claro, sin rodeos. Prioriza lo que más cuenta para el examen (80/20). Usa listas, **negritas** en lo clave, fórmulas y ejemplos numéricos. Algún emoji para marcar secciones (📌 clave, ⚠️ error típico, 🧮 ejemplo) sin abusar. Casos prácticos: planteamiento y solución paso a paso. 80-350 palabras salvo que pidan más.
+Estilo: directo, claro, sin rodeos. Prioriza lo que más cuenta para el examen (80/20). Usa listas, **negritas** en lo clave, fórmulas y ejemplos numéricos. Fórmulas siempre en texto normal (p. ej. «I = C × i × t»), nunca en LaTeX ni entre signos $. Algún emoji para marcar secciones (📌 clave, ⚠️ error típico, 🧮 ejemplo) sin abusar. Casos prácticos: planteamiento y solución paso a paso. 80-350 palabras salvo que pidan más.
 ${dc.n ? "Basa tus respuestas en los documentos del alumno. Cada documento tiene una etiqueta como [D1]. Cuando uses información de un documento, pon su etiqueta justo al final de la frase, por ejemplo: «El tipo general es el 21 % [D1].» Si algo no está en los documentos, dilo y responde con tu conocimiento." : ""}
 ${s ? subjContext(s) : ""}
 ${dc.text ? `\nDOCUMENTOS DEL ALUMNO:\n${dc.text}` : ""}`;
@@ -1729,7 +1744,7 @@ async function aiSummary() {
 ## 🎯 Lo que más cae
 Los 5-8 conceptos clave (el 20 % que da el 80 % de la nota), 1-2 líneas cada uno.
 ## 📐 Fórmulas y datos que memorizar
-En tabla o lista (si aplica).
+En tabla o lista (si aplica). Escribe cada fórmula en texto normal y explica qué es cada letra, p. ej. «Cuota = (Precio de compra − Valor residual) ÷ Vida útil». NUNCA uses LaTeX ni signos $.
 ## 🗺️ Esquema
 Estructura jerárquica con viñetas anidadas cortas.
 ## ❓ Preguntas típicas de examen
@@ -2866,7 +2881,7 @@ function exampleState() {
 }
 
 /* ================= actualizaciones ================= */
-const APP_VERSION = "2026.11.08-2";
+const APP_VERSION = "2026.11.09-1";
 let updateReady = false;
 async function checkUpdate() {
   try {
