@@ -937,6 +937,8 @@ function viewHoy() {
     ${nowCard()}
     ${examReviewCard()}
     ${iconTipCard()}
+    ${installCard()}
+    ${backupCard()}
     <div class="stats">
       <div class="card stat">${ringSvg(mins / goal, 46, 6, mins >= goal ? "var(--ok)" : "var(--accent)")}<div><b class="num">${mins}<span style="font-size:.9rem;color:var(--muted)">/${goal}</span></b><small>${mins >= goal ? "✅ objetivo cumplido" : "minutos de foco hoy"}</small></div></div>
       <div class="card stat"><span class="stat-ic mk emo">🔥</span><div><b>${st} ${st === 1 ? "día" : "días"}</b><small>${st ? "de racha, no la rompas" : "estudia hoy y empieza racha"}</small></div></div>
@@ -1263,7 +1265,7 @@ function examReport(id) {
   openModal(`<div class="sheet-h"><h2>📊 Informe del examen</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
     <div class="row" style="gap:16px;flex-wrap:nowrap">${big}<div style="min-width:0"><b style="overflow-wrap:anywhere">${esc(e.title)}</b><p class="small muted">${E(s.emoji)} ${esc(s.name)} · ${shortDate(parseD(e.date))}${r.feel ? " · " + FEEL[r.feel - 1] + " " + FEEL_TXT[r.feel - 1] : ""}</p></div></div>
     <div class="rep-grid"><div><b>${fmtMin(st.min)}</b><small>estudiado antes</small></div><div><b>${st.n}</b><small>sesiones en ${st.days} ${st.days === 1 ? "día" : "días"}</small></div><div><b>${st.planned ? `${st.done}/${st.planned}` : "—"}</b><small>sesiones del plan hechas</small></div><div><b>${st.score ?? "—"}</b><small>productividad media</small></div></div>
-    <div id="exCoach" class="coach">${r.coach ? `<div class="prose small">${md(r.coach)}</div>` : sample ? thinkingHtml("El coach está analizando tu examen…") : `<p class="small muted">🔑 Con tu clave de Gemini, el coach te analiza cada examen.</p>`}</div>
+    ${AI_NOTE}<div id="exCoach" class="coach">${r.coach ? `<div class="prose small">${md(r.coach)}</div>` : sample ? thinkingHtml("El coach está analizando tu examen…") : `<p class="small muted">🔑 Con tu clave de Gemini, el coach te analiza cada examen.</p>`}</div>
     <div class="row" style="justify-content:flex-end">${sample ? `<button class="btn" type="button" data-exchat>💬 Hablarlo con el coach</button>` : ""}<button class="btn btn-g" type="button" data-exedit>✏️ Cambiar nota</button><button class="btn btn-p" data-close>Cerrar</button></div>`, root => {
     $("[data-exedit]", root).onclick = () => { r.coach = ""; examReviewModal(id, true); };
     const ch = $("[data-exchat]", root); if (ch) ch.onclick = () => { closeModal(); newChat(s.id, examDocs(e), `Acabo de hacer el examen «${e.title}»${r.grade != null ? ` y he sacado un ${fmtGrade(r.grade)}` : ""}. Estudié ${fmtMin(st.min)} en ${st.n} sesiones${st.planned ? ` e hice ${st.done} de ${st.planned} sesiones del plan` : ""}.${r.note ? ` ${r.note}.` : ""} ¿Qué hago distinto para el próximo y qué temas debería reforzar?`); };
@@ -1719,6 +1721,7 @@ function viewChat() {
       ${docs.length ? `<div class="ctxbar"><span class="tiny muted">${E("📎")} ${ctx.filter(id => docs.some(d => d.id === id)).length}/${docs.length} en contexto:</span>${docs.map(d => `<button type="button" class="ctxchip" data-ctx="${d.id}" aria-pressed="${ctx.includes(d.id)}" title="${esc(d.title)}">${E(DOC_EMO[d.type] || "📄")}<span>${esc(d.title || "Sin título")}</span></button>`).join("")}</div>` : `<div class="tiny muted">${E("📎")} Sin documentos en esta asignatura. Súbelos en la pestaña Documentos y el tutor los leerá.</div>`}
       <div class="composer-in"><textarea class="input" id="chatIn" data-keep rows="1" placeholder="Escribe tu duda… (Enter para enviar)" ${sample ? "" : "disabled"}></textarea>
         <button class="btn btn-p" type="submit" id="sendBtn" aria-label="Enviar" ${sample ? "" : "disabled"}>${ic("send")}</button></div>
+      ${AI_NOTE}
     </form>
   </div>`;
 }
@@ -1923,7 +1926,7 @@ function tabEstudiar(s) {
   if (ui.studyTab === "resumen") {
     body = `<div class="row" style="margin-top:14px"><button class="btn btn-p" data-act="ai-summary" ${dis}>${E("🪄")} Generar esquema</button>${t.summary ? `<button class="btn btn-sm" data-act="summary-save">${E("💾")} Guardar como nota</button><button class="btn btn-sm btn-g" data-act="copy-summary">${E("📋")} Copiar</button><button class="btn btn-sm btn-g" data-act="pdf-summary">${E("📄")} PDF</button>` : ""}</div>
       <p class="tiny muted" style="margin-top:8px">Lo que más cae, fórmulas, esquema, preguntas típicas y errores frecuentes.</p>
-      <div id="sumOut" class="prose" style="margin-top:14px">${t.summary ? md(t.summary) : ""}</div>`;
+      <div id="sumOut" class="prose" style="margin-top:14px">${t.summary ? md(t.summary) : ""}</div>${t.summary ? AI_NOTE : ""}`;
   } else if (ui.studyTab === "test") {
     const q = t.quiz;
     body = `<div class="row" style="align-items:flex-end;margin-top:14px"><label class="field" style="flex:1;min-width:200px"><span>📌 Tema</span><select class="input" id="quizTopic"><option value="">Todo el módulo</option>${s.topics.map(x => `<option value="${x.id}">${esc(x.title)}</option>`).join("")}</select></label>
@@ -2296,7 +2299,7 @@ function viewStudio() {
   return `<div class="stack" style="gap:14px">
     <div class="row between" style="flex-wrap:nowrap"><a class="btn btn-sm btn-g" href="${s ? "#asig-" + s.id : "#asignaturas"}" data-act="tab-studio">${ic("back")}${s ? E(s.emoji) + " " + esc(s.name.split(" ").slice(0, 4).join(" ")) : "Asignaturas"}</a><button class="btn btn-sm btn-g" data-act="studio-del" aria-label="Eliminar">${E("🗑️")}</button></div>
     <h1 style="font-size:clamp(1.3rem,3.6vw,1.9rem);overflow-wrap:anywhere">${esc(it.title || "")}</h1>
-    <div id="studioDel"></div>${body}</div>`;
+    <div id="studioDel"></div>${body}${it.kind === "podcast" ? "" : AI_NOTE}</div>`;
 }
 function bindStudioView() {
   const it = S.studio.find(x => x.id === S.param); if (!it) return;
@@ -2463,6 +2466,31 @@ function applyProposal() {
 }
 
 
+
+/* ===== Avisos para no perder nada: copias, instalación y la IA ===== */
+const AI_NOTE = `<p class="tiny muted" style="margin-top:8px">🤖 La IA puede equivocarse. Si algo no cuadra con tus apuntes, manda el profe.</p>`;
+const isStandalone = () => !!(navigator.standalone || (window.matchMedia && matchMedia("(display-mode: standalone)").matches));
+const daysSince = t => t ? Math.floor((Date.now() - t) / 864e5) : null;
+function backupCard() {
+  const has = S.docs.length || state.sessions.length > 2 || state.subjects.some(x => x.exams.length);
+  if (!has || state.example) return "";
+  const d = daysSince(lsGet("rk.lastBackup")); const snooze = lsGet("rk.bkSnooze");
+  if ((d != null && d < 7) || (snooze && Date.now() < snooze)) return "";
+  return `<section class="card row" style="flex-wrap:nowrap;gap:12px;border-color:rgba(245,184,65,.4)"><span class="emo" style="font-size:26px">💾</span><div style="flex:1;min-width:0"><b>${d == null ? "Aún no has guardado ninguna copia" : `Hace ${d} días que no guardas copia`}</b><div class="small muted">Tus datos solo viven en este aparato. Una copia a la semana y no pierdes nada.</div></div><div class="stack" style="gap:6px"><button class="btn btn-sm btn-p" data-act="icon-backup">⬇️ Copia</button><button class="btn btn-sm btn-g" data-act="bk-snooze">Luego</button></div></section>`;
+}
+function installCard() {
+  const mobile = window.matchMedia && matchMedia("(pointer:coarse)").matches;
+  if (isStandalone() || !mobile || lsGet("rk.installTip")) return "";
+  const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  return `<section class="card" style="border-color:rgba(255,74,61,.45)"><div class="card-h"><h2>📲 Instala Rocky para no perder tus datos</h2><button class="x-btn" data-act="install-off" aria-label="Ocultar">${ic("x")}</button></div><p class="small muted">Desde el navegador, el móvil puede borrar lo que guardas si pasas unos días sin entrar. Instalada no pasa y se abre a pantalla completa.</p><p class="small" style="margin-top:6px">${ios ? "En Safari: <b>Compartir</b> → <b>Añadir a pantalla de inicio</b>." : "En Chrome: menú <b>⋮</b> → <b>Instalar aplicación</b> (o <b>Añadir a pantalla de inicio</b>)."}</p></section>`;
+}
+function scheduleWarn() {
+  const tt = state.timetable || [];
+  if (!tt.length) return `<p class="small" style="padding:9px 12px;border-radius:12px;background:var(--marker-soft);border:1px solid rgba(255,74,61,.35)">⚠️ <b>No tienes clases ni planes fijos en tu horario.</b> Rocky no sabe cuándo estás ocupado y te podría poner estudio encima. Añádelos en 🗓️ Agenda › 🏫 Horario o díselo al asistente («los lunes tengo gym de 17 a 19:30»).</p>`;
+  if (!tt.some(c => c.type === "event")) return `<p class="tiny muted">💡 ¿Tienes gym, trabajo u otro plan fijo? Si no está en tu horario, Rocky no lo respeta. Díselo al asistente de la Agenda.</p>`;
+  return "";
+}
+
 /* ===== Flujo examen: examen → apuntes → plan con IA → «Ahora toca» ===== */
 const planBtn = e => `<button class="btn btn-sm ${e.planned ? "btn-g" : "btn-p"}" style="flex:none" data-act="plan-exam" data-id="${e.id}">${e.planned ? "✅ Plan" : "🥊 Planificar"}</button>`;
 const EX_INT = { suave: { n: "😌 Suave", min: 45 }, normal: { n: "💪 Normal", min: 90 }, tope: { n: "🔥 A tope", min: 150 } };
@@ -2485,6 +2513,7 @@ function examModal(sid, examId) {
         <label class="field"><span>📅 Fecha</span><input class="input" type="date" id="exDate" value="${ex ? ex.date : ""}" min="${dkey()}" required style="width:auto"></label>
       </div>
       <label class="field"><span>🎯 Qué entra (temas, RA, tipo de ejercicios)</span><textarea class="input" id="exTopics" rows="3" maxlength="600" placeholder="p. ej. Balance de situación, cuenta de pérdidas y ganancias, principios contables">${esc((ex && ex.topics) || "")}</textarea></label>
+      ${scheduleWarn()}
       <div class="field"><span>📎 Apuntes de este examen</span><div class="mods" id="exDocs">${docList(s)}</div></div>
       <div class="field"><span>⚡ Intensidad</span><div class="seg" role="group" aria-label="Intensidad">${Object.entries(EX_INT).map(([k, v]) => `<button type="button" data-exint="${k}" aria-pressed="${k === inten}">${v.n} · ${fmtMin(v.min)}/día</button>`).join("")}</div></div>
       <p class="tiny muted">Rocky reparte las sesiones desde hoy hasta el examen en tus huecos libres, sin tocar clases, gym ni planes. La víspera: repaso final y simulacro.</p>
@@ -3105,7 +3134,7 @@ function settingsModal() {
     </form>
     <hr class="sep">
     <div class="stack"><h3>💾 Tus datos</h3><p class="small muted">📱 Todo se guarda en este móvil, sin conexión y sin límite práctico. Si cambias de móvil o borras el navegador, se pierde: haz una copia de vez en cuando.</p>
-      <p class="small muted">${S.docs.length} documentos · ${S.chats.length} chats · ${Object.values(S.decks).reduce((a, d) => a + d.length, 0)} tarjetas · ${state.sessions.length} sesiones</p>
+      <p class="small muted">${S.docs.length} documentos · ${S.chats.length} chats · ${Object.values(S.decks).reduce((a, d) => a + d.length, 0)} tarjetas · ${state.sessions.length} sesiones · 💾 última copia: ${daysSince(lsGet("rk.lastBackup")) == null ? "nunca" : daysSince(lsGet("rk.lastBackup")) === 0 ? "hoy" : `hace ${daysSince(lsGet("rk.lastBackup"))} días`}</p>
       <div class="row"><button class="btn btn-sm" id="exp">⬇️ Descargar copia completa</button><button class="btn btn-sm" id="impBtn">📥 Restaurar copia</button><input type="file" id="impFile" accept=".json,application/json" hidden></div>
       <p class="tiny muted">La copia incluye todo: asignaturas, plan, sesiones, documentos con sus archivos, chats y tarjetas.</p></div>
     <hr class="sep">
@@ -3143,9 +3172,9 @@ async function exportAll() {
     const out = { app: "pupitre", v: 2, at: Date.now(), state, col: {}, files: [] };
     for (const c of ["docs", "doctext", "chats", "chatmsgs", "decks", "studio"]) out.col[c] = await idbAll(c);
     for (const d of out.col.docs) if (d.fileId) { const b = await idbGet("files", d.fileId); if (b) out.files.push({ id: d.fileId, type: b.type || "", data: await blobToB64(b) }); }
-    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(out)], { type: "application/json" })); a.download = `pupitre-copia-${dkey()}.json`;
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(out)], { type: "application/json" })); a.download = `rocky-copia-${dkey()}.json`;
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
-    toast("✅ Copia descargada");
+    lsSet("rk.lastBackup", Date.now()); toast("✅ Copia descargada. Comprueba que está en Archivos o Descargas.");
   } catch (e) { toast("⚠️ No se pudo crear la copia"); }
 }
 async function importAll(file) {
@@ -3204,7 +3233,9 @@ document.addEventListener("click", e => {
     case "zen-guide": zenGuide(); break;
     case "exam-review": examReviewModal(id); break;
     case "icon-tip-off": lsSet("rk.iconTip", 1); render(); break;
-    case "icon-backup": exportAll(); break;
+    case "icon-backup": exportAll().then(() => render()); break;
+    case "bk-snooze": lsSet("rk.bkSnooze", Date.now() + 3 * 864e5); render(); break;
+    case "install-off": lsSet("rk.installTip", 1); render(); break;
     case "new-exam": examModal(a.dataset.s || (cur && cur.id)); break;
     case "plan-exam": { const f = findExam(id); if (f) examModal(f.s.id, id); break; }
     case "block-chat": { const b = state.plan.find(x => x.id === id); if (!b) break; const f = b.examId && findExam(b.examId); newChat(b.subjectId, blockDocs(b), `Voy a estudiar «${b.title}»${f ? ` para el examen «${f.e.title}»` : ""}. Explícame lo más importante en 5 puntos con un ejemplo y ponme un ejercicio tipo examen.`); break; }
@@ -3333,7 +3364,7 @@ function exampleState() {
 }
 
 /* ================= actualizaciones ================= */
-const APP_VERSION = "2026.11.10-2";
+const APP_VERSION = "2026.11.10-3";
 let updateReady = false;
 async function checkUpdate() {
   try {
