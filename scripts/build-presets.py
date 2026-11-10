@@ -12,7 +12,7 @@ for key, name in PRESETS.items():
     out = ROOT / key
     out.mkdir(exist_ok=True)
     html = src.replace('<meta name="theme-color"', f'<meta name="pupitre-preset" content="{key}">\n<meta name="theme-color"', 1)
-    html = html.replace('href="icon-192.png"', 'href="../icon-192.png"').replace('href="icon-512.png"', 'href="../icon-512.png"')
+    html = html.replace('href="icon-', 'href="../icon-')
     html = html.replace('const VENDOR = "vendor/";', 'const VENDOR = "../vendor/";')
     assert 'const VENDOR = "../vendor/";' in html
     assert f'content="{key}"' in html

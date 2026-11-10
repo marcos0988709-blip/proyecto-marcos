@@ -11,8 +11,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Rocky">
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="../icon-192.png">
-<link rel="apple-touch-icon" href="../icon-512.png">
+<link rel="icon" href="../icon-192.png?v=rocky1">
+<link rel="apple-touch-icon" href="../icon-512.png?v=rocky1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Caveat:wght@600;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
@@ -149,6 +149,16 @@ textarea.input{resize:vertical;min-height:110px;line-height:1.55}
 .now-card{border-color:rgba(245,184,65,.45);background:radial-gradient(120% 140% at 0% 0%,rgba(245,184,65,.16),transparent 60%),var(--sheet);box-shadow:var(--shadow),0 0 0 1px rgba(245,184,65,.12)}
 .now-t{font-size:clamp(1.25rem,3.6vw,1.6rem);margin:4px 0 2px;overflow-wrap:anywhere}
 .amb{display:flex;flex-direction:column;gap:8px;align-items:center;text-align:center}
+.rep-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0}
+.rep-grid>div{background:var(--sheet-2);border:1px solid var(--line-strong);border-radius:12px;padding:10px 12px;min-width:0}
+.rep-grid b{display:block;font-family:var(--f-mono);font-size:1.2rem}.rep-grid small{color:var(--muted);font-size:.75rem}
+.coach{margin:0 0 14px;padding:12px 14px;border-radius:14px;background:var(--accent-soft);border:1px solid rgba(245,184,65,.35)}
+.score-ring{position:relative;width:84px;height:84px;flex:none}.score-ring svg{width:84px;height:84px}.score-ring b{position:absolute;inset:0;display:grid;place-items:center;font-size:1.5rem}
+.zen-bar{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+body.zen .side,body.zen .bnav,body.zen .topbar,body.zen .focus-wrap>.stack,body.zen .focus-pick,body.zen .timer-card>.seg,body.zen #sidetimer{display:none!important}
+body.zen .app{grid-template-columns:1fr!important}body.zen .main{padding-bottom:24px}
+body.zen .focus-wrap{display:flex;justify-content:center;align-items:center;min-height:calc(100vh - 40px)}
+body.zen .timer-card{border-color:transparent;background:transparent;box-shadow:none;max-width:560px;width:100%}
 .hello{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
 .hello .date{font-size:.95rem;color:var(--muted);margin-top:4px}
 .school{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.02em;margin-bottom:6px}
@@ -846,6 +856,7 @@ function render(anim) {
   renderSideTimer();
   checkBadges();
   ambSync();
+  document.body.classList.toggle("zen", !!(state && timer.zen && S.view === "foco"));
 }
 
 /* ---------- Onboarding ---------- */
@@ -924,6 +935,8 @@ function viewHoy() {
     <div class="hello"><div>${school}<h1>${greeting()}${nm}</h1><p class="date">${longDate(new Date())} · <a href="#progreso" class="pill mk" style="text-decoration:none">⭐ Nivel ${levelInfo().lvl} · ${levelInfo().title}</a></p></div>
       <button class="btn btn-lg" data-act="new-exam">🥊 Nuevo examen</button></div>
     ${nowCard()}
+    ${examReviewCard()}
+    ${iconTipCard()}
     <div class="stats">
       <div class="card stat">${ringSvg(mins / goal, 46, 6, mins >= goal ? "var(--ok)" : "var(--accent)")}<div><b class="num">${mins}<span style="font-size:.9rem;color:var(--muted)">/${goal}</span></b><small>${mins >= goal ? "✅ objetivo cumplido" : "minutos de foco hoy"}</small></div></div>
       <div class="card stat"><span class="stat-ic mk emo">🔥</span><div><b>${st} ${st === 1 ? "día" : "días"}</b><small>${st ? "de racha, no la rompas" : "estudia hoy y empieza racha"}</small></div></div>
@@ -994,27 +1007,32 @@ function beep() {
 async function lockScreen() { try { wake = await navigator.wakeLock.request("screen"); } catch (e) { wake = null; } }
 function releaseLock() { try { wake && wake.release(); } catch (e) {} wake = null; }
 function startTimer() {
+  if (!timer.startedAt && timer.phase === "focus") { timer.leaves = 0; timer.awayMs = 0; timer.hiddenAt = null; }
   try { audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); audioCtx.resume && audioCtx.resume(); } catch (e) {}
   timer.endsAt = Date.now() + remainingMs(); timer.running = true; timer.startedAt = timer.startedAt || Date.now(); timer.remaining = null; saveTimer(); lockScreen(); tick(); render();
 }
 function pauseTimer() { timer.remaining = remainingMs(); timer.running = false; saveTimer(); releaseLock(); render(); }
 function resetTimer() { timer.running = false; timer.remaining = null; timer.startedAt = null; saveTimer(); releaseLock(); render(); }
 function logFocus(min) {
-  if (min < 1) return;
-  state.sessions.push({ id: uid(), subjectId: timer.subjectId, topicId: timer.topicId, start: timer.startedAt || (Date.now() - min * 60000), min: Math.round(min) });
+  if (min < 1) return null;
+  const blk = timer.blockId ? state.plan.find(x => x.id === timer.blockId) : null; const leaves = timer.leaves || 0, awayS = Math.round((timer.awayMs || 0) / 1000); const id = uid();
+  state.sessions.push({ id, subjectId: timer.subjectId, topicId: timer.topicId, start: timer.startedAt || (Date.now() - min * 60000), min: Math.round(min), leaves, awayS, score: focusScore(min, leaves, awayS), zen: !!timer.zen, blockTitle: blk ? blk.title : "", examId: (blk && blk.examId) || "" });
+  timer.leaves = 0; timer.awayMs = 0;
   if (timer.blockId) { const b = state.plan.find(x => x.id === timer.blockId); if (b) { b.doneMin = (b.doneMin || 0) + Math.round(min); if (b.doneMin >= b.min * .8) b.done = true; } }
-  commit(false);
+  commit(false); return id;
 }
 function finishPhase(manual) {
+  let repId = null;
   if (timer.phase === "focus") {
     const elapsed = manual ? (phaseLen("focus") - remainingMs()) / 60000 : phaseLen("focus") / 60000;
-    logFocus(elapsed); timer.cycle = (timer.cycle || 0) + 1; if (timer.blockMin) { timer.blockMin = null; timer.blockId = null; }
+    repId = logFocus(elapsed); timer.cycle = (timer.cycle || 0) + 1; if (timer.blockMin) { timer.blockMin = null; timer.blockId = null; }
     timer.phase = timer.cycle % state.settings.longEvery === 0 ? "long" : "short";
     toast(elapsed >= 1 ? `💪 +${Math.round(elapsed)} min de foco registrados` : "⏭️ Sesión saltada");
   } else { timer.phase = "focus"; toast("🎯 Descanso terminado. A por el siguiente bloque."); }
   timer.running = false; timer.remaining = null; timer.startedAt = null; saveTimer(); releaseLock();
   if (!manual) beep();
   render();
+  if (repId) setTimeout(() => sessionReport(repId), 300);
 }
 function finishEarly() {
   if (timer.phase !== "focus") return finishPhase(true);
@@ -1090,6 +1108,7 @@ function viewFoco() {
         ${timer.running ? `<button class="btn btn-p btn-lg" style="min-width:160px" data-act="t-pause">${ic("pause")}Pausar</button>` : `<button class="btn btn-p btn-lg" style="min-width:160px" data-act="t-start">${ic("play")}${timer.remaining != null && timer.remaining < phaseLen(timer.phase) ? "Seguir" : "Empezar"}</button>`}
         <button class="icon-btn" style="width:50px;height:50px;border-radius:50%" data-act="t-finish" aria-label="${timer.phase === "focus" ? "Terminar y guardar" : "Saltar descanso"}" title="${timer.phase === "focus" ? "Terminar y guardar" : "Saltar descanso"}">${ic("skip")}</button>
       </div>
+      ${zenBar()}
       <div class="amb"><span class="tiny muted">🎧 Sonido para concentrarte · suena solo mientras haces foco</span><div class="chips" style="justify-content:center">${Object.entries(AMBIENT).map(([k, l]) => `<button class="chip" data-amb="${k}" aria-pressed="${(state.settings.ambient || "off") === k}">${l}</button>`).join("")}</div>${(state.settings.ambient || "off") !== "off" ? `<label class="row tiny muted" style="gap:8px;justify-content:center">🔈<input type="range" id="ambVol" min="0.05" max="1" step="0.05" value="${ambVol()}" aria-label="Volumen" style="width:160px;accent-color:var(--accent)">🔊</label>` : ""}</div>
       ${blk ? `<p class="small muted">${E("🗓️")} Bloque del plan: <b>${esc(blk.title)}</b> · ${fmtMin(blk.doneMin || 0)} de ${fmtMin(blk.min)} <button class="btn btn-sm btn-g" data-act="unlink-block">Quitar</button></p>${blockDocs(blk).length ? `<div class="chips" style="justify-content:center">${blockDocs(blk).map(id => { const d = S.docs.find(x => x.id === id); return `<a class="chip" href="#doc-${id}">${E(DOC_EMO[d.type] || "📄")}<span>${esc((d.title || "Apuntes").slice(0, 34))}</span></a>`; }).join("")}<button class="chip" data-act="block-chat" data-id="${blk.id}">${E("💬")}<span>Dudas al tutor</span></button></div>` : ""}` : ""}
       <div class="focus-pick">
@@ -1131,6 +1150,144 @@ function renderSideTimer() {
   if (!state || (!timer.running && timer.remaining == null) || S.view === "foco") { el.innerHTML = ""; return; }
   const ms = remainingMs();
   el.innerHTML = `<a class="card" href="#foco" style="display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit"><span class="emo" style="font-size:22px">${timer.phase === "focus" ? sEmo(timer.subjectId) : "☕"}</span><div><div class="tiny muted">${timer.running ? PH[timer.phase] : "⏸️ En pausa"}</div><b class="num" id="sideClock" style="font-size:1.3rem">${pad(Math.floor(ms / 60000))}:${pad(Math.floor(ms / 1000) % 60)}</b></div></a>`;
+}
+
+/* ===== Modo Zen, distracciones e informes de productividad ===== */
+const FEEL = ["😫", "😕", "😐", "🙂", "🔥"], FEEL_TXT = ["fatal", "regular", "normal", "bien", "genial"];
+const fmtSecs = s => s < 60 ? `${s} s` : `${Math.floor(s / 60)} min${s % 60 ? " " + (s % 60) + " s" : ""}`;
+const focusScore = (min, leaves, awayS) => Math.max(0, Math.min(100, Math.round(100 * (1 - awayS / Math.max(60, min * 60 + awayS)) - 6 * leaves)));
+/* cada vez que sales de la app durante el foco cuenta como distracción */
+document.addEventListener("visibilitychange", () => {
+  if (!state) return;
+  if (document.visibilityState === "hidden") { if (timer.running && timer.phase === "focus" && !timer.hiddenAt) { timer.hiddenAt = Date.now(); saveTimer(); } return; }
+  if (!timer.hiddenAt) return;
+  const away = Date.now() - timer.hiddenAt; timer.hiddenAt = null;
+  if (away > 2500 && timer.running && timer.phase === "focus") {
+    timer.leaves = (timer.leaves || 0) + 1; timer.awayMs = (timer.awayMs || 0) + away;
+    toast(`👀 Te has ido ${fmtSecs(Math.round(away / 1000))} · ${timer.leaves} ${timer.leaves === 1 ? "salida" : "salidas"} en esta sesión. ¡Vuelve al ring! 🥊`);
+  }
+  saveTimer(); if (S.view === "foco") render();
+});
+function zenGuide() {
+  openModal(`<div class="sheet-h"><h2>🔒 Bloquear apps de verdad</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
+    <div class="stack" style="gap:12px">
+      <p class="small muted">Una app web no puede cerrar otras apps: eso solo lo deja hacer Apple. Rocky apunta cada vez que te vas, y con esto el iPhone o el iPad te cortan las distracciones de verdad:</p>
+      <section class="card"><h3>1️⃣ Concentración «Rocky» (5 min, lo más fácil)</h3><ol class="small" style="margin:8px 0 0;padding-left:18px">
+        <li>Ajustes → <b>Concentración</b> → <b>＋</b> → <b>Personalizado</b> → llámalo <b>Rocky 🥊</b>.</li>
+        <li>En <b>Personas</b> y <b>Apps</b>, no permitas ninguna: se silencian todas las notificaciones.</li>
+        <li>En <b>Personalizar pantallas</b>, elige una pantalla de inicio con solo Rocky: el resto de apps desaparecen mientras estudias.</li>
+        <li>Actívala desde el Centro de control cuando empieces el Modo Zen.</li></ol></section>
+      <section class="card"><h3>2️⃣ Que TikTok o Instagram te echen (Atajos)</h3><ol class="small" style="margin:8px 0 0;padding-left:18px">
+        <li>App <b>Atajos</b> → <b>Automatización</b> → <b>＋</b> → <b>App</b>.</li>
+        <li>Elige TikTok, Instagram, YouTube… → <b>Se abre</b> → <b>Ejecutar inmediatamente</b>.</li>
+        <li>Acción: <b>Ir a la pantalla de inicio</b> (y si quieres, <b>Mostrar notificación</b>: «🥊 Vuelve a Rocky»).</li>
+        <li>Desactívala cuando acabes de estudiar.</li></ol></section>
+      <section class="card"><h3>3️⃣ Horario sin distracciones (Tiempo de uso)</h3><p class="small" style="margin-top:6px">Ajustes → <b>Tiempo de uso</b> → <b>Tiempo de inactividad</b>: pon tus horas de estudio. Durante ese rato solo funcionan las apps que dejes en <b>Apps siempre permitidas</b>.</p></section>
+      <div class="row" style="justify-content:flex-end"><button class="btn btn-p" data-close>Entendido 💪</button></div>
+    </div>`);
+}
+function zenBar() {
+  if (!timer.zen) return `<button class="btn" data-act="zen-on">🧘 Modo Zen</button>`;
+  const n = timer.leaves || 0;
+  return `<div class="zen-bar"><span class="pill mk">🧘 Modo Zen</span><span class="small ${n ? "" : "muted"}">📵 ${n} ${n === 1 ? "salida" : "salidas"}</span><button class="btn btn-sm btn-g" data-act="zen-guide">🔒 Bloquear apps de verdad</button><button class="btn btn-sm btn-g" data-act="zen-off">Salir</button></div>`;
+}
+/* informe al acabar cada sesión */
+async function coachSession(x) {
+  if (x.coach) return x.coach;
+  const s = subj(x.subjectId); const today = state.sessions.filter(y => dkey(new Date(y.start)) === dkey());
+  const prompt = `Eres el coach de estudio de Rocky: directo, motivador y sin rollo, como un entrenador de boxeo. Comenta esta sesión de estudio en 2-3 frases cortas: una valoración sincera y UN consejo concreto para la siguiente. Español de España, tuteando, máximo 55 palabras, como mucho 1 emoji.
+DATOS: ${x.min} min de foco${s ? ` de ${s.name}` : ""}${x.blockTitle ? ` (sesión «${x.blockTitle}»)` : ""}; salió de la app ${x.leaves || 0} veces (${x.awayS || 0} s fuera); productividad ${x.score}/100${x.feel ? `; dice que se ha sentido ${FEEL_TXT[x.feel - 1]}` : ""}; hoy lleva ${today.length} sesiones y ${minutesOn(dkey())} min de un objetivo de ${state.profile.goalMin || 120} min.`;
+  const r = await sample(prompt, { cache: false });
+  x.coach = String(r.text || "").trim().slice(0, 700); commit(false); return x.coach;
+}
+function sessionReport(id) {
+  const x = state.sessions.find(y => y.id === id); if (!x) return; const s = subj(x.subjectId);
+  const sc = x.score ?? 100; const col = sc >= 85 ? "var(--ok)" : sc >= 60 ? "var(--accent)" : "var(--bad)";
+  const verdict = sc >= 90 ? "🏆 Sesión de campeón" : sc >= 75 ? "💪 Buen round" : sc >= 50 ? "😐 Con distracciones" : "🥴 Demasiadas distracciones";
+  openModal(`<div class="sheet-h"><h2>🥊 Sesión terminada</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
+    <div class="row" style="gap:16px;flex-wrap:nowrap"><div class="score-ring">${ringSvg(sc / 100, 84, 9, col)}<b class="num">${sc}</b></div><div style="min-width:0"><b style="font-size:1.1rem">${verdict}</b><p class="small muted">Productividad ${sc}/100 · ${s ? E(s.emoji) + " " + esc(s.name) : "Sesión libre"}</p>${x.blockTitle ? `<p class="tiny muted">${esc(x.blockTitle)}</p>` : ""}</div></div>
+    <div class="rep-grid"><div><b>${x.min}′</b><small>de foco</small></div><div><b>${x.leaves || 0}</b><small>salidas de la app</small></div><div><b>${fmtSecs(x.awayS || 0)}</b><small>fuera de la app</small></div><div><b>${fmtMin(minutesOn(dkey()))}</b><small>hoy en total</small></div></div>
+    <div class="field"><span>¿Qué tal te has sentido?</span><div class="seg" role="group" aria-label="Sensación">${FEEL.map((f, i) => `<button type="button" data-feel="${i + 1}" aria-pressed="${x.feel === i + 1}">${f}</button>`).join("")}</div></div>
+    <div id="coachOut" class="coach">${x.coach ? `<div class="prose small"><b>🤖 Coach:</b> ${md(x.coach)}</div>` : sample ? thinkingHtml("El coach está mirando tu sesión…") : `<p class="small muted">🔑 Con tu clave de Gemini, el coach te comenta cada sesión.</p>`}</div>
+    <div class="row" style="justify-content:flex-end">${s && sample ? `<button class="btn" type="button" data-repchat>💬 Hablar con el coach</button>` : ""}<button class="btn btn-p" data-close>Seguir 💪</button></div>`, root => {
+    $$("[data-feel]", root).forEach(b => b.onclick = () => { x.feel = +b.dataset.feel; commit(false); $$("[data-feel]", root).forEach(y => y.setAttribute("aria-pressed", y === b)); });
+    const rc = $("[data-repchat]", root); if (rc) rc.onclick = () => { closeModal(); newChat(x.subjectId, [], `Acabo de hacer una sesión de ${x.min} min${x.blockTitle ? ` («${x.blockTitle}»)` : ""}. Productividad ${sc}/100 y me he ido de la app ${x.leaves || 0} veces. ¿Qué tal lo he hecho y qué hago en la siguiente sesión para rendir más?`); };
+    if (sample && !x.coach) coachSession(x).then(t => { const o = $("#coachOut", root); if (o) o.innerHTML = `<div class="prose small"><b>🤖 Coach:</b> ${md(t)}</div>`; }).catch(e => { const o = $("#coachOut", root); if (o) o.innerHTML = `<p class="tiny muted">⚠️ ${aiErr(e)}</p>`; });
+  });
+}
+/* informe de cada examen */
+function examsToReview() { const out = []; for (const s of state.subjects) for (const e of s.exams) { const d = daysUntil(e.date); if (d < 0 && d >= -21 && !e.result) out.push({ e, s }); } return out.sort((a, b) => b.e.date.localeCompare(a.e.date)); }
+function examStats(e, s) {
+  const from = dkey(addDays(parseD(e.date), -21));
+  const ses = state.sessions.filter(x => x.subjectId === s.id && dkey(new Date(x.start)) >= from && dkey(new Date(x.start)) < e.date);
+  const blocks = state.plan.filter(b => b.examId === e.id); const scored = ses.filter(x => x.score != null);
+  return { min: ses.reduce((a, x) => a + x.min, 0), n: ses.length, days: new Set(ses.map(x => dkey(new Date(x.start)))).size, planned: blocks.length, done: blocks.filter(b => b.done).length, score: scored.length ? Math.round(scored.reduce((a, x) => a + x.score, 0) / scored.length) : null, leaves: ses.reduce((a, x) => a + (x.leaves || 0), 0) };
+}
+function examReviewCard() {
+  const r = examsToReview()[0]; if (!r) return "";
+  return `<section class="card row" style="flex-wrap:nowrap;gap:12px;border-color:rgba(245,184,65,.4)"><span class="emo" style="font-size:28px">📊</span><div style="flex:1;min-width:0"><b style="overflow-wrap:anywhere">¿Qué tal fue «${esc(r.e.title)}»?</b><div class="small muted">${E(r.s.emoji)} ${esc(r.s.name)} · cuéntalo y el coach te dice qué mejorar</div></div><button class="btn btn-sm btn-p" data-act="exam-review" data-id="${r.e.id}">Contar</button></section>`;
+}
+function examReviewModal(id, edit) {
+  const f = findExam(id); if (!f) return; const { e, s } = f;
+  if (e.result && !edit) { examReport(id); return; }
+  let feel = (e.result && e.result.feel) || 0;
+  openModal(`<div class="sheet-h"><h2>📊 ¿Qué tal «${esc(e.title)}»?</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
+    <form id="erForm" class="stack" style="gap:12px">
+      <label class="field"><span>📝 Nota (si ya la sabes)</span><input class="input num" type="text" id="erGrade" inputmode="decimal" maxlength="5" placeholder="p. ej. 7,5" value="${e.result && e.result.grade != null ? fmtGrade(e.result.grade) : ""}"></label>
+      <div class="field"><span>¿Cómo te salió?</span><div class="seg" role="group" aria-label="Sensación">${FEEL.map((x, i) => `<button type="button" data-erfeel="${i + 1}" aria-pressed="${feel === i + 1}">${x}</button>`).join("")}</div></div>
+      <label class="field"><span>💭 ¿Qué cayó o qué te costó? (opcional)</span><textarea class="input" id="erNote" rows="3" maxlength="500" placeholder="p. ej. Cayó mucho balance y me lié con la amortización acumulada">${esc((e.result && e.result.note) || "")}</textarea></label>
+      <div class="row" style="justify-content:flex-end"><button class="btn btn-p" type="submit">📊 Ver mi informe</button></div>
+    </form>`, root => {
+    $$("[data-erfeel]", root).forEach(b => b.onclick = () => { feel = +b.dataset.erfeel; $$("[data-erfeel]", root).forEach(y => y.setAttribute("aria-pressed", y === b)); });
+    $("#erForm", root).addEventListener("submit", ev => {
+      ev.preventDefault(); const gv = $("#erGrade", root).value.replace(",", ".");
+      if (gv === "" && !feel) { toast("✏️ Pon la nota o cómo te salió"); return; }
+      if (gv !== "" && (isNaN(+gv) || +gv < 0 || +gv > 10)) { toast("✏️ La nota tiene que ir de 0 a 10"); return; }
+      e.result = { grade: gv === "" ? null : Math.max(0, Math.min(10, +gv)), feel: feel || null, note: $("#erNote", root).value.trim(), at: Date.now() };
+      commit(false); closeModal(); setTimeout(() => examReport(id), 80);
+    });
+  });
+}
+async function coachExam(e, s, st) {
+  const r = e.result;
+  const prompt = `Eres el coach de estudio de Rocky: directo, sincero y motivador, como un entrenador de boxeo. Analiza cómo preparó el alumno este examen y dile qué cambiar. ${COURSE_CTX()}
+EXAMEN: «${e.title}» de ${s.name} (${e.date}). ${r.grade != null ? `Nota: ${fmtGrade(r.grade)}.` : "Aún no sabe la nota."} ${r.feel ? `Dice que le salió ${FEEL_TXT[r.feel - 1]}.` : ""} ${r.note ? `Comentario: «${r.note}».` : ""}
+PREPARACIÓN (21 días antes): ${fmtMin(st.min)} de estudio en ${st.n} sesiones repartidas en ${st.days} días; ${st.planned ? `hizo ${st.done} de ${st.planned} sesiones del plan;` : "no tenía plan en Rocky;"} productividad media ${st.score ?? "sin medir"}/100; ${st.leaves} salidas de la app mientras estudiaba.
+Responde en Markdown con 3 apartados cortos: **✅ Lo que funcionó**, **⚠️ Lo que mejorar** y **🎯 Para el próximo examen**, con 1-2 viñetas concretas cada uno que usen estos datos. Máximo 110 palabras. Español de España, tuteando.`;
+  const res = await sample(prompt, { cache: false });
+  r.coach = String(res.text || "").trim().slice(0, 1500); commit(false); return r.coach;
+}
+function examReport(id) {
+  const f = findExam(id); if (!f || !f.e.result) return; const { e, s } = f; const r = e.result; const st = examStats(e, s);
+  const big = r.grade != null ? `<b class="num" style="font-size:2.6rem;line-height:1;color:${r.grade >= 5 ? "var(--ok)" : "var(--bad)"}">${fmtGrade(r.grade)}</b>` : `<span class="emo" style="font-size:2.6rem">${FEEL[(r.feel || 3) - 1]}</span>`;
+  openModal(`<div class="sheet-h"><h2>📊 Informe del examen</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
+    <div class="row" style="gap:16px;flex-wrap:nowrap">${big}<div style="min-width:0"><b style="overflow-wrap:anywhere">${esc(e.title)}</b><p class="small muted">${E(s.emoji)} ${esc(s.name)} · ${shortDate(parseD(e.date))}${r.feel ? " · " + FEEL[r.feel - 1] + " " + FEEL_TXT[r.feel - 1] : ""}</p></div></div>
+    <div class="rep-grid"><div><b>${fmtMin(st.min)}</b><small>estudiado antes</small></div><div><b>${st.n}</b><small>sesiones en ${st.days} ${st.days === 1 ? "día" : "días"}</small></div><div><b>${st.planned ? `${st.done}/${st.planned}` : "—"}</b><small>sesiones del plan hechas</small></div><div><b>${st.score ?? "—"}</b><small>productividad media</small></div></div>
+    <div id="exCoach" class="coach">${r.coach ? `<div class="prose small">${md(r.coach)}</div>` : sample ? thinkingHtml("El coach está analizando tu examen…") : `<p class="small muted">🔑 Con tu clave de Gemini, el coach te analiza cada examen.</p>`}</div>
+    <div class="row" style="justify-content:flex-end">${sample ? `<button class="btn" type="button" data-exchat>💬 Hablarlo con el coach</button>` : ""}<button class="btn btn-g" type="button" data-exedit>✏️ Cambiar nota</button><button class="btn btn-p" data-close>Cerrar</button></div>`, root => {
+    $("[data-exedit]", root).onclick = () => { r.coach = ""; examReviewModal(id, true); };
+    const ch = $("[data-exchat]", root); if (ch) ch.onclick = () => { closeModal(); newChat(s.id, examDocs(e), `Acabo de hacer el examen «${e.title}»${r.grade != null ? ` y he sacado un ${fmtGrade(r.grade)}` : ""}. Estudié ${fmtMin(st.min)} en ${st.n} sesiones${st.planned ? ` e hice ${st.done} de ${st.planned} sesiones del plan` : ""}.${r.note ? ` ${r.note}.` : ""} ¿Qué hago distinto para el próximo y qué temas debería reforzar?`); };
+    if (!r.coach && sample) coachExam(e, s, st).then(t => { const o = $("#exCoach", root); if (o) o.innerHTML = `<div class="prose small">${md(t)}</div>`; }).catch(err => { const o = $("#exCoach", root); if (o) o.innerHTML = `<p class="tiny muted">⚠️ ${aiErr(err)}</p>`; });
+  });
+}
+function prodCard() {
+  const from = dkey(addDays(new Date(), -6)); const ses = state.sessions.filter(x => dkey(new Date(x.start)) >= from && x.score != null);
+  const res = state.subjects.flatMap(s => s.exams.filter(e => e.result).map(e => ({ e, s }))).sort((a, b) => b.e.date.localeCompare(a.e.date)).slice(0, 5);
+  if (!ses.length && !res.length) return `<section class="card"><div class="card-h"><h2>${E("⚡")} Productividad</h2></div><p class="small muted">Haz una sesión en ⏱️ Foco (mejor en 🧘 Modo Zen) y aquí verás tu nota de concentración y tus distracciones. Después de cada examen, cuéntale a Rocky qué tal y verás tu informe.</p></section>`;
+  const avg = ses.length ? Math.round(ses.reduce((a, x) => a + x.score, 0) / ses.length) : null; const lv = ses.reduce((a, x) => a + (x.leaves || 0), 0);
+  return `<section class="card"><div class="card-h"><h2>${E("⚡")} Productividad · 7 días</h2>${avg != null ? `<span class="pill ${avg >= 80 ? "ok" : avg >= 60 ? "warn" : "bad"}">${avg}/100</span>` : ""}</div>
+    ${ses.length ? `<div class="rep-grid" style="margin-top:0"><div><b>${avg}</b><small>concentración media</small></div><div><b>${ses.length}</b><small>sesiones medidas</small></div><div><b>${lv}</b><small>salidas de la app</small></div><div><b>${Math.max(...ses.map(x => x.score))}</b><small>mejor sesión</small></div></div>` : ""}
+    ${res.length ? `<h3 style="margin:6px 0 6px">${E("📊")} Tus exámenes</h3>${res.map(({ e, s }) => `<button class="exam" style="width:100%;text-align:left;background:none;border-left:0;border-right:0;border-top:0;color:inherit;cursor:pointer;font:inherit" data-act="exam-review" data-id="${e.id}"><div class="cd ${e.result.grade != null && e.result.grade < 5 ? "bad" : ""}"><b class="num">${e.result.grade != null ? fmtGrade(e.result.grade) : FEEL[(e.result.feel || 3) - 1]}</b><small>nota</small></div><div style="min-width:0"><b style="overflow-wrap:anywhere">${esc(e.title)}</b><div class="small muted">${E(s.emoji)} ${esc(s.name)} · ver informe</div></div></button>`).join("")}` : ""}
+  </section>`;
+}
+/* el icono y el nombre de fuera los guarda el iPhone al instalar: hay que reinstalar con copia */
+function iconTipCard() {
+  const standalone = navigator.standalone || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+  if (!standalone || lsGet("rk.iconTip")) return "";
+  return `<section class="card" style="border-color:rgba(245,184,65,.45)"><div class="card-h"><h2>🥊 ¿Fuera sigue poniendo «Pupitre»?</h2><button class="x-btn" data-act="icon-tip-off" aria-label="Ocultar">${ic("x")}</button></div>
+    <p class="small muted" style="margin-bottom:8px">El iPhone guarda el nombre y el icono de cuando instalaste la app y no los cambia solo. Para ver ROCKY con el guante, sin perder nada:</p>
+    <ol class="small" style="margin:0 0 10px;padding-left:18px"><li>Toca <b>⬇️ Descargar copia</b> y guárdala en <b>Archivos</b>. Comprueba que está.</li><li>Mantén pulsado el icono de fuera → <b>Eliminar app</b>.</li><li>Abre la web en <b>Safari</b> → <b>Compartir</b> → <b>Añadir a pantalla de inicio</b>. Ya saldrá Rocky 🥊.</li><li>Abre Rocky → ⚙️ Ajustes → <b>📥 Restaurar copia</b> y elige el archivo.</li></ol>
+    <div class="row"><button class="btn btn-p btn-sm" data-act="icon-backup">⬇️ Descargar copia</button><button class="btn btn-sm btn-g" data-act="icon-tip-off">Ya lo tengo</button></div></section>`;
 }
 
 /* ---------- Asignaturas ---------- */
@@ -1178,7 +1335,7 @@ function tabTemas(s) {
 function tabFechas(s) {
   const exams = s.exams.slice().sort((a, b) => a.date.localeCompare(b.date));
   return `<section class="card">
-    ${exams.length ? exams.map(e => { const d = daysUntil(e.date); return `<div class="exam"><div class="cd ${d < 0 ? "" : urg(d)}" style="${d < 0 ? "opacity:.5" : ""}"><b class="num">${d < 0 ? "✓" : d}</b><small>${d < 0 ? "pasado" : d === 1 ? "día" : "días"}</small></div><div style="flex:1;min-width:0"><b style="overflow-wrap:anywhere">${esc(e.title)}</b><div class="small muted">${longDate(parseD(e.date))}${examDocs(e).length ? ` · 📎 ${examDocs(e).length} apuntes` : ""}</div></div>${d >= 0 ? planBtn(e) : ""}<button class="x-btn" aria-label="Eliminar" data-act="del-exam" data-id="${e.id}">${ic("x")}</button></div>`; }).join("") : `<p class="muted small">${E("📅")} Sin fechas. Añádelas para que el plan reparta el estudio y la IA sepa qué urge.</p>`}
+    ${exams.length ? exams.map(e => { const d = daysUntil(e.date); return `<div class="exam"><div class="cd ${d < 0 ? "" : urg(d)}" style="${d < 0 ? "opacity:.5" : ""}"><b class="num">${d < 0 ? "✓" : d}</b><small>${d < 0 ? "pasado" : d === 1 ? "día" : "días"}</small></div><div style="flex:1;min-width:0"><b style="overflow-wrap:anywhere">${esc(e.title)}</b><div class="small muted">${longDate(parseD(e.date))}${examDocs(e).length ? ` · 📎 ${examDocs(e).length} apuntes` : ""}</div></div>${d >= 0 ? planBtn(e) : `<button class="btn btn-sm ${e.result ? "btn-g" : "btn-p"}" style="flex:none" data-act="exam-review" data-id="${e.id}">${e.result ? "📊 Informe" : "📊 ¿Qué tal?"}</button>`}<button class="x-btn" aria-label="Eliminar" data-act="del-exam" data-id="${e.id}">${ic("x")}</button></div>`; }).join("") : `<p class="muted small">${E("📅")} Sin fechas. Añádelas para que el plan reparta el estudio y la IA sepa qué urge.</p>`}
     <button class="btn btn-p" style="margin-top:12px;width:100%" data-act="new-exam" data-s="${s.id}">🥊 Nuevo examen con plan de estudio</button>
     <p class="tiny muted" style="margin-top:10px">O apunta solo la fecha:</p>
     <form id="examForm" class="grid" style="grid-template-columns:1fr auto auto;gap:8px;margin-top:12px"><input class="input" id="examTitle" data-keep placeholder="${s.kind === "proyecto" ? "Entrega final" : "Examen UF1"}" maxlength="80" required><input class="input" type="date" id="examDate" required style="width:auto"><button class="btn btn-p" type="submit" aria-label="Añadir fecha">${ic("plus")}</button></form>
@@ -2900,6 +3057,7 @@ function viewProgreso() {
   return `<div class="stack" style="gap:18px">
     <div><h1>${E("📈")} Progreso</h1><p class="muted">La constancia gana a los atracones. Esto es lo que llevas.</p></div>
     ${levelCard()}
+    ${prodCard()}
     <div class="stats">
       <div class="card stat"><span class="stat-ic emo">⏱️</span><div><b>${fmtH(total)}</b><small>de foco en total</small></div></div>
       <div class="card stat"><span class="stat-ic mk emo">🔥</span><div><b>${streak()} / ${bestStreak}</b><small>racha actual / mejor</small></div></div>
@@ -3041,6 +3199,12 @@ document.addEventListener("click", e => {
     case "studio-copy": { const it = S.studio.find(x => x.id === S.param); const m0 = it && (it.md || (it.notes && notesToMd(it.notes))); if (m0) navigator.clipboard.writeText(m0).then(() => toast("📋 Copiado"), () => toast("Selecciona el texto a mano para copiarlo")); break; }
     case "studio-del": { const it = S.studio.find(x => x.id === S.param); if (it) confirmInline("#studioDel", "🗑️ Se borra esta creación.", "Eliminar", async () => { podStop(); await sDel("studio", it.id); ui.asigTab = "studio"; saveUi(); go(subj(it.subjectId) ? "asig-" + it.subjectId : "asignaturas"); toast("🗑️ Eliminado"); }); break; }
     case "open-settings": settingsModal(); break;
+    case "zen-on": timer.zen = true; saveTimer(); try { const de = document.documentElement; de.requestFullscreen && de.requestFullscreen().catch(() => {}); } catch (er) {} if (!timer.running) startTimer(); else render(); toast("🧘 Modo Zen: si te vas a otra app, Rocky lo apunta. ¡Al ring!"); break;
+    case "zen-off": timer.zen = false; saveTimer(); try { document.fullscreenElement && document.exitFullscreen(); } catch (er) {} render(); break;
+    case "zen-guide": zenGuide(); break;
+    case "exam-review": examReviewModal(id); break;
+    case "icon-tip-off": lsSet("rk.iconTip", 1); render(); break;
+    case "icon-backup": exportAll(); break;
     case "new-exam": examModal(a.dataset.s || (cur && cur.id)); break;
     case "plan-exam": { const f = findExam(id); if (f) examModal(f.s.id, id); break; }
     case "block-chat": { const b = state.plan.find(x => x.id === id); if (!b) break; const f = b.examId && findExam(b.examId); newChat(b.subjectId, blockDocs(b), `Voy a estudiar «${b.title}»${f ? ` para el examen «${f.e.title}»` : ""}. Explícame lo más importante en 5 puntos con un ejemplo y ponme un ejercicio tipo examen.`); break; }
@@ -3169,7 +3333,7 @@ function exampleState() {
 }
 
 /* ================= actualizaciones ================= */
-const APP_VERSION = "2026.11.10-1";
+const APP_VERSION = "2026.11.10-2";
 let updateReady = false;
 async function checkUpdate() {
   try {
