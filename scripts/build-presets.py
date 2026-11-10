@@ -1,11 +1,11 @@
-"""Genera las versiones personalizadas de Pupitre Libre a partir de docs/index.html.
+"""Genera las versiones personalizadas de Rocky a partir de docs/index.html.
 
 Uso: python3 scripts/build-presets.py   (ejecutar después de cada cambio en docs/index.html)
 """
 import json, pathlib, shutil
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent / "docs"
-PRESETS = {"mecanica": "Pupitre · Mecánica"}
+PRESETS = {"mecanica": "Rocky · Mecánica"}
 
 src = (ROOT / "index.html").read_text(encoding="utf-8")
 for key, name in PRESETS.items():

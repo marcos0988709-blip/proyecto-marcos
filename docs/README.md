@@ -1,6 +1,6 @@
-# 📓 Pupitre Libre
+# 🥊 Rocky
 
-Versión de Pupitre que funciona **sin Claude**: todo se guarda en tu móvil y la IA usa tu clave gratis de Gemini.
+Versión de Rocky que funciona **sin Claude**: todo se guarda en tu móvil y la IA usa tu clave gratis de Gemini.
 
 ## Cómo ponerla en tu móvil (5 minutos)
 
@@ -15,7 +15,7 @@ Versión de Pupitre que funciona **sin Claude**: todo se guarda en tu móvil y l
 
 1. Entra en **https://aistudio.google.com/app/apikey** con tu cuenta de Google.
 2. Pulsa **Create API key** y cópiala.
-3. En Pupitre: ⚙️ Ajustes → pega la clave → **Probar clave**.
+3. En Rocky: ⚙️ Ajustes → pega la clave → **Probar clave**.
 
 La clave es gratis, con límite de usos al día, y no usa tu suscripción de Gemini. Se guarda solo en tu móvil.
 
