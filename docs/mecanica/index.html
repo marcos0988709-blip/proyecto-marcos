@@ -795,7 +795,8 @@ function parseJSONLoose(t) {
 function setupAI() {
   if (!aiCfg().key) { sample = null; imgLimits = null; return; }
   const f = (input, opts) => geminiCall(input, opts || {});
-  f.json = async (input, opts) => parseJSONLoose((await geminiCall(input, opts || {}, true)).text);
+  /* si la respuesta llega cortada (mala conexión o Gemini saturado), se repite una vez sola */
+  f.json = async (input, opts) => { const o = opts || {}; try { return parseJSONLoose((await geminiCall(input, o, true)).text); } catch (e) { if (!e || e.code !== "invalid_json" || (o.signal && o.signal.aborted)) throw e; if (o.onStatus) o.onStatus("La respuesta llegó cortada, repitiendo…"); return parseJSONLoose((await geminiCall(input, o, true)).text); } };
   f.limits = async () => ({ images: { maxCount: 8 } });
   sample = f; imgLimits = { maxCount: 8 };
 }
@@ -3414,7 +3415,7 @@ function exampleState() {
 }
 
 /* ================= actualizaciones ================= */
-const APP_VERSION = "2026.11.10-4";
+const APP_VERSION = "2026.11.10-5";
 let updateReady = false;
 async function checkUpdate() {
   try {
