@@ -1009,7 +1009,8 @@ function beep() {
 async function lockScreen() { try { wake = await navigator.wakeLock.request("screen"); } catch (e) { wake = null; } }
 function releaseLock() { try { wake && wake.release(); } catch (e) {} wake = null; }
 function startTimer() {
-  if (!timer.startedAt && timer.phase === "focus") { timer.leaves = 0; timer.awayMs = 0; timer.hiddenAt = null; }
+  iosUnmute();
+  if (!timer.startedAt && timer.phase === "focus") { timer.leaves = 0; timer.awayMs = 0; timer.hiddenAt = null; timer.lastAway = null; }
   try { audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); audioCtx.resume && audioCtx.resume(); } catch (e) {}
   timer.endsAt = Date.now() + remainingMs(); timer.running = true; timer.startedAt = timer.startedAt || Date.now(); timer.remaining = null; saveTimer(); lockScreen(); tick(); render();
 }
@@ -1019,7 +1020,7 @@ function logFocus(min) {
   if (min < 1) return null;
   const blk = timer.blockId ? state.plan.find(x => x.id === timer.blockId) : null; const leaves = timer.leaves || 0, awayS = Math.round((timer.awayMs || 0) / 1000); const id = uid();
   state.sessions.push({ id, subjectId: timer.subjectId, topicId: timer.topicId, start: timer.startedAt || (Date.now() - min * 60000), min: Math.round(min), leaves, awayS, score: focusScore(min, leaves, awayS), zen: !!timer.zen, blockTitle: blk ? blk.title : "", examId: (blk && blk.examId) || "" });
-  timer.leaves = 0; timer.awayMs = 0;
+  timer.leaves = 0; timer.awayMs = 0; timer.lastAway = null;
   if (timer.blockId) { const b = state.plan.find(x => x.id === timer.blockId); if (b) { b.doneMin = (b.doneMin || 0) + Math.round(min); if (b.doneMin >= b.min * .8) b.done = true; } }
   commit(false); return id;
 }
@@ -1072,6 +1073,23 @@ function noiseBuffer(c, type) {
   return (ambBufs[type] = buf);
 }
 const ambVol = () => state.settings.ambVol ?? .5;
+/* iPhone: con el interruptor de silencio, Safari calla el audio web. Pedirle «modo música» lo evita */
+let unmuteEl = null, unmuteT = null;
+function iosUnmute() {
+  clearTimeout(unmuteT);
+  try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {}
+  try {
+    if (!unmuteEl) {
+      const sr = 8000, n = sr / 2, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf), W = (o, t) => [...t].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
+      W(0, "RIFF"); v.setUint32(4, 36 + n * 2, true); W(8, "WAVEfmt "); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); W(36, "data"); v.setUint32(40, n * 2, true);
+      unmuteEl = new Audio(URL.createObjectURL(new Blob([buf], { type: "audio/wav" }))); unmuteEl.loop = true; unmuteEl.setAttribute("playsinline", "");
+    }
+    const pr = unmuteEl.play(); pr && pr.catch(() => {});
+  } catch (e) {}
+  try { audioCtx && audioCtx.state !== "running" && audioCtx.resume(); } catch (e) {}
+}
+function iosUnmuteLater() { clearTimeout(unmuteT); unmuteT = setTimeout(() => { try { unmuteEl && unmuteEl.pause(); } catch (e) {} }, 3000); }
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && audioCtx && (amb || timer.running)) iosUnmute(); });
 function ambStop(fade = .6) {
   clearTimeout(ambPrevT); ambPrevT = null; if (!amb) return; const a = amb; amb = null;
   try { const t = audioCtx.currentTime; a.out.gain.cancelScheduledValues(t); a.out.gain.setValueAtTime(a.out.gain.value, t); a.out.gain.linearRampToValueAtTime(0, t + fade); } catch (e) {}
@@ -1079,7 +1097,8 @@ function ambStop(fade = .6) {
 }
 function ambStart(kind) {
   ambStop(.3); if (!kind || kind === "off") return;
-  try { audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); audioCtx.resume && audioCtx.resume(); } catch (e) { return; }
+  try { audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
+  iosUnmute();
   const c = audioCtx, src = c.createBufferSource(); src.buffer = noiseBuffer(c, kind === "rain" ? "pink" : "brown"); src.loop = true;
   const out = c.createGain(); out.gain.value = 0; out.connect(c.destination);
   let node = src, lfo = null;
@@ -1089,7 +1108,7 @@ function ambStart(kind) {
   out.gain.linearRampToValueAtTime(ambVol() * (kind === "rain" ? .55 : .9), c.currentTime + 1.2);
   amb = { kind, src, lfo, out };
 }
-function ambSync() { const k = state.settings.ambient || "off"; if (timer.running && timer.phase === "focus" && k !== "off") { clearTimeout(ambPrevT); ambPrevT = null; if (!amb || amb.kind !== k) ambStart(k); } else if (!ambPrevT || !amb) ambStop(); }
+function ambSync() { const k = state.settings.ambient || "off"; if (timer.running && timer.phase === "focus" && k !== "off") { clearTimeout(ambPrevT); ambPrevT = null; if (!amb || amb.kind !== k) ambStart(k); else if (audioCtx && audioCtx.state !== "running") iosUnmute(); } else if (!ambPrevT || !amb) { ambStop(); if (!timer.running) iosUnmuteLater(); } }
 function ambPreview(k) { ambStart(k); if (!(timer.running && timer.phase === "focus")) ambPrevT = setTimeout(() => ambStop(1), 4000); }
 function viewFoco() {
   const ms = remainingMs(); const txt = `${pad(Math.floor(ms / 60000))}:${pad(Math.floor(ms / 1000) % 60)}`;
@@ -1165,7 +1184,7 @@ document.addEventListener("visibilitychange", () => {
   if (!timer.hiddenAt) return;
   const away = Date.now() - timer.hiddenAt; timer.hiddenAt = null;
   if (away > 2500 && timer.running && timer.phase === "focus") {
-    timer.leaves = (timer.leaves || 0) + 1; timer.awayMs = (timer.awayMs || 0) + away;
+    timer.leaves = (timer.leaves || 0) + 1; timer.awayMs = (timer.awayMs || 0) + away; timer.lastAway = away;
     toast(`👀 Te has ido ${fmtSecs(Math.round(away / 1000))} · ${timer.leaves} ${timer.leaves === 1 ? "salida" : "salidas"} en esta sesión. ¡Vuelve al ring! 🥊`);
   }
   saveTimer(); if (S.view === "foco") render();
@@ -1191,7 +1210,7 @@ function zenGuide() {
 function zenBar() {
   if (!timer.zen) return `<button class="btn" data-act="zen-on">🧘 Modo Zen</button>`;
   const n = timer.leaves || 0;
-  return `<div class="zen-bar"><span class="pill mk">🧘 Modo Zen</span><span class="small ${n ? "" : "muted"}">📵 ${n} ${n === 1 ? "salida" : "salidas"}</span><button class="btn btn-sm btn-g" data-act="zen-guide">🔒 Bloquear apps de verdad</button><button class="btn btn-sm btn-g" data-act="zen-off">Salir</button></div>`;
+  return `<div class="zen-bar"><span class="pill mk">🧘 Modo Zen</span><span class="small ${n ? "" : "muted"}">📵 ${n} ${n === 1 ? "salida" : "salidas"}</span>${timer.lastAway ? `<button class="btn btn-sm btn-g" data-act="zen-undo" title="Si solo bloqueaste la pantalla o fue algo de estudio">↩️ No me distraje</button>` : ""}<button class="btn btn-sm btn-g" data-act="zen-guide">🔒 Bloquear apps de verdad</button><button class="btn btn-sm btn-g" data-act="zen-off">Salir</button></div>`;
 }
 /* informe al acabar cada sesión */
 async function coachSession(x) {
@@ -1815,8 +1834,9 @@ function cardsPane(s, dis) {
       <div class="card stat"><span class="stat-ic emo">🃏</span><div><b>${cards.length}</b><small>en tu mazo</small></div></div>
     </div>
     <div class="row" style="margin-top:14px"><button class="btn btn-p" data-act="review-start" data-s="${s.id}" ${due ? "" : "disabled"}>🔁 Repasar ahora${due ? ` (${due})` : ""}</button><button class="btn" data-act="ai-cards" ${dis}>${E("🪄")} Añadir 12 tarjetas con IA</button></div>
+    <form id="cardForm" class="stack" style="gap:8px;margin-top:14px"><span class="tiny muted">✍️ O escríbelas tú (sin IA):</span><input class="input" id="cardQ" data-keep maxlength="200" placeholder="Pregunta · p. ej. ¿Qué es el activo corriente?"><textarea class="input" id="cardA" data-keep rows="2" maxlength="400" placeholder="Respuesta"></textarea><div class="row" style="justify-content:flex-end"><button class="btn btn-sm" type="submit">➕ Añadir tarjeta</button></div></form>
     <p class="tiny muted" style="margin-top:10px">🧠 Repaso espaciado: cada tarjeta que aciertas vuelve más tarde (1, 3, 7, 14 y 30 días) y las que fallas vuelven hoy. Memorizas con la mitad de esfuerzo.</p>
-    ${!cards.length ? `<p class="muted small" style="margin-top:8px">Tu mazo está vacío. Pulsa «Añadir 12 tarjetas con IA» y empieza.</p>` : !due ? `<p class="muted small" style="margin-top:8px">🎉 Hoy no te toca nada en este módulo. Vuelve mañana o añade tarjetas nuevas.</p>` : ""}
+    ${!cards.length ? `<p class="muted small" style="margin-top:8px">Tu mazo está vacío. Pulsa «Añadir 12 tarjetas con IA» o escríbelas tú arriba.</p>` : !due ? `<p class="muted small" style="margin-top:8px">🎉 Hoy no te toca nada en este módulo. Vuelve mañana o añade tarjetas nuevas.</p>` : ""}
     <div id="cardsOut" style="margin-top:12px"></div>`;
 }
 
@@ -1943,6 +1963,7 @@ function tabEstudiar(s) {
   return `<section class="card">${head}${body}</section>`;
 }
 function bindStudy(s) {
+  const cf = $("#cardForm"); cf && cf.addEventListener("submit", e => { e.preventDefault(); const q = $("#cardQ").value.trim(), a = $("#cardA").value.trim(); if (!q || !a) { toast("✏️ Escribe la pregunta y la respuesta"); return; } $("#cardQ").value = ""; $("#cardA").value = ""; saveDeck(s.id, deckOf(s.id).concat([{ id: uid(), q, a, box: 0, due: dkey() }])).then(() => { toast("🃏 Tarjeta añadida"); render(); }); });
   $$("[data-stab]").forEach(b => b.onclick = () => { ui.studyTab = b.dataset.stab; saveUi(); render(); });
   $$("[data-sctx]").forEach(b => b.onclick = () => { const set = new Set(studyCtx(s)); const id = b.dataset.sctx; set.has(id) ? set.delete(id) : set.add(id); ui.ctx[s.id] = [...set]; saveUi(); render(); });
   $$(".opt[data-qi]").forEach(b => b.onclick = () => { const t = tut(s.id); const it = t.quiz.items[+b.dataset.qi]; if (it.picked != null) return; it.picked = +b.dataset.oi; commit(); });
@@ -2587,6 +2608,29 @@ Responde SOLO con JSON: {"resumen":"1-2 frases con la estrategia","bloques":[{"d
   lastAction = { title: `Plan de «${ex.title}»: ${blocks.length} sesiones · ${fmtMin(tot)}`, text: resumen || (viaAI ? "" : "Plan básico repartido por días. Con tu clave de Gemini, Rocky lo hace por temas."), list: blocks.slice(0, 6).map(b => `${fmtDay(b.date)} · ${b.start} · ${esc(b.title)}`).concat(blocks.length > 6 ? [`…y ${blocks.length - 6} más en la Agenda`] : []) };
   commit(false); toast("🥊 Plan listo. ¡A entrenar!"); go("hoy"); render();
 }
+function missedBlocks() {
+  const today = dkey(), n = new Date(), nowM = n.getHours() * 60 + n.getMinutes(), from = dkey(addDays(n, -14));
+  return state.plan.filter(b => (b.kind || "study") === "study" && !b.done && b.date >= from && (b.date < today || (b.date === today && toMin(b.start) + b.min <= nowM)))
+    .filter(b => { const f = b.examId && findExam(b.examId); return !f || f.e.date > today; })
+    .sort((a, b) => a.date.localeCompare(b.date) || toMin(a.start) - toMin(b.start));
+}
+function replanMissed() {
+  const list = missedBlocks(); if (!list.length) { toast("🎉 No tienes sesiones saltadas"); return; }
+  snapshot(); const moved = [], lost = [];
+  for (const b of list) {
+    const f = b.examId && findExam(b.examId); const until = f ? f.e.date : dkey(addDays(new Date(), 8));
+    let placed = false;
+    for (let d = new Date(); dkey(d) < until && !placed; d = addDays(d, 1)) {
+      const k = dkey(d); const sl = freeSlots(k, false).find(([a, z]) => z - a >= Math.min(b.min, 40)); if (!sl) continue;
+      const min = Math.min(b.min, sl[1] - sl[0]); const old = `${fmtDay(b.date)} ${b.start}`;
+      Object.assign(b, { date: k, start: toHHMM(sl[0]), min, moved: (b.moved || 0) + 1 });
+      moved.push(`${esc(b.title)}: ${old} → <b>${fmtDay(k)} ${b.start}</b>`); placed = true;
+    }
+    if (!placed) lost.push(esc(b.title));
+  }
+  lastAction = { title: moved.length ? `🔄 ${moved.length} ${moved.length === 1 ? "sesión recolocada" : "sesiones recolocadas"}` : "No he encontrado huecos libres", text: lost.length ? `Sin hueco antes del examen: ${lost.join(", ")}. Libera algo de tiempo o díselo al asistente.` : "", list: moved.slice(0, 8) };
+  commit(); toast(moved.length ? "🔄 Hecho: tus sesiones saltadas tienen nuevo hueco" : "😮 No hay huecos libres");
+}
 function nowBlock() {
   const today = dkey(); const n = new Date(); const nowM = n.getHours() * 60 + n.getMinutes();
   const list = state.plan.filter(b => b.date === today && (b.kind || "study") === "study" && !b.done).sort((a, b) => toMin(a.start) - toMin(b.start));
@@ -2601,14 +2645,16 @@ function nowCard() {
   if (examBusy) { const f = findExam(examBusy); return `<section class="card now-card">${thinkingHtml(`🥊 Preparando el plan de «${esc(f ? f.e.title : "tu examen")}»…`)}</section>`; }
   const nb = nowBlock();
   if (!nb) return `<section class="card now-card"><div class="row" style="flex-wrap:nowrap;gap:14px">${GLOVE(56)}<div style="flex:1;min-width:0"><span class="eyebrow">Hoy</span><h2>Sin sesiones pendientes</h2><p class="small muted">¿Tienes algún examen? Dile cuándo es y Rocky te monta el plan hasta ese día.</p></div></div>
-    <div class="row" style="margin-top:12px"><button class="btn btn-p" data-act="new-exam">🥊 Nuevo examen</button><button class="btn" data-go="foco">${ic("play")}Sesión libre</button></div></section>`;
+    <div class="row" style="margin-top:12px"><button class="btn btn-p" data-act="new-exam">🥊 Nuevo examen</button><button class="btn" data-go="foco">${ic("play")}Sesión libre</button>${missedBlocks().length ? `<button class="btn btn-m" data-act="replan-missed">🔄 Recolocar ${missedBlocks().length} saltadas</button>` : ""}</div></section>`;
+  const miss = missedBlocks().length;
   const { b, label, rest } = nb; const s = subj(b.subjectId); const f = b.examId && findExam(b.examId); const docs = blockDocs(b);
   return `<section class="card now-card" style="--c:${sColor(b.subjectId)}">
     <span class="eyebrow" style="color:var(--accent)">${label}</span>
     <h2 class="now-t">${s ? E(s.emoji) + " " : ""}${esc(b.title)}</h2>
     <p class="small muted">${b.start}–${toHHMM(toMin(b.start) + b.min)} · ${fmtMin(b.min)}${s ? " · " + esc(s.name) : ""}</p>
     ${f ? `<p class="small" style="margin-top:4px">🎯 ${esc(f.e.title)} · <b>${daysUntil(f.e.date) === 1 ? "mañana" : `en ${daysUntil(f.e.date)} días`}</b>${docs.length ? ` · 📎 ${docs.length} ${docs.length === 1 ? "apunte" : "apuntes"}` : ""}</p>` : ""}
-    <div class="row" style="margin-top:12px"><button class="btn btn-p btn-lg" data-act="focus-block" data-id="${b.id}">${ic("play")}Empezar</button>${rest ? `<span class="tiny muted">+${rest} ${rest === 1 ? "sesión" : "sesiones"} más hoy</span>` : `<span class="tiny muted">Última sesión de hoy 💪</span>`}</div>
+    <div class="row" style="margin-top:12px"><button class="btn btn-p btn-lg" data-act="focus-block" data-id="${b.id}">${ic("play")}Empezar</button>${rest ? `<span class="tiny muted">+${rest} ${rest === 1 ? "sesión" : "sesiones"} más hoy</span>` : `<span class="tiny muted">Última sesión de hoy 💪</span>`}<button class="btn btn-sm btn-g" data-act="ics-alarms" title="Que el calendario del móvil te avise antes de cada sesión">🔔 Avisos</button></div>
+    ${miss ? `<p class="small" style="margin-top:10px">⏳ Te has saltado <b>${miss} ${miss === 1 ? "sesión" : "sesiones"}</b>. <button class="btn btn-sm btn-m" data-act="replan-missed">🔄 Recolocar</button></p>` : ""}
   </section>`;
 }
 
@@ -3017,11 +3063,12 @@ function exportICS() {
     const title = (kind === "event" ? "📌 " : (s ? s.emoji + " " : "📚 ")) + (b.title || (s ? s.name : "Estudio"));
     if (b.allDay) { ev(b.id, ["DTSTART;VALUE=DATE:" + icsD(b.date), "DTEND;VALUE=DATE:" + icsD(dkey(addDays(parseD(b.date), 1))), "SUMMARY:" + icsEsc(title)]); continue; }
     const endM = toMin(b.start) + b.min; const endK = endM >= 1440 ? dkey(addDays(parseD(b.date), 1)) : b.date;
-    ev(b.id, ["DTSTART:" + icsDT(b.date, b.start), "DTEND:" + icsDT(endK, toHHMM(endM % 1440)), "SUMMARY:" + icsEsc(title), ...(s ? ["DESCRIPTION:" + icsEsc(s.name)] : [])]);
+    const alarm = kind === "study" && !b.done && b.date >= dkey(now) ? ["BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:" + icsEsc("🥊 En 10 min: " + title), "TRIGGER:-PT10M", "END:VALARM"] : [];
+    ev(b.id, ["DTSTART:" + icsDT(b.date, b.start), "DTEND:" + icsDT(endK, toHHMM(endM % 1440)), "SUMMARY:" + icsEsc(title), ...(s ? ["DESCRIPTION:" + icsEsc(s.name)] : []), ...alarm]);
   }
   const mon = mondayOf(now);
   for (const c of state.timetable) { const k = dkey(addDays(mon, c.dow)); const s = subj(c.subjectId); ev("tt" + c.id, ["DTSTART:" + icsDT(k, c.start), "DTEND:" + icsDT(k, c.end), "RRULE:FREQ=WEEKLY;BYDAY=" + BYDAY[c.dow], "SUMMARY:" + icsEsc("🏫 " + (c.title || (s ? s.name : "Clase"))), ...(c.room ? ["LOCATION:" + icsEsc(c.room)] : [])]); }
-  for (const e of allUpcomingExams()) ev("ex" + e.id, ["DTSTART;VALUE=DATE:" + icsD(e.date), "DTEND;VALUE=DATE:" + icsD(dkey(addDays(parseD(e.date), 1))), "SUMMARY:" + icsEsc("🚨 Examen: " + e.s.name + " · " + e.title)]);
+  for (const e of allUpcomingExams()) ev("ex" + e.id, ["DTSTART;VALUE=DATE:" + icsD(e.date), "DTEND;VALUE=DATE:" + icsD(dkey(addDays(parseD(e.date), 1))), "SUMMARY:" + icsEsc("🚨 Examen: " + e.s.name + " · " + e.title), "BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:" + icsEsc("🚨 Mañana examen: " + e.title), "TRIGGER:-PT6H", "END:VALARM"]);
   for (const t of state.tasks) if (t.due && t.status !== "done") ev("tk" + t.id, ["DTSTART;VALUE=DATE:" + icsD(t.due), "DTEND;VALUE=DATE:" + icsD(dkey(addDays(parseD(t.due), 1))), "SUMMARY:" + icsEsc("✅ Entrega: " + t.title)]);
   L.push("END:VCALENDAR");
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([L.join("\r\n")], { type: "text/calendar" })); a.download = "pupitre.ics";
@@ -3233,6 +3280,9 @@ document.addEventListener("click", e => {
     case "zen-guide": zenGuide(); break;
     case "exam-review": examReviewModal(id); break;
     case "icon-tip-off": lsSet("rk.iconTip", 1); render(); break;
+    case "replan-missed": replanMissed(); break;
+    case "ics-alarms": exportICS(); setTimeout(() => toast("🔔 Abre el archivo y toca «Añadir todo»: el calendario te avisará 10 min antes de cada sesión. Si cambias el plan, expórtalo otra vez."), 600); break;
+    case "zen-undo": if (timer.lastAway) { timer.leaves = Math.max(0, (timer.leaves || 0) - 1); timer.awayMs = Math.max(0, (timer.awayMs || 0) - timer.lastAway); timer.lastAway = null; saveTimer(); toast("👍 Quitada. Esa no cuenta"); render(); } break;
     case "icon-backup": exportAll().then(() => render()); break;
     case "bk-snooze": lsSet("rk.bkSnooze", Date.now() + 3 * 864e5); render(); break;
     case "install-off": lsSet("rk.installTip", 1); render(); break;
@@ -3364,7 +3414,7 @@ function exampleState() {
 }
 
 /* ================= actualizaciones ================= */
-const APP_VERSION = "2026.11.10-3";
+const APP_VERSION = "2026.11.10-4";
 let updateReady = false;
 async function checkUpdate() {
   try {
