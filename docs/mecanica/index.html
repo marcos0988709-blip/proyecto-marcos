@@ -354,14 +354,18 @@ details.set-adv summary{cursor:pointer;color:var(--muted);font-size:.86rem;font-
 .wb b{font-family:var(--f-mono);font-size:.7rem;color:var(--muted);font-weight:500}
 
 /* Onboarding */
-.onb{display:grid;gap:22px;grid-template-columns:1fr;align-items:start;padding-block:6px}
-@media (min-width:900px){.onb{grid-template-columns:1.05fr 1fr}}
-.onb h1{font-size:clamp(2.2rem,6vw,3.5rem);line-height:1.02}
-.onb .lead{font-size:1.06rem;color:var(--muted);max-width:52ch;margin-top:12px}
-.feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:12px;margin-top:6px}
-.feat div{display:flex;gap:10px;align-items:flex-start;font-size:.9rem}
-.feat .emo{font-size:22px;margin-top:1px}
-.preview{transform:rotate(-1.2deg)}
+.onb1{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px;padding-block:4px 24px}
+.onb1-t{font-size:clamp(2rem,8vw,2.8rem);line-height:1.02;margin:8px 0 4px}
+body.onb-on .bnav,body.onb-on .nav{display:none}
+.onb1-step{display:flex;align-items:center;gap:10px;margin-top:6px}
+.onb1-n{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#000;font-weight:800;font-size:.8rem;display:grid;place-items:center}
+.onb1-lv{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media (min-width:480px){.onb1-lv{grid-template-columns:repeat(4,1fr)}}
+.onb1-lv button{padding:14px 8px;border-radius:14px;border:1px solid var(--line-strong);background:var(--sheet);color:var(--ink);font-weight:700;font-size:.95rem}
+.onb1-lv button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent);color:#000}
+.onb1-go{width:100%;justify-content:center}
+.onb1-go:disabled{opacity:.45}
+.onb1-alt{justify-content:center;gap:4px}
 .mods{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:8px}
 .mod{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line-strong);border-radius:12px;cursor:pointer;background:var(--sheet-2);line-height:1.3}
 .mod input{width:18px;height:18px;flex:none;margin:2px 0 0;accent-color:var(--c)}
@@ -848,6 +852,7 @@ function render(anim) {
   renderNav();
   if (!dbAnswered) { $("#view").innerHTML = `<p class="muted">${E("⏳")} Abriendo tu pupitre…</p>`; return; }
   const v = $("#view"); const route = S.view + ":" + (S.param || "");
+  document.body.classList.toggle("onb-on", !state);
   if (!state) { v.innerHTML = viewOnboarding(); bindOnboarding(); lastRoute = "onb"; renderSideTimer(); return; }
   const same = lastRoute === route && !anim;
   const a = document.activeElement; const keep = {}; const focus = same && a && a.id ? { id: a.id, s: a.selectionStart, e: a.selectionEnd } : null;
@@ -866,60 +871,60 @@ function render(anim) {
   document.body.classList.toggle("zen", !!(state && timer.zen && S.view === "foco"));
 }
 
-/* ---------- Onboarding ---------- */
+/* ---------- Onboarding: una pantalla, cualquier curso ---------- */
+const STUDY_LV = {
+  eso: { label: "ESO", years: ["1º", "2º", "3º", "4º"], subs: [["Lengua", "📖", 1], ["Matemáticas", "📐", 1], ["Inglés", "🗣️", 1], ["Geografía e Historia", "🌍", 1], ["Biología y Geología", "🧬", 1], ["Física y Química", "🧪", 1], ["Tecnología", "🔧", 0], ["Catalán", "📝", 0], ["Educación Física", "🏃", 0], ["Música", "🎵", 0], ["Plástica", "🎨", 0], ["Francés", "🥐", 0]] },
+  bach: { label: "Bachillerato", years: ["1º", "2º"], subs: [["Lengua", "📖", 1], ["Inglés", "🗣️", 1], ["Historia", "🏛️", 1], ["Filosofía", "💭", 0], ["Matemáticas", "📐", 0], ["Mates CCSS", "📊", 0], ["Física", "🧲", 0], ["Química", "🧪", 0], ["Biología", "🧬", 0], ["Dibujo Técnico", "📏", 0], ["Economía", "💼", 0], ["Historia del Arte", "🖼️", 0], ["Latín", "🏺", 0], ["Catalán", "📝", 0]] },
+  fp: { label: "FP", years: ["1º", "2º"], subs: [["FOL", "🦺", 1], ["Inglés", "🗣️", 1], ["Empresa e iniciativa", "💼", 0], ["Digitalización", "🌐", 0], ["Sostenibilidad", "🌱", 0]] },
+  uni: { label: "Universidad", years: ["1º", "2º", "3º", "4º"], subs: [] },
+};
+const onb = { lvl: "", year: "", picked: new Set(), extra: [], preset: false };
+function onbSubs() {
+  const L = STUDY_LV[onb.lvl]; if (!L) return [];
+  if (onb.preset) return CURSO.map(t => [t.name, t.emoji, t.def ? 1 : 0, t]);
+  return L.subs.concat(onb.extra.map(n => [n, "📘", 1]));
+}
 function viewOnboarding() {
   const loading = !dbAnswered && window.claude;
-  return `<section class="onb view-in">
-    <div class="stack" style="gap:18px">
-      <div class="row" style="gap:14px;flex-wrap:nowrap">${LOGO(76, "rise")}<span class="pill mk">${E("🥊")} Entrena para el 10</span></div>
-      <h1>Entrena tu cabeza.<br><span class="mark">Gana</span> cada examen.</h1>
-      <p class="lead">Tus módulos, tus apuntes, tus PDF y un tutor con IA que se los ha leído todos. Más sesiones de foco y un plan semanal que se hace solo.</p>
-      <div class="feat">
-        <div>${E("⏱️")}<span><b>Sesiones de foco</b><br><span class="muted">Pomodoro que apunta tus horas por asignatura.</span></span></div>
-        <div>${E("📄")}<span><b>Documentos sin límite</b><br><span class="muted">Notas, PDF, Word e imágenes en cada asignatura.</span></span></div>
-        <div>${E("💬")}<span><b>Chats con IA sin límite</b><br><span class="muted">La IA lee tus documentos y te explica, resume y examina.</span></span></div>
-        <div>${E("🗓️")}<span><b>Plan con IA</b><br><span class="muted">Tu semana repartida según exámenes y horas libres.</span></span></div>
-      </div>
-      <form id="onbForm" class="card stack" style="gap:14px">
-        <label class="field"><span>¿Cómo te llamas?</span><input class="input" id="onbName" placeholder="Tu nombre" autocomplete="given-name" maxlength="40"></label>
-        <div class="field"><span>¿Qué estudias?</span><div class="seg" role="group" aria-label="Curso"><button type="button" data-oc="aif" aria-pressed="true">${PRESET_LABEL}</button><button type="button" data-oc="otro" aria-pressed="false">✏️ Otro curso</button></div></div>
-        <div class="field" id="ocAif"><span>${PRESET === "mecanica" ? "Tus asignaturas" : "Tus módulos"} de este curso (desmarca los que no tengas)</span><div class="mods">${tplPicker("onb", false)}</div></div>
-        <div class="field" id="ocOtro" hidden><span>Escribe tu curso (y el centro si quieres)</span><input class="input" id="onbCourse" placeholder="p. ej. 2º Bachillerato Ciencias · IES Bellvitge" maxlength="90"><span class="tiny muted">Después pegas tu clave de Gemini y la IA te crea las asignaturas con sus temas.</span></div>
-        <div class="row">
-          <button class="btn btn-p btn-lg" type="submit">${E("🚀")} Crear mi curso</button>
-          ${PRESET === "aif" ? `<button class="btn btn-lg" type="button" id="onbExample">${E("👀")} Ver ejemplo</button>` : ""}
-          <button class="btn btn-g" type="button" id="onbEmpty">Empezar vacío</button>
-        </div>
-        ${loading ? `<p class="tiny muted"><span class="thinking"><i></i><i></i><i></i></span> Buscando tus datos guardados…</p>` : ""}
-      </form>
-    </div>
-    <div class="preview" aria-hidden="true">
-      <div class="card stack" style="gap:16px">
-        <div class="row between"><span class="eyebrow">Hoy · plan</span><span class="pill warn">${E("🚨")} Examen en 6 días</span></div>
-        ${(PRESET === "mecanica" ? [["17:00", "📐", "Derivadas: problemas de optimización", COLORS[0], 1], ["18:00", "🧲", "Dinámica: leyes de Newton", COLORS[1], 0], ["19:00", "📏", "Sistema diédrico", COLORS[4], 0]] : [["17:00", "🧾", "IVA: liquidación del modelo 303", COLORS[0], 1], ["18:00", "💻", "Tablas dinámicas", COLORS[2], 0], ["19:00", "🗣️", "Business emails", COLORS[4], 0]]).map(([t, e, n, c, d]) => `<div class="blk ${d ? "done" : ""}" style="--c:${c}"><span class="check" aria-checked="${d ? "true" : "false"}">${ic("check")}</span><span class="ttl">${E(e)} ${n}</span><span class="t">${t}</span></div>`).join("")}
-        <div class="ring" style="width:170px;margin:4px auto;--c:${COLORS[0]}"><svg viewBox="0 0 260 260"><circle class="track" cx="130" cy="130" r="118" fill="none" stroke-width="12"/><circle class="prog" cx="130" cy="130" r="118" fill="none" stroke-width="12" stroke-linecap="round" stroke-dasharray="741" stroke-dashoffset="250"/></svg><div class="ring-center"><span class="clock" style="font-size:2.3rem">16:24</span><span class="phase">🎯 Foco</span></div></div>
-        <div class="msg a small"><b>🤖 Tutor:</b> ${PRESET === "mecanica" ? "En tus apuntes de Física, lo que más cae es el <b>sólido rígido</b>. Te pongo un problema tipo examen…" : "En tu PDF del tema 4, lo que más cae es la <b>liquidación del IVA</b>. Te pongo un caso práctico…"}</div>
-      </div>
-    </div>
+  const L = STUDY_LV[onb.lvl];
+  const presetOk = (PRESET === "mecanica" && onb.lvl === "uni") || (PRESET !== "mecanica" && onb.lvl === "fp");
+  return `<section class="onb1 view-in">
+    <h1 class="onb1-t">Tu curso,<br><span class="mark">en orden.</span></h1>
+    <div class="onb1-step"><span class="onb1-n">1</span><b>¿Qué estudias?</b></div>
+    <div class="onb1-lv">${Object.entries(STUDY_LV).map(([k, l]) => `<button type="button" data-lv="${k}" aria-pressed="${onb.lvl === k}">${l.label}</button>`).join("")}</div>
+    ${L ? `<div class="chips onb1-yr">${L.years.map(y => `<button type="button" class="chip" data-yr="${y}" aria-pressed="${onb.year === y}">${y}</button>`).join("")}
+      ${presetOk ? `<button type="button" class="chip" data-preset aria-pressed="${onb.preset}">${PRESET === "mecanica" ? "Ing. Mecánica (URV)" : "Administración y Finanzas"}</button>` : ""}</div>
+    <div class="onb1-step"><span class="onb1-n">2</span><b>Tus asignaturas</b></div>
+    <div class="chips onb1-subs">${onbSubs().map(([n, e]) => `<button type="button" class="chip" data-sub="${esc(n)}" aria-pressed="${onb.picked.has(n)}">${E(e)}<span>${esc(n)}</span></button>`).join("")}</div>
+    <form id="onbAdd" class="row" style="flex-wrap:nowrap;gap:8px"><input class="input" id="onbExtra" placeholder="Añadir otra" maxlength="60" autocomplete="off"><button class="btn" type="submit" aria-label="Añadir">${ic("plus")}</button></form>
+    <input class="input" id="onbName" placeholder="Tu nombre (opcional)" autocomplete="given-name" maxlength="40" value="${esc(onb.name || "")}">
+    <button class="btn btn-p btn-lg onb1-go" type="button" id="onbGo" ${onb.picked.size ? "" : "disabled"}>Empezar${onb.picked.size ? ` · ${onb.picked.size}` : ""}</button>` : ""}
+    <div class="row onb1-alt">${PRESET === "aif" ? `<button class="btn btn-g btn-sm" type="button" id="onbExample">Ver ejemplo</button>` : ""}<button class="btn btn-g btn-sm" type="button" id="onbImp">Tengo una copia</button><input type="file" id="onbImpFile" accept=".json,application/json" hidden></div>
+    ${loading ? `<p class="tiny muted"><span class="thinking"><i></i><i></i><i></i></span> Buscando tus datos…</p>` : ""}
   </section>`;
 }
-let onbMode = "aif";
 function bindOnboarding() {
-  $$("[data-oc]").forEach(b => b.onclick = () => { onbMode = b.dataset.oc; $$("[data-oc]").forEach(x => x.setAttribute("aria-pressed", x === b)); $("#ocAif").hidden = onbMode !== "aif"; $("#ocOtro").hidden = onbMode === "aif"; if (onbMode !== "aif") $("#onbCourse").focus(); });
-  $("#onbForm").addEventListener("submit", e => {
-    e.preventDefault();
-    if (onbMode === "otro") {
-      const course = $("#onbCourse").value.trim(); if (!course) { toast("✏️ Escribe qué estudias"); $("#onbCourse").focus(); return; }
-      state = blankState(); state.profile.name = $("#onbName").value.trim(); state.profile.school = course;
-      commit(false); go("asignaturas"); render(); setTimeout(() => sample ? aiSubjectsModal() : (toast("🔑 Pon tu clave de Gemini y la IA te crea las asignaturas"), settingsModal()), 300); return;
-    }
-    state = blankState(); state.profile.name = $("#onbName").value.trim(); state.profile.school = SCHOOL;
-    state.subjects = CURSO.filter(t => $(`[data-onb="${t.key}"]`).checked).map(fromTpl);
-    commit(false); toast(state.subjects.length ? `🎉 ${state.subjects.length} módulos creados. Mete tus fechas de examen.` : "✅ Listo. Añade tu primera asignatura.");
-    go(state.subjects.length ? "hoy" : "asignaturas"); render();
+  const re = (focusSel) => { const n = $("#onbName"); if (n) onb.name = n.value; render(); if (focusSel) { const el = $(focusSel); el && el.focus(); } };
+  $$("[data-lv]").forEach(b => b.onclick = () => {
+    if (onb.lvl === b.dataset.lv) return;
+    onb.lvl = b.dataset.lv; onb.year = ""; onb.preset = false; onb.extra = [];
+    onb.picked = new Set(STUDY_LV[onb.lvl].subs.filter(s => s[2]).map(s => s[0])); re();
   });
-  $("#onbExample") && $("#onbExample").addEventListener("click", () => { state = exampleState(); state.profile.name = $("#onbName").value.trim(); commit(false); go("hoy"); render(); });
-  $("#onbEmpty").addEventListener("click", () => { state = blankState(); state.profile.name = $("#onbName").value.trim(); commit(false); go("asignaturas"); render(); });
+  $$("[data-yr]").forEach(b => b.onclick = () => { onb.year = onb.year === b.dataset.yr ? "" : b.dataset.yr; re(); });
+  const pb = $("[data-preset]"); if (pb) pb.onclick = () => { onb.preset = !onb.preset; onb.picked = new Set(onbSubs().filter(s => s[2]).map(s => s[0])); re(); };
+  $$("[data-sub]").forEach(b => b.onclick = () => { const n = b.dataset.sub; onb.picked.has(n) ? onb.picked.delete(n) : onb.picked.add(n); re(); });
+  const add = $("#onbAdd"); if (add) add.addEventListener("submit", e => { e.preventDefault(); const v = $("#onbExtra").value.trim(); if (!v) return; if (onb.preset) onb.preset = false; if (!onbSubs().some(s => s[0].toLowerCase() === v.toLowerCase())) onb.extra.push(v); onb.picked.add(onbSubs().find(s => s[0].toLowerCase() === v.toLowerCase())[0]); re("#onbExtra"); });
+  const go_ = $("#onbGo"); if (go_) go_.onclick = () => {
+    const L = STUDY_LV[onb.lvl]; const name = $("#onbName").value.trim();
+    state = blankState(); state.profile.name = name;
+    state.profile.school = onb.preset ? SCHOOL : [onb.year, L.label].filter(Boolean).join(" ");
+    let i = 0;
+    state.subjects = onbSubs().filter(s => onb.picked.has(s[0])).map(([n, e, , t]) => t ? fromTpl(t) : ({ id: uid(), emoji: e, name: n, kind: "asignatura", color: COLORS[i++ % COLORS.length], exams: [], topics: [] }));
+    commit(false); go("hoy"); render();
+  };
+  $("#onbExample") && ($("#onbExample").onclick = () => { state = exampleState(); commit(false); go("hoy"); render(); });
+  $("#onbImp").onclick = () => $("#onbImpFile").click();
+  $("#onbImpFile").onchange = e => { const f = e.target.files[0]; if (f) importAll(f); };
 }
 
 /* ---------- Hoy ---------- */
@@ -3450,7 +3455,7 @@ function exampleState() {
 }
 
 /* ================= actualizaciones ================= */
-const APP_VERSION = "2026.11.12-2";
+const APP_VERSION = "2026.11.12-3";
 let updateReady = false;
 async function checkUpdate() {
   try {
