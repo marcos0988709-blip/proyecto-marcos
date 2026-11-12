@@ -359,6 +359,50 @@ details.set-adv summary{cursor:pointer;color:var(--muted);font-size:.86rem;font-
 .kpi>span>small{display:block;font-size:.7rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .kpi-ic{width:22px;height:22px;flex:none;color:var(--accent);stroke-width:1.8}
 .now-line{gap:10px;flex-wrap:nowrap;width:100%;color:var(--ink);font:inherit;cursor:pointer}
+/* Vídeo resumen */
+.vid{display:flex;flex-direction:column;gap:12px}
+.v-segs{display:flex;gap:4px}.v-seg{flex:1;height:4px;border-radius:4px;background:var(--line)}.v-seg.done{background:var(--accent)}.v-seg.on{background:linear-gradient(90deg,var(--accent),var(--line));background-size:200% 100%;animation:vSeg 2.4s linear infinite}
+@keyframes vSeg{from{background-position:100% 0}to{background-position:0 0}}
+.v-stage{position:relative;aspect-ratio:4/5;max-height:72vh;width:100%;margin:0 auto;border-radius:22px;overflow:hidden;cursor:pointer;border:1px solid rgba(245,184,65,.25);
+  background:radial-gradient(90% 60% at 85% 0%,rgba(245,184,65,.28),transparent 60%),radial-gradient(70% 50% at 0% 100%,rgba(255,74,61,.18),transparent 60%),linear-gradient(180deg,#121218,#07070a)}
+@media (min-width:760px){.v-stage{aspect-ratio:16/9}}
+.v-stage::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:32px 32px;animation:vGrid 18s linear infinite}
+@keyframes vGrid{to{background-position:32px 64px}}
+.v-scene{position:absolute;inset:0;padding:clamp(18px,5vw,40px);display:flex;flex-direction:column;gap:clamp(10px,2.4vw,18px)}
+.v-scene>*{animation:vIn .6s cubic-bezier(.2,.8,.2,1) both}.v-scene>.v-t{animation-delay:.12s}.v-scene>.v-body{animation-delay:.3s}
+@keyframes vIn{from{opacity:0;transform:translateY(18px)}}
+.v-top{display:flex;justify-content:space-between;align-items:center}
+.v-k{font:800 .72rem var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:#000;background:var(--accent);padding:5px 10px;border-radius:99px}
+.v-n{font:600 .78rem var(--f-mono);color:var(--muted)}
+.v-t{font-family:Anton,var(--f-display);font-weight:400;font-size:clamp(1.9rem,7.5vw,3.2rem);line-height:1.02;letter-spacing:.01em;text-transform:uppercase;color:#fff}
+.v-body{flex:1;display:flex;flex-direction:column;justify-content:center;gap:12px;min-height:0}
+.v-list,.v-steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:clamp(8px,2vw,14px)}
+.v-list li,.v-steps li,.v-bar,.v-cmp>div{animation:vIn .55s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(.45s + var(--i,0) * .45s)}
+.v-list li{font-size:clamp(1.05rem,4.4vw,1.5rem);font-weight:700;padding-left:22px;position:relative;line-height:1.25}
+.v-list li::before{content:"";position:absolute;left:0;top:.42em;width:10px;height:10px;border-radius:3px;background:var(--accent);box-shadow:0 0 12px var(--accent)}
+.v-steps li{display:flex;gap:12px;align-items:center;font-size:clamp(1rem,4vw,1.35rem);font-weight:700}
+.v-steps b{flex:none;width:clamp(30px,7vw,40px);height:clamp(30px,7vw,40px);border-radius:50%;display:grid;place-items:center;background:var(--accent);color:#000;font-family:var(--f-mono)}
+.v-big{font-family:Anton,var(--f-display);font-size:clamp(4rem,22vw,8rem);line-height:1;background:linear-gradient(180deg,#FFE59C,#F5B841 55%,#C98410);-webkit-background-clip:text;background-clip:text;color:transparent;animation:vPop .7s .4s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes vPop{from{opacity:0;transform:scale(.6)}}
+.v-sub{font-size:clamp(1rem,4vw,1.35rem);color:var(--muted);font-weight:600;animation:vIn .6s .8s both}
+.v-formula{font:700 clamp(1.15rem,5vw,1.9rem) var(--f-mono);padding:16px 18px;border-radius:16px;border:1px solid rgba(245,184,65,.45);background:rgba(245,184,65,.08);color:#fff;animation:vPop .6s .4s both}
+.v-bars{display:flex;flex-direction:column;gap:12px}
+.v-bar{display:grid;grid-template-columns:minmax(0,38%) 1fr auto;gap:10px;align-items:center;font-weight:700;font-size:clamp(.9rem,3.6vw,1.15rem)}
+.v-bar i{height:clamp(14px,3.6vw,22px);border-radius:8px;background:rgba(255,255,255,.07);overflow:hidden}
+.v-bar em{display:block;height:100%;width:var(--w);border-radius:8px;background:linear-gradient(90deg,#C98410,#F5B841,#FFE59C);box-shadow:0 0 18px rgba(245,184,65,.5);animation:vGrow 1s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(.6s + var(--i,0) * .35s)}
+@keyframes vGrow{from{width:0}}
+.v-bar b{font-family:var(--f-mono);color:var(--accent)}
+.v-cmp{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:stretch}
+.v-cmp>div{padding:14px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid var(--line-strong)}
+.v-cmp h4{margin:0 0 6px;font-size:clamp(1rem,4vw,1.3rem);color:var(--accent)}.v-cmp ul{margin:0;padding-left:18px;font-size:clamp(.85rem,3.4vw,1.05rem);font-weight:600}
+.v-vs{align-self:center;font-family:Anton,var(--f-display);color:var(--marker);font-size:1.3rem}
+@media (max-width:520px){.v-cmp{grid-template-columns:1fr}.v-vs{justify-self:center}}
+.v-logo{position:absolute;right:14px;bottom:12px;width:30px;height:30px;opacity:.55}
+.v-play{position:absolute;inset:0;display:grid;place-items:center;opacity:0;transition:opacity .2s;pointer-events:none}
+.v-play svg{width:68px;height:68px;padding:18px;border-radius:50%;background:rgba(0,0,0,.6);color:var(--accent)}
+.v-stage.paused .v-play{opacity:1}.v-stage.paused .v-scene *{animation-play-state:paused}
+.v-stage.loading::after{content:"Generando voz…";position:absolute;left:50%;bottom:16px;transform:translateX(-50%);font-size:.8rem;color:var(--muted);background:rgba(0,0,0,.6);padding:6px 12px;border-radius:99px}
+.v-cap{text-align:center;color:var(--muted);max-width:60ch;margin:0 auto;min-height:3em}
 /* Onboarding */
 .onb1{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px;padding-block:4px 24px}
 .onb1-t{font-size:clamp(2rem,8vw,2.8rem);line-height:1.02;margin:8px 0 4px}
@@ -853,7 +897,7 @@ function readHash() {
   else { S.view = "hoy"; S.param = null; }
 }
 function go(h) { if (location.hash.slice(1) === h) render(); else location.hash = h; }
-window.addEventListener("hashchange", () => { const was = S.view + S.param; readHash(); if (pod && was !== S.view + S.param) podStop(); render(true); window.scrollTo(0, 0); });
+window.addEventListener("hashchange", () => { const was = S.view + S.param; readHash(); if (was !== S.view + S.param) { if (pod) podStop(); if (podAI || vid) { podAI = null; vidPause(); vid = null; stopMediaAudio(); } } render(true); window.scrollTo(0, 0); });
 function renderNav() {
   const cur = { asig: "asignaturas", doc: "asignaturas", studio: "asignaturas", chat: "tutor" }[S.view] || S.view;
   const hidden = new Set((state && state.settings && state.settings.hiddenNav) || []);
@@ -1651,7 +1695,8 @@ async function ocrDoc(d, quiet) {
 
 /* ---------- IA: helpers ---------- */
 function aiErr(e) {
-  const c = e && e.code; const extra = e && e.message && !["cancelled", "no_key"].includes(c) ? ` (${String(e.message).slice(0, 160)})` : "";
+  const c = e && e.code;
+  if (c === "no_tts") return "Tu clave no tiene voces de IA disponibles."; if (c === "tts_failed") return "No se pudo generar la voz."; const extra = e && e.message && !["cancelled", "no_key"].includes(c) ? ` (${String(e.message).slice(0, 160)})` : "";
   return ({ not_granted: "Has denegado el acceso a la IA. Actívalo en los permisos del artefacto.", rate_limited: "Has llegado al límite gratis de Gemini por ahora. Espera un minuto (o hasta mañana si es el límite diario).", prompt_too_large: "Demasiado texto a la vez. Quita algún documento del contexto.", invalid_json: "La respuesta no salió en el formato esperado. Dale otra vez.", cancelled: "Parado.", refused: "La IA no ha querido responder a eso. Reformula la pregunta.", images_unavailable: "No se pudo enviar la imagen.", no_key: "Falta tu clave de Gemini: pégala en ⚙️ Ajustes.", bad_key: "La clave de Gemini no es válida. Revísala en ⚙️ Ajustes.", bad_model: "Ese modelo de Gemini no está disponible con tu clave. Pulsa «Probar clave» en ⚙️ Ajustes.", network: "Sin conexión a internet. Prueba otra vez cuando tengas señal.", empty_completion: "La IA no ha devuelto nada. Prueba otra vez.", overloaded: "Gemini está saturado ahora mismo y he probado varios modelos sin suerte. Espera 1-2 minutos y vuelve a intentarlo.", timeout: "Gemini está tardando demasiado (puede que vaya saturado). Prueba otra vez en un momento o quita algún documento del contexto 📎.", upstream_error: "Gemini ha dado un error." }[c] || "No se pudo contactar con la IA. Prueba de nuevo en un momento.") + extra;
 }
 const thinkingHtml = (t = "Pensando…") => `<span class="thinking"><i></i><i></i><i></i> ${t}</span>`;
@@ -2246,7 +2291,8 @@ function mmToDeck(it) {
 /* ---------- Estudio IA (estilo NotebookLM) ---------- */
 const STUDIO = {
   apuntes: { e: "📝", n: "Apuntes visuales", d: "Tus apuntes pasados a limpio, con esquemas y diagramas" },
-  podcast: { e: "🎧", n: "Pódcast", d: "Dos profes te lo explican charlando (5-8 min)" },
+  video: { e: "🎬", n: "Vídeo resumen", d: "Escenas animadas con voz de IA" },
+  podcast: { e: "🎧", n: "Pódcast", d: "Corto (5 min) o largo (15-20 min)" },
   mindmap: { e: "🧠", n: "Mapa mental", d: "Todo el tema de un vistazo" },
   guia: { e: "📖", n: "Guía de estudio", d: "Conceptos, ejemplos y autoevaluación" },
   faq: { e: "❓", n: "Preguntas frecuentes", d: "Las dudas típicas, resueltas" },
@@ -2275,7 +2321,7 @@ function tabStudio(s) {
       ${items.length ? items.map(it => `<a class="chat-row" href="#studio-${it.id}"><span class="semo" style="--c:${s.color}">${E((STUDIO[it.kind] || {}).e || "📄")}</span><div style="min-width:0"><div class="ct">${esc(it.title || "Sin título")}</div><div class="tiny muted">${(STUDIO[it.kind] || {}).n || ""}</div></div><span class="tiny muted">${ago(it.createdAt)}</span></a>`).join("") : `<div class="empty"><span class="emo big">✨</span><p>Aún no has creado nada. Prueba el 🎧 Pódcast para escuchar el tema mientras vas en el bus.</p></div>`}
     </section></div>`;
 }
-async function genStudio(kind) {
+async function genStudio(kind, opts = {}) {
   const s = subj(S.param); if (!s) return;
   if (!sample) { toast("Pega tu clave de Gemini en ⚙️ Ajustes"); settingsModal(); return; }
   if (studioBusy) return; studioBusy = true; render();
@@ -2283,11 +2329,63 @@ async function genStudio(kind) {
   try {
     const src = await studySource(s, 120000);
     const item = { subjectId: s.id, kind, createdAt: Date.now(), updatedAt: Date.now() };
-    if (kind === "podcast") {
-      const r = await sample.json(`Escribe el GUION de un pódcast educativo en español de España entre dos profesores, Laura (A) y Dani (B), que explican este contenido a un alumno de FP de forma amena, clara y con ejemplos cotidianos. Duración 5-8 minutos (900-1300 palabras), 24-40 intervenciones cortas (1-3 frases cada una). Empieza presentando el tema, cubre lo más importante para el examen (80/20), incluye algún ejemplo con números si aplica, haz que uno pregunte las dudas típicas y el otro las resuelva, y termina con un resumen de 3 ideas clave. Las frases se van a leer en voz alta: nada de Markdown, emojis, paréntesis ni símbolos raros; escribe porcentajes y siglas como se pronuncian si ayuda.\n${src}\n\nResponde SOLO con JSON: {"title":"título corto","lines":[{"s":"A","t":"frase"}]}`);
-      const lines = (r && Array.isArray(r.lines) ? r.lines : []).filter(l => l && l.t).map(l => ({ s: l.s === "B" ? "B" : "A", t: String(l.t).replace(/[*_#`]/g, "") }));
+    if (kind === "video") {
+      const r = await sample.json(`Crea el guion de un VÍDEO RESUMEN animado de 2 a 4 minutos sobre este contenido. ${COURSE_CTX()}
+Entre 6 y 9 escenas. La primera es un gancho (una pregunta o un dato que enganche). La última, las 3 ideas clave para el examen.
+Cada escena tiene:
+- "titulo": máximo 7 palabras.
+- "etiqueta": 1-2 palabras (por ejemplo «Concepto», «Ejemplo», «Ojo al examen», «Truco»).
+- "narracion": 2-4 frases (30-60 palabras), tono cercano y con energía, como un buen youtuber educativo de España. Se lee en voz alta: sin emojis, símbolos ni Markdown.
+- "visual": UNO de estos objetos (varía los tipos entre escenas):
+  {"tipo":"lista","items":["máximo 4, muy cortos"]}
+  {"tipo":"pasos","items":["máximo 5 pasos cortos"]}
+  {"tipo":"dato","valor":"21 %","texto":"qué significa, corto"}
+  {"tipo":"barras","items":[{"label":"…","valor":10}],"unidad":"%"}  (solo con números reales del contenido)
+  {"tipo":"comparar","a":{"titulo":"…","puntos":["…"]},"b":{"titulo":"…","puntos":["…"]}}
+  {"tipo":"formula","texto":"BAI = BAII − gastos financieros","nota":"corto"}
+Sé fiel al contenido del alumno.
+${src}
+
+Responde SOLO con JSON: {"title":"título corto","scenes":[{"titulo":"…","etiqueta":"…","narracion":"…","visual":{…}}]}`);
+      const scenes = (r && Array.isArray(r.scenes) ? r.scenes : []).filter(x => x && x.narracion).slice(0, 12).map(x => ({ titulo: String(x.titulo || "").slice(0, 80), etiqueta: String(x.etiqueta || "").slice(0, 24), narracion: String(x.narracion).replace(/[*_#`]/g, "").slice(0, 600), visual: x.visual && typeof x.visual === "object" ? x.visual : { tipo: "lista", items: [] } }));
+      if (scenes.length < 3) throw { code: "invalid_json" };
+      item.title = String((r && r.title) || "Vídeo: " + sName(s)).slice(0, 90); item.scenes = scenes;
+    } else if (kind === "podcast") {
+      const long = opts.len === "largo"; item.len = long ? "largo" : "corto";
+      const cleanL = r => (r && Array.isArray(r.lines) ? r.lines : []).filter(l => l && l.t).map(l => ({ s: l.s === "B" ? "B" : "A", t: String(l.t).replace(/[*_#`]/g, "") }));
+      let r, lines;
+      if (long) {
+        /* el largo se escribe por partes: un índice y luego tres trozos, para llegar de verdad a 15-20 minutos */
+        const say = t => { const o = out(); if (o) o.innerHTML = thinkingHtml(t); };
+        say("Preparando el índice del pódcast…");
+        const askIdx = () => sample.json(`Vas a preparar un pódcast educativo largo (15-20 minutos) sobre este contenido. ${COURSE_CTX()} Haz el índice: un título atractivo y entre 6 y 9 apartados que cubran TODO lo importante del contenido, en orden lógico.\n${src}\n\nResponde SOLO con JSON: {"title":"…","apartados":["…"]}`);
+        let idx = null; for (let t = 0; t < 2 && !idx; t++) { try { idx = await askIdx(); } catch (e) { if (t) throw e; } }
+        const ap = (idx && Array.isArray(idx.apartados) ? idx.apartados : []).map(String).filter(Boolean).slice(0, 9); if (ap.length < 3) throw { code: "invalid_json" };
+        const g = [ap.slice(0, Math.ceil(ap.length / 3)), ap.slice(Math.ceil(ap.length / 3), Math.ceil(ap.length * 2 / 3)), ap.slice(Math.ceil(ap.length * 2 / 3))];
+        lines = [];
+        for (let k = 0; k < 3; k++) {
+          say(`Escribiendo el pódcast… parte ${k + 1} de 3`);
+          const prev = lines.slice(-4).map(l => `${l.s === "A" ? "Laura" : "Dani"}: ${l.t}`).join("\n");
+          const ask = () => sample.json(`Escribe la PARTE ${k + 1} de 3 del guion de un pódcast educativo en español de España entre dos profes jóvenes, Laura (A) y Dani (B), que charlan con naturalidad, humor y ejemplos cotidianos. ${COURSE_CTX()}
+Título del pódcast: «${idx.title || sName(s)}». Índice completo: ${ap.join(" · ")}.
+En esta parte tratad SOLO estos apartados, a fondo: ${g[k].join(" · ")}. Cada apartado con explicación clara, un ejemplo (con números si aplica) y una pregunta típica de examen que el otro responde.
+${k === 0 ? "Empezad con un gancho y presentad de qué va el pódcast." : `Seguid la conversación justo donde se quedó (sin saludar otra vez). Final de la parte anterior:\n${prev}`}
+${k === 2 ? "Terminad con un repaso de 5 ideas clave para el examen y una despedida corta." : "No os despidáis: la charla sigue en la siguiente parte."}
+Longitud: 900-1100 palabras, 30-45 intervenciones de 1-4 frases. Se lee en voz alta: nada de Markdown, emojis ni símbolos.
+${src}
+
+Responde SOLO con JSON: {"lines":[{"s":"A","t":"frase"}]}`);
+          let best = []; for (let t = 0; t < 2 && best.length < 26; t++) { try { const got = cleanL(await ask()); if (got.length > best.length) best = got; } catch (e) { if (e && ["no_key", "cancelled"].includes(e.code)) throw e; } }
+          lines = lines.concat(best);
+        }
+        if (lines.length < 20) throw { code: "invalid_json" };
+        r = { title: idx.title };
+      } else {
+        r = await sample.json(`Escribe el GUION de un pódcast educativo en español de España entre dos profesores jóvenes, Laura (A) y Dani (B), que explican este contenido a un alumno de forma amena, clara y con ejemplos cotidianos. ${COURSE_CTX()} Duración 5-7 minutos (850-1150 palabras), 24-40 intervenciones cortas (1-3 frases cada una). Empieza presentando el tema, cubre lo más importante para el examen (80/20), incluye algún ejemplo con números si aplica, haz que uno pregunte las dudas típicas y el otro las resuelva, y termina con un resumen de 3 ideas clave. Las frases se van a leer en voz alta: nada de Markdown, emojis, paréntesis ni símbolos raros; escribe porcentajes y siglas como se pronuncian si ayuda.\n${src}\n\nResponde SOLO con JSON: {"title":"título corto","lines":[{"s":"A","t":"frase"}]}`);
+        lines = cleanL(r);
+      }
       if (lines.length < 4) throw { code: "invalid_json" };
-      item.title = "🎧 " + String((r && r.title) || "Pódcast: " + s.name).slice(0, 90); item.lines = lines;
+      item.title = String((r && r.title) || "Pódcast: " + sName(s)).slice(0, 90); item.lines = lines;
     } else if (kind === "apuntes") {
       const r = await sample.json(`${NOTES_PROMPT}\n${src}\n\nResponde SOLO con JSON: ${NOTES_SCHEMA}`);
       const n = cleanNotes(r); if (!n || n.secciones.length < 2) throw { code: "invalid_json" };
@@ -2327,12 +2425,155 @@ function podPause() { if (!pod) return; pod.playing = false; pod.tok = 0; speech
 function podStop() { try { speechSynthesis.cancel(); } catch (e) {} pod = null; }
 function podUI() {
   const it = pod && S.studio.find(x => x.id === pod.id);
-  $$(".pline").forEach(el => el.classList.toggle("on", !!pod && +el.dataset.pl === pod.i));
-  const cur = $(".pline.on"); if (cur && pod && pod.playing) cur.scrollIntoView({ block: "center", behavior: "smooth" });
-  const btn = $("#podBtn"); if (btn) btn.innerHTML = pod && pod.playing ? ic("pause") : ic("play");
-  const w = $("#podWave"); if (w) w.classList.toggle("on", !!(pod && pod.playing));
-  const pr = $("#podProg"); if (pr && it) pr.textContent = `${Math.min((pod ? pod.i : 0) + 1, it.lines.length)} / ${it.lines.length}`;
+  const ai = podAI && podAI.id === S.param ? podAI : null; const at = ai ? ai.line : pod ? pod.i : -1; const playing = !!((ai && ai.playing) || (pod && pod.playing));
+  $$(".pline").forEach(el => el.classList.toggle("on", at >= 0 && +el.dataset.pl === at));
+  const cur = $(".pline.on"); if (cur && playing) cur.scrollIntoView({ block: "center", behavior: "smooth" });
+  const btn = $("#podBtn"); if (btn) btn.innerHTML = playing ? ic("pause") : ic("play");
+  const w = $("#podWave"); if (w) w.classList.toggle("on", playing && !(ai && ai.loading));
+  const it2 = it || S.studio.find(x => x.id === S.param);
+  const pr = $("#podProg"); if (pr && it2 && it2.lines) pr.innerHTML = ai && ai.loading ? thinkingHtml("Generando voz…") : `${Math.min(Math.max(at, 0) + 1, it2.lines.length)} / ${it2.lines.length}`;
 }
+/* ===== Voz de IA (Gemini TTS): pódcast y vídeo con voces naturales ===== */
+const VOICES = { Laura: "Leda", Dani: "Puck", narrador: "Puck" };
+let ttsModelName = null;
+async function ttsModel() {
+  if (ttsModelName) return ttsModelName;
+  const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200", { headers: { "x-goog-api-key": aiCfg().key } });
+  if (!r.ok) throw { code: r.status === 429 ? "rate_limited" : "no_tts" };
+  const ms = ((await r.json()).models || []).filter(m => (m.supportedGenerationMethods || []).includes("generateContent")).map(m => m.name.replace(/^models\//, "")).filter(n => /tts/i.test(n)).sort();
+  ttsModelName = ms.filter(n => /flash/i.test(n)).pop() || ms.pop();
+  if (!ttsModelName) throw { code: "no_tts" };
+  return ttsModelName;
+}
+function pcmToWav(b64, rate) {
+  const bin = atob(b64), len = bin.length, buf = new ArrayBuffer(44 + len), v = new DataView(buf);
+  const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, "RIFF"); v.setUint32(4, 36 + len, true); w(8, "WAVE"); w(12, "fmt "); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, "data"); v.setUint32(40, len, true);
+  const u = new Uint8Array(buf, 44); for (let i = 0; i < len; i++) u[i] = bin.charCodeAt(i);
+  return new Blob([buf], { type: "audio/wav" });
+}
+async function tts(text, voice) {
+  if (!aiCfg().key) throw { code: "no_key" };
+  const model = await ttsModel();
+  const speechConfig = typeof voice === "string" ? { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } }
+    : { multiSpeakerVoiceConfig: { speakerVoiceConfigs: Object.entries(voice).map(([speaker, v]) => ({ speaker, voiceConfig: { prebuiltVoiceConfig: { voiceName: v } } })) } };
+  for (let a = 0; ; a++) {
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, { method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": aiCfg().key },
+      body: JSON.stringify({ contents: [{ parts: [{ text }] }], generationConfig: { responseModalities: ["AUDIO"], speechConfig } }) }).catch(() => null);
+    if (r && r.ok) {
+      const j = await r.json().catch(() => ({})); const parts = (((j.candidates || [])[0] || {}).content || {}).parts || [];
+      const d = parts.find(p => p.inlineData || p.inline_data); const inl = d && (d.inlineData || d.inline_data); if (!inl || !inl.data) throw { code: "tts_failed" };
+      const rate = +(((inl.mimeType || inl.mime_type || "").match(/rate=(\d+)/) || [])[1]) || 24000;
+      return pcmToWav(inl.data, rate);
+    }
+    const st = r ? r.status : 0;
+    if ((st === 429 || st >= 500 || !st) && a < 2) { await new Promise(z => setTimeout(z, 2000 * (a + 1))); continue; }
+    throw { code: st === 429 ? "rate_limited" : "tts_failed" };
+  }
+}
+/* cada trozo de audio se guarda: la segunda vez suena al momento y sin gastar IA */
+const ttsMem = new Map(); const ttsPending = new Map();
+function ttsGet(key, text, voice) {
+  if (ttsMem.has(key)) return Promise.resolve(ttsMem.get(key));
+  if (ttsPending.has(key)) return ttsPending.get(key);
+  const pr = (async () => {
+    let blob = null; try { blob = await idbGet("files", "tts:" + key); } catch (e) {}
+    if (!blob) { blob = await tts(text, voice); try { await idbPut("files", "tts:" + key, blob); } catch (e) {} }
+    ttsMem.set(key, blob); return blob;
+  })();
+  ttsPending.set(key, pr); pr.finally(() => ttsPending.delete(key)).catch(() => {});
+  return pr;
+}
+async function ttsForget(id) { for (const k of [...ttsMem.keys()]) if (k.startsWith(id + ":")) ttsMem.delete(k); try { const keys = await tx("files", "readonly", o => o.getAllKeys()); for (const k of keys || []) if (String(k).startsWith("tts:" + id + ":")) await idbDel("files", k); } catch (e) {} }
+const useAIVoice = () => !!sample && lsGet("rk.voice") !== "movil";
+let mediaAudio = null;
+function stopMediaAudio() { if (mediaAudio) { mediaAudio.onended = mediaAudio.ontimeupdate = null; try { mediaAudio.pause(); } catch (e) {} URL.revokeObjectURL(mediaAudio.src); mediaAudio = null; } }
+
+/* --- Pódcast con voces de IA: se genera por trozos y se va escuchando mientras se prepara el siguiente --- */
+const POD_PROMPT = "Lee esta conversación de un pódcast educativo en español de España. Laura y Dani son dos profes jóvenes que charlan con naturalidad, ritmo y buen humor, sin sonar a robot:\n";
+function podChunks(lines) {
+  const out = []; let cur = null;
+  lines.forEach((l, i) => { if (!cur || cur.chars > 1100) { cur = { from: i, to: i, chars: 0 }; out.push(cur); } cur.to = i; cur.chars += l.t.length; });
+  return out;
+}
+const podLinesText = (it, c) => POD_PROMPT + it.lines.slice(c.from, c.to + 1).map(l => `${l.s === "A" ? "Laura" : "Dani"}: ${l.t}`).join("\n");
+let podAI = null;
+async function podAIPlay(it, ci) {
+  podStop(); stopMediaAudio(); const ch = podChunks(it.lines); if (ci >= ch.length) { podAI = null; podUI(); return; }
+  const tok = Math.random(); podAI = { id: it.id, c: ci, playing: true, loading: true, tok, line: ch[ci].from }; podUI();
+  let blob;
+  try { blob = await ttsGet(`${it.id}:p${ci}`, podLinesText(it, ch[ci]), { Laura: VOICES.Laura, Dani: VOICES.Dani }); }
+  catch (e) { if (!podAI || podAI.tok !== tok) return; podAI = null; toast(aiErr(e) + " Sigo con las voces del móvil."); podPlay(it.id, ch[ci].from); return; }
+  if (!podAI || podAI.tok !== tok) return;
+  if (ch[ci + 1]) ttsGet(`${it.id}:p${ci + 1}`, podLinesText(it, ch[ci + 1]), { Laura: VOICES.Laura, Dani: VOICES.Dani }).catch(() => {});
+  const a = mediaAudio = new Audio(URL.createObjectURL(blob)); a.playbackRate = (pod && pod.rate) || +(lsGet("rk.podRate") || 1);
+  const c = ch[ci]; const lens = it.lines.slice(c.from, c.to + 1).map(l => l.t.length); const tot = lens.reduce((x, y) => x + y, 0);
+  a.ontimeupdate = () => { if (!a.duration) return; let acc = 0, k = 0; const f = a.currentTime / a.duration * tot; while (k < lens.length - 1 && acc + lens[k] < f) acc += lens[k++]; if (podAI && podAI.line !== c.from + k) { podAI.line = c.from + k; podUI(); } };
+  a.onended = () => { if (podAI && podAI.tok === tok) podAIPlay(it, ci + 1); };
+  podAI.loading = false; podUI();
+  try { await a.play(); } catch (e) { podAI.playing = false; podUI(); }
+}
+function podAIPause() { if (!podAI) return; if (mediaAudio) mediaAudio.pause(); podAI.playing = false; podUI(); }
+function podAIResume(it) { if (podAI && mediaAudio && !podAI.loading) { mediaAudio.play().catch(() => {}); podAI.playing = true; podUI(); } else podAIPlay(it, podAI ? podAI.c : 0); }
+function podAIFromLine(it, line) { const ch = podChunks(it.lines); podAIPlay(it, Math.max(0, ch.findIndex(c => line >= c.from && line <= c.to))); }
+
+/* --- Vídeo resumen: escenas animadas + narración con voz de IA --- */
+function vScene(sc, i, n) {
+  const v = sc.visual || {}; const items = (a, m) => (Array.isArray(a) ? a : []).slice(0, m);
+  let body = "";
+  switch (v.tipo) {
+    case "dato": body = `<div class="v-big">${esc(v.valor || "")}</div>${v.texto ? `<div class="v-sub">${esc(v.texto)}</div>` : ""}`; break;
+    case "barras": { const it = items(v.items, 5).filter(x => x && isFinite(+x.valor)); const mx = Math.max(1, ...it.map(x => Math.abs(+x.valor))); body = `<div class="v-bars">${it.map((x, k) => `<div class="v-bar" style="--i:${k}"><span>${esc(x.label || "")}</span><i><em style="--w:${Math.round(Math.abs(+x.valor) / mx * 100)}%"></em></i><b>${esc(String(x.valor))}${esc(v.unidad || "")}</b></div>`).join("")}</div>`; break; }
+    case "pasos": body = `<ol class="v-steps">${items(v.items, 5).map((x, k) => `<li style="--i:${k}"><b>${k + 1}</b><span>${esc(x)}</span></li>`).join("")}</ol>`; break;
+    case "comparar": body = `<div class="v-cmp">${[v.a, v.b].filter(Boolean).map((c, k) => `<div style="--i:${k}"><h4>${esc(c.titulo || "")}</h4><ul>${items(c.puntos, 3).map(p => `<li>${esc(p)}</li>`).join("")}</ul></div>`).join(`<span class="v-vs">VS</span>`)}</div>`; break;
+    case "formula": body = `<div class="v-formula">${esc(v.texto || "")}</div>${v.nota ? `<div class="v-sub">${esc(v.nota)}</div>` : ""}`; break;
+    default: body = `<ul class="v-list">${items(v.items, 4).map((x, k) => `<li style="--i:${k}">${esc(x)}</li>`).join("")}</ul>`;
+  }
+  return `<div class="v-scene" data-tipo="${esc(v.tipo || "lista")}"><div class="v-top"><span class="v-k">${esc(sc.etiqueta || "")}</span><span class="v-n">${i + 1}/${n}</span></div><h3 class="v-t">${esc(sc.titulo || "")}</h3><div class="v-body">${body}</div></div>`;
+}
+let vid = null;
+const VID_PROMPT = "Narra este fragmento de un vídeo educativo en español de España, con energía, cercanía y buen ritmo, como un buen youtuber de estudio:\n";
+function vidStage(it, i) {
+  const st = $("#vidStage"); if (!st) return;
+  st.innerHTML = vScene(it.scenes[i], i, it.scenes.length) + `<svg class="v-logo" viewBox="0 0 120 120" aria-hidden="true"><use href="#rkMarkSym"/></svg>`;
+  $$(".v-seg", document).forEach((s, k) => { s.classList.toggle("done", k < i); s.classList.toggle("on", k === i); });
+  const cap = $("#vidCap"); if (cap) cap.textContent = it.scenes[i].narracion || "";
+}
+async function vidPlay(it, i) {
+  stopMediaAudio(); try { speechSynthesis.cancel(); } catch (e) {}
+  if (i >= it.scenes.length) { vid = { id: it.id, i: it.scenes.length - 1, playing: false, ended: true }; vidUI(); return; }
+  const tok = Math.random(); vid = { id: it.id, i, playing: true, loading: true, tok }; vidStage(it, i); vidUI();
+  const next = () => { if (vid && vid.tok === tok && vid.playing) vidPlay(it, i + 1); };
+  const sc = it.scenes[i];
+  if (useAIVoice()) {
+    try {
+      const blob = await ttsGet(`${it.id}:v${i}`, VID_PROMPT + sc.narracion, VOICES.narrador);
+      if (!vid || vid.tok !== tok) return;
+      if (it.scenes[i + 1]) ttsGet(`${it.id}:v${i + 1}`, VID_PROMPT + it.scenes[i + 1].narracion, VOICES.narrador).catch(() => {});
+      const a = mediaAudio = new Audio(URL.createObjectURL(blob)); a.onended = () => setTimeout(next, 500);
+      vid.loading = false; vidUI(); await a.play().catch(() => { vid.playing = false; vidUI(); }); return;
+    } catch (e) { if (!vid || vid.tok !== tok) return; toast(aiErr(e) + " Uso la voz del móvil."); lsSet("rk.voice", "movil"); }
+  }
+  vid.loading = false; vidUI();
+  if (window.speechSynthesis) { const u = new SpeechSynthesisUtterance(sc.narracion || sc.titulo || ""); u.lang = "es-ES"; const [v] = podVoices(); if (v) u.voice = v; u.onend = () => setTimeout(next, 400); speechSynthesis.speak(u); }
+  else setTimeout(next, Math.max(4000, (sc.narracion || "").length * 65));
+}
+function vidPause() { if (!vid) return; vid.playing = false; vid.tok = 0; if (mediaAudio) mediaAudio.pause(); try { speechSynthesis.cancel(); } catch (e) {} vidUI(); }
+function vidUI() {
+  const b = $("#vidBtn"); if (b) b.innerHTML = vid && vid.playing ? ic("pause") : ic("play");
+  const st = $("#vidStage"); if (st) { st.classList.toggle("loading", !!(vid && vid.loading)); st.classList.toggle("paused", !(vid && vid.playing)); }
+}
+async function vidPrepare(it) {
+  /* genera todas las voces antes para verlo de seguido */
+  const box = $("#vidPrep"); let ok = 0;
+  for (let i = 0; i < it.scenes.length; i++) {
+    if (box) box.innerHTML = thinkingHtml(`Preparando la voz… ${i + 1}/${it.scenes.length}`);
+    try { await ttsGet(`${it.id}:v${i}`, VID_PROMPT + it.scenes[i].narracion, VOICES.narrador); ok++; } catch (e) { if (box) box.innerHTML = `<span class="small" style="color:var(--bad)">${esc(aiErr(e))}</span>`; return; }
+  }
+  if (box) box.innerHTML = `<span class="small" style="color:var(--ok)">Voz lista: ${ok} escenas</span>`;
+}
+
 const mmOpen = new Set();
 function mmNode(n, path, depth, root) {
   const kids = n.c && n.c.length; const open = depth === 0 || mmOpen.has(path);
@@ -2343,12 +2584,22 @@ function viewStudio() {
   if (!it) return `<div class="empty"><span class="emo big">✨</span><p>Esta creación ya no existe.</p><a class="btn" href="#asignaturas">Volver</a></div>`;
   const s = subj(it.subjectId);
   let body = "";
-  if (it.kind === "podcast") {
-    const playing = pod && pod.id === it.id && pod.playing; const idx = pod && pod.id === it.id ? pod.i : -1;
+  const voiceSw = sample ? `<div class="seg" role="group" aria-label="Voz"><button data-act="voice-mode" data-v="ia" aria-pressed="${useAIVoice()}">Voz IA</button><button data-act="voice-mode" data-v="movil" aria-pressed="${!useAIVoice()}">Voz del móvil</button></div>` : "";
+  if (it.kind === "video" && it.scenes) {
+    const i = vid && vid.id === it.id ? vid.i : 0; const playing = vid && vid.id === it.id && vid.playing;
+    body = `<div class="vid">
+      <div class="v-segs">${it.scenes.map((_, k) => `<i class="v-seg ${k < i ? "done" : k === i ? "on" : ""}"></i>`).join("")}</div>
+      <div class="v-stage ${playing ? "" : "paused"}" id="vidStage" data-act="vid-toggle">${vScene(it.scenes[i], i, it.scenes.length)}<svg class="v-logo" viewBox="0 0 120 120" aria-hidden="true"><use href="#rkMarkSym"/></svg><span class="v-play">${ic("play")}</span></div>
+      <p class="v-cap small" id="vidCap">${esc(it.scenes[i].narracion)}</p>
+      <div class="row" style="justify-content:center"><button class="icon-btn" data-act="vid-prev" aria-label="Anterior">${ic("back")}</button><button class="big" id="vidBtn" data-act="vid-toggle" aria-label="Reproducir o pausar">${playing ? ic("pause") : ic("play")}</button><button class="icon-btn" data-act="vid-next" aria-label="Siguiente" style="transform:scaleX(-1)">${ic("back")}</button></div>
+      <div class="row" style="justify-content:center">${voiceSw}${useAIVoice() ? `<button class="btn btn-sm btn-g" data-act="vid-prep">Preparar voz</button>` : ""}</div><div id="vidPrep" style="text-align:center"></div>
+    </div>`;
+  } else if (it.kind === "podcast") {
+    const playing = (pod && pod.id === it.id && pod.playing) || (podAI && podAI.id === it.id && podAI.playing); const idx = podAI && podAI.id === it.id ? podAI.line : pod && pod.id === it.id ? pod.i : -1;
     body = `<div class="player"><div class="wave ${playing ? "on" : ""}" id="podWave">${"<i></i>".repeat(14)}</div>
         <div class="row" style="justify-content:center"><button class="icon-btn" data-act="pod-prev" aria-label="Anterior">${ic("back")}</button><button class="big" id="podBtn" data-act="pod-toggle" aria-label="Reproducir o pausar">${playing ? ic("pause") : ic("play")}</button><button class="icon-btn" data-act="pod-next" aria-label="Siguiente" style="transform:scaleX(-1)">${ic("back")}</button></div>
         <div class="row tiny muted" style="justify-content:center"><span id="podProg">${Math.max(1, idx + 1)} / ${it.lines.length}</span><label class="row" style="gap:6px">⚡ Velocidad <select class="input" id="podRate" style="width:auto;padding:4px 8px;font-size:14px">${[0.9, 1, 1.15, 1.3, 1.5].map(r => `<option value="${r}" ${((pod && pod.rate) || 1) == r ? "selected" : ""}>${String(r).replace(".", ",")}×</option>`).join("")}</select></label></div>
-        <p class="tiny muted" style="text-align:center">🎙️ <b style="color:var(--accent)">Laura</b> y <b style="color:var(--marker)">Dani</b> con las voces de tu móvil. Toca cualquier frase para saltar ahí.</p></div>
+        <div class="row" style="justify-content:center">${voiceSw}</div><p class="tiny muted" style="text-align:center">${it.len === "largo" ? "Largo · " : ""}<b style="color:var(--accent)">Laura</b> y <b style="color:var(--marker)">Dani</b> · toca una frase para saltar ahí</p></div>
       <section class="card" style="margin-top:14px"><h3 style="margin-bottom:8px">Transcripción</h3>${it.lines.map((l, i) => `<div class="pline ${l.s} ${i === idx ? "on" : ""}" data-pl="${i}"><span class="who">${l.s === "A" ? "Laura" : "Dani"}</span><span>${esc(l.t)}</span></div>`).join("")}</section>`;
   } else if (it.kind === "apuntes" && it.notes) {
     body = `<div class="row" style="margin-bottom:12px"><button class="btn btn-sm btn-p" data-act="studio-pdf">PDF</button><button class="btn btn-sm" data-act="studio-note">Guardar como nota</button><button class="btn btn-sm btn-g" data-act="studio-copy">Copiar</button></div>${paperHtml(it.notes, `${s ? s.emoji + " " + s.name : ""} · ${new Date(it.createdAt).toLocaleDateString("es-ES")}`)}`;
@@ -2361,12 +2612,12 @@ function viewStudio() {
   return `<div class="stack" style="gap:14px">
     <div class="row between" style="flex-wrap:nowrap"><a class="btn btn-sm btn-g" href="${s ? "#asig-" + s.id : "#asignaturas"}" data-act="tab-studio">${ic("back")}${s ? E(s.emoji) + " " + esc(sName(s)) : "Asignaturas"}</a><button class="btn btn-sm btn-g" data-act="studio-del" aria-label="Eliminar"></button></div>
     <h1 style="font-size:clamp(1.3rem,3.6vw,1.9rem);overflow-wrap:anywhere">${esc(it.title || "")}</h1>
-    <div id="studioDel"></div>${body}${it.kind === "podcast" ? "" : AI_NOTE}</div>`;
+    <div id="studioDel"></div>${body}${it.kind === "podcast" || it.kind === "video" ? "" : AI_NOTE}</div>`;
 }
 function bindStudioView() {
   const it = S.studio.find(x => x.id === S.param); if (!it) return;
-  $$(".pline").forEach(el => el.onclick = () => podPlay(it.id, +el.dataset.pl));
-  const rt = $("#podRate"); rt && (rt.onchange = () => { const r = +rt.value; if (pod) { pod.rate = r; if (pod.playing) podPlay(it.id, pod.i); } else pod = { id: it.id, i: 0, playing: false, rate: r, tok: 0 }; });
+  $$(".pline").forEach(el => el.onclick = () => useAIVoice() ? podAIFromLine(it, +el.dataset.pl) : podPlay(it.id, +el.dataset.pl));
+  const rt = $("#podRate"); rt && (rt.onchange = () => { const r = +rt.value; lsSet("rk.podRate", r); if (mediaAudio) mediaAudio.playbackRate = r; if (pod) { pod.rate = r; if (pod.playing) podPlay(it.id, pod.i); } else pod = { id: it.id, i: 0, playing: false, rate: r, tok: 0 }; });
   $$("[data-mmp]").forEach(b => b.onclick = () => { const p = b.dataset.mmp; mmOpen.has(p) ? mmOpen.delete(p) : mmOpen.add(p); render(); });
   $$("[data-mmcard]").forEach(b => b.onclick = () => { const p = b.dataset.mmcard; mmCards.has(p) ? mmCards.delete(p) : mmCards.add(p); render(); });
 }
@@ -3331,11 +3582,19 @@ document.addEventListener("click", e => {
     case "new-subject": subjectModal(); break;
     case "camera": { pickFor = cur.id; const ci = $("#camIn"); ci.value = ""; ci.click(); break; }
     case "add-link": linkModal(cur.id); break;
-    case "studio-gen": genStudio(a.dataset.k); break;
+    case "studio-gen": if (a.dataset.k === "podcast") openModal(`<div class="sheet-h"><h2>Pódcast</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div><div class="stack" style="gap:10px"><button class="btn btn-lg" data-close data-act="studio-pod" data-len="corto">Corto · 5 min</button><button class="btn btn-lg btn-p" data-close data-act="studio-pod" data-len="largo">Largo · 15-20 min</button></div>`); else genStudio(a.dataset.k); break;
+    case "studio-pod": genStudio("podcast", { len: a.dataset.len }); break;
+    case "voice-mode": lsSet("rk.voice", a.dataset.v); podStop(); podAI = null; vidPause(); stopMediaAudio(); render(); break;
+    case "vid-toggle": { const it = S.studio.find(x => x.id === S.param); if (!it) break; if (vid && vid.id === it.id && vid.playing) vidPause(); else vidPlay(it, vid && vid.id === it.id && !vid.ended ? vid.i : 0); break; }
+    case "vid-prev": { const it = S.studio.find(x => x.id === S.param); if (it) vidPlay(it, Math.max(0, (vid && vid.id === it.id ? vid.i : 0) - 1)); break; }
+    case "vid-next": { const it = S.studio.find(x => x.id === S.param); if (it) vidPlay(it, Math.min(it.scenes.length - 1, (vid && vid.id === it.id ? vid.i : 0) + 1)); break; }
+    case "vid-prep": { const it = S.studio.find(x => x.id === S.param); if (it) vidPrepare(it); break; }
     case "tab-studio": ui.asigTab = "studio"; saveUi(); break;
-    case "pod-toggle": { const it = S.studio.find(x => x.id === S.param); if (!it) break; if (pod && pod.id === it.id && pod.playing) podPause(); else podPlay(it.id, pod && pod.id === it.id ? pod.i : 0); break; }
-    case "pod-prev": { const it = S.studio.find(x => x.id === S.param); if (it) podPlay(it.id, Math.max(0, (pod && pod.id === it.id ? pod.i : 0) - 1)); break; }
-    case "pod-next": { const it = S.studio.find(x => x.id === S.param); if (it) podPlay(it.id, Math.min(it.lines.length - 1, (pod && pod.id === it.id ? pod.i : 0) + 1)); break; }
+    case "pod-toggle": { const it = S.studio.find(x => x.id === S.param); if (!it) break;
+      if (useAIVoice()) { if (podAI && podAI.id === it.id && podAI.playing) podAIPause(); else if (podAI && podAI.id === it.id) podAIResume(it); else podAIPlay(it, 0); break; }
+      if (pod && pod.id === it.id && pod.playing) podPause(); else podPlay(it.id, pod && pod.id === it.id ? pod.i : 0); break; }
+    case "pod-prev": { const it = S.studio.find(x => x.id === S.param); if (!it) break; if (useAIVoice()) { podAIPlay(it, Math.max(0, (podAI && podAI.id === it.id ? podAI.c : 0) - 1)); break; } podPlay(it.id, Math.max(0, (pod && pod.id === it.id ? pod.i : 0) - 1)); break; }
+    case "pod-next": { const it = S.studio.find(x => x.id === S.param); if (!it) break; if (useAIVoice()) { podAIPlay(it, Math.min(podChunks(it.lines).length - 1, (podAI && podAI.id === it.id ? podAI.c : 0) + 1)); break; } podPlay(it.id, Math.min(it.lines.length - 1, (pod && pod.id === it.id ? pod.i : 0) + 1)); break; }
     case "mm-all": { const it = S.studio.find(x => x.id === S.param); if (it) { const walk = (n, p) => { if (n.c && n.c.length) { mmOpen.add(p); n.c.forEach((k, i) => walk(k, p + "-" + i)); } }; walk(it.tree, it.id); render(); } break; }
     case "mm-none": mmOpen.clear(); render(); break;
     case "mm-ask": { const it = S.studio.find(x => x.id === S.param); if (it) newChat(it.subjectId, null, `Explícame «${a.dataset.q}» dentro del tema «${a.dataset.root}», con un ejemplo.`); break; }
@@ -3343,7 +3602,7 @@ document.addEventListener("click", e => {
     case "studio-pdf": { const it = S.studio.find(x => x.id === S.param); if (it && it.notes) { const s2 = subj(it.subjectId); printPaper(it.notes, `${s2 ? s2.name : ""} · ${new Date(it.createdAt).toLocaleDateString("es-ES")}`); } break; }
     case "mm-deck": { const it = S.studio.find(x => x.id === S.param); if (it && it.tree) mmToDeck(it); break; }
     case "studio-copy": { const it = S.studio.find(x => x.id === S.param); const m0 = it && (it.md || (it.notes && notesToMd(it.notes))); if (m0) navigator.clipboard.writeText(m0).then(() => toast("Copiado"), () => toast("Selecciona el texto a mano para copiarlo")); break; }
-    case "studio-del": { const it = S.studio.find(x => x.id === S.param); if (it) confirmInline("#studioDel", "🗑️ Se borra esta creación.", "Eliminar", async () => { podStop(); await sDel("studio", it.id); ui.asigTab = "studio"; saveUi(); go(subj(it.subjectId) ? "asig-" + it.subjectId : "asignaturas"); toast("Eliminado"); }); break; }
+    case "studio-del": { const it = S.studio.find(x => x.id === S.param); if (it) confirmInline("#studioDel", "Se borra esta creación.", "Eliminar", async () => { podStop(); podAI = null; vidPause(); stopMediaAudio(); ttsForget(it.id); await sDel("studio", it.id); ui.asigTab = "studio"; saveUi(); go(subj(it.subjectId) ? "asig-" + it.subjectId : "asignaturas"); toast("Eliminado"); }); break; }
     case "open-settings": settingsModal(); break;
     case "zen-on": timer.zen = true; saveTimer(); try { const de = document.documentElement; de.requestFullscreen && de.requestFullscreen().catch(() => {}); } catch (er) {} if (!timer.running) startTimer(); else render(); toast("Modo Zen: si te vas a otra app, Rocky lo apunta. ¡Al ring!"); break;
     case "zen-off": timer.zen = false; saveTimer(); try { document.fullscreenElement && document.exitFullscreen(); } catch (er) {} render(); break;
@@ -3485,7 +3744,7 @@ function exampleState() {
 }
 
 /* ================= actualizaciones ================= */
-const APP_VERSION = "2026.11.12-5";
+const APP_VERSION = "2026.11.12-6";
 let updateReady = false;
 async function checkUpdate() {
   try {
