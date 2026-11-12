@@ -1190,9 +1190,18 @@ document.addEventListener("visibilitychange", () => {
   saveTimer(); if (S.view === "foco") render();
 });
 function zenGuide() {
-  openModal(`<div class="sheet-h"><h2>🔒 Bloquear apps de verdad</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
-    <div class="stack" style="gap:12px">
-      <p class="small muted">Una app web no puede cerrar otras apps: eso solo lo deja hacer Apple. Rocky apunta cada vez que te vas, y con esto el iPhone o el iPad te cortan las distracciones de verdad:</p>
+  const android = /Android/i.test(navigator.userAgent);
+  const steps = android ? `
+      <section class="card"><h3>1️⃣ Modo Concentración (5 min, lo más fácil)</h3><ol class="small" style="margin:8px 0 0;padding-left:18px">
+        <li>Ajustes → <b>Bienestar digital y controles parentales</b> → <b>Modo Concentración</b>.</li>
+        <li>Elige las apps que te distraen: TikTok, Instagram, YouTube…</li>
+        <li>Toca <b>Activar ahora</b> cuando empieces el Modo Zen: esas apps se <b>pausan</b> y no se pueden abrir hasta que lo quites.</li></ol></section>
+      <section class="card"><h3>2️⃣ Un límite al día para cada app</h3><ol class="small" style="margin:8px 0 0;padding-left:18px">
+        <li>Ajustes → <b>Bienestar digital</b> → toca el gráfico o la app (por ejemplo TikTok).</li>
+        <li><b>Temporizador de aplicación</b> → ponle, por ejemplo, 20 minutos al día.</li>
+        <li>Al llegar al límite, la app se pausa hasta el día siguiente.</li></ol></section>
+      <section class="card"><h3>3️⃣ Si es Samsung: modo «Estudio»</h3><p class="small" style="margin-top:6px">Ajustes → <b>Modos y rutinas</b> → <b>Modos</b> → <b>＋</b> → llámalo <b>Estudio</b>: silencia las notificaciones y deja solo las apps que tú elijas.</p></section>
+      <p class="tiny muted">Los nombres cambian un poco según la marca del móvil. Si no lo encuentras, busca «concentración» en el buscador de Ajustes.</p>` : `
       <section class="card"><h3>1️⃣ Concentración «Rocky» (5 min, lo más fácil)</h3><ol class="small" style="margin:8px 0 0;padding-left:18px">
         <li>Ajustes → <b>Concentración</b> → <b>＋</b> → <b>Personalizado</b> → llámalo <b>Rocky 🥊</b>.</li>
         <li>En <b>Personas</b> y <b>Apps</b>, no permitas ninguna: se silencian todas las notificaciones.</li>
@@ -1203,7 +1212,10 @@ function zenGuide() {
         <li>Elige TikTok, Instagram, YouTube… → <b>Se abre</b> → <b>Ejecutar inmediatamente</b>.</li>
         <li>Acción: <b>Ir a la pantalla de inicio</b> (y si quieres, <b>Mostrar notificación</b>: «🥊 Vuelve a Rocky»).</li>
         <li>Desactívala cuando acabes de estudiar.</li></ol></section>
-      <section class="card"><h3>3️⃣ Horario sin distracciones (Tiempo de uso)</h3><p class="small" style="margin-top:6px">Ajustes → <b>Tiempo de uso</b> → <b>Tiempo de inactividad</b>: pon tus horas de estudio. Durante ese rato solo funcionan las apps que dejes en <b>Apps siempre permitidas</b>.</p></section>
+      <section class="card"><h3>3️⃣ Horario sin distracciones (Tiempo de uso)</h3><p class="small" style="margin-top:6px">Ajustes → <b>Tiempo de uso</b> → <b>Tiempo de inactividad</b>: pon tus horas de estudio. Durante ese rato solo funcionan las apps que dejes en <b>Apps siempre permitidas</b>.</p></section>`;
+  openModal(`<div class="sheet-h"><h2>🔒 Bloquear apps de verdad</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
+    <div class="stack" style="gap:12px">
+      <p class="small muted">Una app web no puede cerrar otras apps: eso solo lo deja hacer el sistema del móvil. Rocky apunta cada vez que te vas, y con esto ${android ? "tu Android" : "el iPhone o el iPad"} te corta las distracciones de verdad:</p>${steps}
       <div class="row" style="justify-content:flex-end"><button class="btn btn-p" data-close>Entendido 💪</button></div>
     </div>`);
 }
@@ -1951,7 +1963,7 @@ function tabEstudiar(s) {
     const q = t.quiz;
     body = `<div class="row" style="align-items:flex-end;margin-top:14px"><label class="field" style="flex:1;min-width:200px"><span>📌 Tema</span><select class="input" id="quizTopic"><option value="">Todo el módulo</option>${s.topics.map(x => `<option value="${x.id}">${esc(x.title)}</option>`).join("")}</select></label>
       <label class="field" style="width:160px"><span>🎚️ Dificultad</span><select class="input" id="quizDiff"><option value="media">Media</option><option value="examen" selected>Nivel examen</option><option value="dificil">Difícil</option></select></label>
-      <button class="btn btn-p" data-act="ai-quiz" ${dis}>${E("🪄")} ${q ? "Nuevo test" : "Generar test"}</button></div><div id="quizOut" style="margin-top:12px">`;
+      <button class="btn btn-p" data-act="ai-quiz" ${dis}>${E("🪄")} ${q ? "Nuevo test" : "Generar test"}</button><button class="btn" data-act="cards-quiz" title="Sin IA: con las tarjetas que tienes en el mazo">${E("🃏")} Test con mis tarjetas</button></div><div id="quizOut" style="margin-top:12px">`;
     if (q) {
       const answered = q.items.filter(x => x.picked != null).length, right = q.items.filter(x => x.picked === x.answer).length;
       body += (answered === q.items.length ? `<div class="banner"><span>${right === q.items.length ? "🏆" : right >= q.items.length * .6 ? "👍" : "📚"} <b>${right}/${q.items.length} aciertos</b> · ${right === q.items.length ? "Perfecto. Marca el tema como dominado." : right >= q.items.length * .6 ? "Bien. Repasa las que fallaste." : "Toca repasar este tema antes del examen."}</span></div>` : `<p class="tiny muted">${answered}/${q.items.length} respondidas${q.topic ? " · " + esc(q.topic) : ""}</p>`)
@@ -1997,6 +2009,15 @@ ${src}`;
     t.summary = text; commit();
   } catch (e) { out.innerHTML = e && e.text ? md(e.text) : `<p class="ai-off">⚠️ ${aiErr(e)}</p>`; }
   aiCtl = null;
+}
+/* test sin IA: cada tarjeta es una pregunta y las respuestas de otras tarjetas hacen de opciones falsas */
+function cardsQuiz() {
+  const s = subj(S.param); if (!s) return; const t = tut(s.id);
+  const deck = deckOf(s.id).filter(c => c.q && c.a); const answers = [...new Set(deck.map(c => String(c.a)))];
+  if (deck.length < 4 || answers.length < 4) { toast("🃏 Necesitas al menos 4 tarjetas con respuestas distintas. Escríbelas en la pestaña Tarjetas."); return; }
+  const shuffle = a => a.map(v => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map(x => x[1]);
+  const items = shuffle(deck).slice(0, 8).map(c => { const right = String(c.a); const options = shuffle([right, ...shuffle(answers.filter(a => a !== right)).slice(0, 3)]); return { q: String(c.q), options, answer: options.indexOf(right), why: `La respuesta es: ${right}`, picked: null }; });
+  t.quiz = { topic: "Con tus tarjetas", items, at: Date.now() }; commit(); toast("🃏 Test hecho con tus tarjetas");
 }
 async function aiQuiz() {
   const s = subj(S.param), t = tut(s.id);
@@ -3376,6 +3397,7 @@ document.addEventListener("click", e => {
       toast("📅 Enviando a tu agenda…"); location.hash = "plan"; setTimeout(() => runAssistant(m3.content), 400); break;
     }
     case "ai-quiz": aiQuiz(); break;
+    case "cards-quiz": cardsQuiz(); break;
     case "ai-cards": aiCards(); break;
     case "go-study": ui.asigTab = "estudiar"; saveUi(); go("asig-" + a.dataset.s); break;
     case "review-start": startReview(a.dataset.s || cur.id); break;
@@ -3414,7 +3436,7 @@ function exampleState() {
 }
 
 /* ================= actualizaciones ================= */
-const APP_VERSION = "2026.11.10-5";
+const APP_VERSION = "2026.11.12-1";
 let updateReady = false;
 async function checkUpdate() {
   try {
