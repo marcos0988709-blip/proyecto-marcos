@@ -11,8 +11,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Rocky">
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="../icon-192.png?v=rocky1">
-<link rel="apple-touch-icon" href="../icon-512.png?v=rocky1">
+<link rel="icon" href="../icon-192.png?v=rocky2">
+<link rel="apple-touch-icon" href="../icon-512.png?v=rocky2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Caveat:wght@600;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
@@ -61,10 +61,10 @@ p{margin:0}
 .brand{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:800;font-size:1.25rem;letter-spacing:-.02em;text-decoration:none}
 .brand-mark{width:36px;height:36px;display:block;filter:drop-shadow(0 4px 14px rgba(245,184,65,.35))}
 .brand-word{font-family:Anton,Impact,"Arial Narrow Bold",sans-serif;font-weight:400;font-size:1.55rem;letter-spacing:.06em;background:linear-gradient(180deg,#FFE29A,#F5B841 55%,#D98E12);-webkit-background-clip:text;background-clip:text;color:transparent}
-.glove{display:block;flex:none;width:var(--ms,120px);height:var(--ms,120px);filter:drop-shadow(0 10px 30px rgba(245,184,65,.3))}
-.glove.punch{animation:rkPunch 2.4s ease-in-out infinite}
-@keyframes rkPunch{0%,70%,100%{transform:translate(0,0) rotate(0)}78%{transform:translate(6px,-4px) rotate(8deg) scale(1.08)}86%{transform:translate(-2px,1px) rotate(-3deg)}}
-@media (prefers-reduced-motion:reduce){.glove.punch{animation:none}}
+.logo-mark{display:block;flex:none;width:var(--ms,120px);height:var(--ms,120px);filter:drop-shadow(0 10px 30px rgba(245,184,65,.28))}
+.logo-mark.rise{animation:rkRise 3s ease-in-out infinite}
+@keyframes rkRise{0%,60%,100%{transform:translateY(0)}72%{transform:translateY(-6px)}84%{transform:translateY(0)}}
+@media (prefers-reduced-motion:reduce){.logo-mark.rise{animation:none}}
 .top-actions{display:flex;align-items:center;gap:8px}
 .sync{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;color:var(--muted);padding:5px 10px;border-radius:99px;border:1px solid var(--line);background:var(--sheet);white-space:nowrap}
 .sync i{width:7px;height:7px;border-radius:50%;background:var(--faint)}
@@ -159,6 +159,12 @@ body.zen .side,body.zen .bnav,body.zen .topbar,body.zen .focus-wrap>.stack,body.
 body.zen .app{grid-template-columns:1fr!important}body.zen .main{padding-bottom:24px}
 body.zen .focus-wrap{display:flex;justify-content:center;align-items:center;min-height:calc(100vh - 40px)}
 body.zen .timer-card{border-color:transparent;background:transparent;box-shadow:none;max-width:560px;width:100%}
+.set-sec{display:flex;flex-direction:column;gap:12px}
+.set-h{font-size:.74rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.set-row{display:flex;align-items:center;gap:10px}.grow{flex:1}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--faint);flex:none}.dot.ok{background:var(--ok);box-shadow:0 0 10px var(--ok)}
+details.set-adv summary{cursor:pointer;color:var(--muted);font-size:.86rem;font-weight:700;list-style:none}details.set-adv summary::before{content:"▸ "}details.set-adv[open] summary::before{content:"▾ "}
+.set-check{display:flex;align-items:center;gap:10px;font-size:.92rem}.set-check input{width:18px;height:18px;accent-color:var(--accent)}
 .hello{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
 .hello .date{font-size:.95rem;color:var(--muted);margin-top:4px}
 .school{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.02em;margin-bottom:6px}
@@ -454,7 +460,7 @@ hr.sep{border:0;border-top:1px solid var(--line);width:100%;margin:0}
 </style>
 </head>
 <body>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="rkG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFE08A"/><stop offset=".55" stop-color="#F5B841"/><stop offset="1" stop-color="#C98410"/></linearGradient><linearGradient id="rkR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF5A4A"/><stop offset="1" stop-color="#C4221B"/></linearGradient></defs><symbol id="rkGloveSym" viewBox="0 0 120 120"><g id="rkGlove" transform="rotate(-10 62 64)"><path d="M41 84 C31 72 27 52 33 38 C40 21 61 15 78 20 C94 25 100 42 96 60 C93 73 88 80 85 84 Z" fill="url(#rkG)"/><path d="M42 76 C31 72 27 58 31 48 C34 41 43 40 47 46 C51 53 52 64 49 71 C47 75 45 77 42 76 Z" fill="#E8A62C" stroke="#B87708" stroke-width="2.2"/><path d="M55 33 Q70 28 86 36" fill="none" stroke="#B87708" stroke-width="2.6" stroke-linecap="round" opacity=".7"/><ellipse cx="58" cy="30" rx="10" ry="5" fill="#FFF3C4" opacity=".45" transform="rotate(-18 58 30)"/><rect x="38" y="82" width="50" height="25" rx="7" fill="url(#rkR)"/><rect x="38" y="91" width="50" height="5" fill="#FFF" opacity=".9"/></g></symbol><symbol id="rkLogo" viewBox="0 0 120 120"><rect width="120" height="120" rx="28" fill="#0B0B0E" stroke="rgba(245,184,65,.35)" stroke-width="2"/><use href="#rkGloveSym"/></symbol></svg>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="rkG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFE59C"/><stop offset=".55" stop-color="#F5B841"/><stop offset="1" stop-color="#C98410"/></linearGradient></defs><symbol id="rkMarkSym" viewBox="0 0 120 120"><path fill="url(#rkG)" fill-rule="evenodd" d="M31 23 H64 C81 23 91 33 91 48 C91 61 83 69.5 71 71.5 L92 97 H71.5 L53.5 73 H47.5 V97 H31 Z M60 34 L74.5 50.5 H66 V61.5 H54 V50.5 H45.5 Z"/></symbol><symbol id="rkLogo" viewBox="0 0 120 120"><rect width="120" height="120" rx="28" fill="#0B0B0E" stroke="rgba(245,184,65,.35)" stroke-width="2"/><use href="#rkMarkSym"/></symbol></svg>
 <div class="app">
   <aside class="side" aria-label="Navegación">
     <a class="brand" href="#hoy" aria-label="Rocky"><svg class="brand-mark" viewBox="0 0 120 120" aria-hidden="true"><use href="#rkLogo"/></svg><span class="brand-word">ROCKY</span></a>
@@ -523,7 +529,7 @@ const I = {
 };
 const ic = (name, extra = "") => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${extra}>${I[name]}</svg>`;
 const E = (e, cls = "") => `<span class="emo ${cls}">${e}</span>`;
-const GLOVE = (size = 120, cls = "") => `<svg class="glove ${cls}" style="--ms:${size}px" viewBox="0 0 120 120" aria-hidden="true"><use href="#rkGloveSym"/></svg>`;
+const LOGO = (size = 120, cls = "") => `<svg class="logo-mark ${cls}" style="--ms:${size}px" viewBox="0 0 120 120" aria-hidden="true"><use href="#rkLogo"/></svg>`;
 
 /* ===== Módulos de 1º del CFGS Administración y Finanzas (currículo LOE: RD 1584/2011 y adaptación de Cataluña) ===== */
 const CURSO_AIF = [
@@ -865,7 +871,7 @@ function viewOnboarding() {
   const loading = !dbAnswered && window.claude;
   return `<section class="onb view-in">
     <div class="stack" style="gap:18px">
-      <div class="row" style="gap:14px;flex-wrap:nowrap">${GLOVE(80, "punch")}<span class="pill mk">${E("🥊")} Entrena para el 10</span></div>
+      <div class="row" style="gap:14px;flex-wrap:nowrap">${LOGO(76, "rise")}<span class="pill mk">${E("🥊")} Entrena para el 10</span></div>
       <h1>Entrena tu cabeza.<br><span class="mark">Gana</span> cada examen.</h1>
       <p class="lead">Tus módulos, tus apuntes, tus PDF y un tutor con IA que se los ha leído todos. Más sesiones de foco y un plan semanal que se hace solo.</p>
       <div class="feat">
@@ -929,7 +935,7 @@ function viewHoy() {
   const nm = state.profile.name ? `, ${esc(state.profile.name)}` : "";
   const school = state.profile.school ? `<span class="school">${E("🏫")} ${esc(state.profile.school)}</span>` : "";
   if (!state.subjects.length) return `<div class="hello"><div>${school}<h1>${greeting()}${nm}</h1><p class="date">${longDate(new Date())}</p></div></div>
-    <div class="empty" style="margin-top:22px">${GLOVE(88, "punch")}<h2>Empieza por tus asignaturas</h2><p>Añade tus módulos con sus temas y fechas de examen. Con eso Rocky te organiza el resto.</p><div class="row" style="justify-content:center"><button class="btn btn-p" data-act="ai-subjects">${E("🪄")} Crear con IA</button>${(!state.profile.school || state.profile.school === SCHOOL || /administr/i.test(state.profile.school)) ? `<button class="btn" data-act="add-modules">${PRESET_BTN}</button>` : ""}<button class="btn" data-act="new-subject">${E("➕")} Otra asignatura</button></div></div>`;
+    <div class="empty" style="margin-top:22px">${LOGO(84, "rise")}<h2>Empieza por tus asignaturas</h2><p>Añade tus módulos con sus temas y fechas de examen. Con eso Rocky te organiza el resto.</p><div class="row" style="justify-content:center"><button class="btn btn-p" data-act="ai-subjects">${E("🪄")} Crear con IA</button>${(!state.profile.school || state.profile.school === SCHOOL || /administr/i.test(state.profile.school)) ? `<button class="btn" data-act="add-modules">${PRESET_BTN}</button>` : ""}<button class="btn" data-act="new-subject">${E("➕")} Otra asignatura</button></div></div>`;
   const lastChat = S.chats[0];
   const dueAll = state.subjects.map(x => ({ s: x, n: deckOf(x.id).filter(isDue).length })).filter(x => x.n); const dueTot = dueAll.reduce((a, x) => a + x.n, 0);
   return `<div class="stack" style="gap:20px">
@@ -2666,7 +2672,7 @@ function nowBlock() {
 function nowCard() {
   if (examBusy) { const f = findExam(examBusy); return `<section class="card now-card">${thinkingHtml(`🥊 Preparando el plan de «${esc(f ? f.e.title : "tu examen")}»…`)}</section>`; }
   const nb = nowBlock();
-  if (!nb) return `<section class="card now-card"><div class="row" style="flex-wrap:nowrap;gap:14px">${GLOVE(56)}<div style="flex:1;min-width:0"><span class="eyebrow">Hoy</span><h2>Sin sesiones pendientes</h2><p class="small muted">¿Tienes algún examen? Dile cuándo es y Rocky te monta el plan hasta ese día.</p></div></div>
+  if (!nb) return `<section class="card now-card"><div class="row" style="flex-wrap:nowrap;gap:14px">${LOGO(52)}<div style="flex:1;min-width:0"><span class="eyebrow">Hoy</span><h2>Sin sesiones pendientes</h2><p class="small muted">¿Tienes algún examen? Dile cuándo es y Rocky te monta el plan hasta ese día.</p></div></div>
     <div class="row" style="margin-top:12px"><button class="btn btn-p" data-act="new-exam">🥊 Nuevo examen</button><button class="btn" data-go="foco">${ic("play")}Sesión libre</button>${missedBlocks().length ? `<button class="btn btn-m" data-act="replan-missed">🔄 Recolocar ${missedBlocks().length} saltadas</button>` : ""}</div></section>`;
   const miss = missedBlocks().length;
   const { b, label, rest } = nb; const s = subj(b.subjectId); const f = b.examId && findExam(b.examId); const docs = blockDocs(b);
@@ -3176,64 +3182,71 @@ function viewProgreso() {
 
 /* ---------- Ajustes ---------- */
 function settingsModal() {
-  const cfg = aiCfg();
-  openModal(`<div class="sheet-h"><h2>⚙️ Ajustes</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
-    <div class="stack" style="gap:12px">
-      <h3>🔑 IA gratis con Gemini</h3>
-      <p class="small muted">1) Entra en <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" style="color:var(--accent)">aistudio.google.com/app/apikey</a> con tu cuenta de Google. 2) Pulsa <b>Create API key</b>. 3) Cópiala y pégala aquí. Es gratis y no usa tu suscripción de Gemini.</p>
-      <label class="field"><span>Clave de API</span><input class="input" id="stKey" type="password" autocomplete="off" value="${esc(cfg.key)}" placeholder="AIza…"></label>
-      <label class="field"><span>Velocidad</span><select class="input" id="stSpeed"><option value="fast" ${cfg.speed !== "smart" ? "selected" : ""}>⚡ Rápida (contesta en segundos)</option><option value="smart" ${cfg.speed === "smart" ? "selected" : ""}>🧠 Más lista (piensa más, tarda más)</option></select></label>
-      <label class="field"><span>Modelo</span><input class="input" id="stModel" list="modelList" value="${esc(cfg.model)}"><datalist id="modelList"></datalist></label>
-      <p class="tiny muted">💡 Recomendado: <b>gemini-3.5-flash</b>. Si va lenta, prueba <b>gemini-flash-lite-latest</b>, que es el más rápido.</p>
-      <div class="row"><button class="btn btn-p btn-sm" id="aiSave">💾 Guardar clave</button><button class="btn btn-sm" id="aiTest">🧪 Probar clave</button>${cfg.key ? `<button class="btn btn-sm btn-g" id="aiDel">Quitar clave</button>` : ""}</div>
-      <div id="aiMsg" class="small"></div>
-      <p class="tiny muted">🔒 La clave se guarda solo en este móvil y solo se envía a Google. En el plan gratis, Google puede usar lo que envías para mejorar sus modelos: no metas datos personales.</p>
-    </div>
-    <hr class="sep">
-    <form id="setForm" class="stack" style="gap:14px">
-      <h3>👤 Perfil</h3>
-      <label class="field"><span>Tu nombre</span><input class="input" id="stName" value="${esc(state.profile.name)}" maxlength="40"></label>
-      <label class="field"><span>Centro y curso</span><input class="input" id="stSchool" value="${esc(state.profile.school)}" maxlength="90"></label>
-      <label class="field"><span>Objetivo diario de foco (minutos)</span><input class="input num" type="number" id="stGoal" min="15" max="720" step="15" value="${state.profile.goalMin}"></label>
-      <label class="row" style="flex-wrap:nowrap"><input type="checkbox" id="stSound" ${state.settings.sound ? "checked" : ""} style="width:18px;height:18px;accent-color:var(--accent)"><span>🔔 Sonido al terminar cada bloque</span></label>
-      <h3 style="margin-top:4px">🎛️ Modo simple</h3>
-      <p class="small muted">Oculta las secciones que no uses para ver el menú más limpio.</p>
-      <div class="stack" style="gap:8px">${[["foco","⏱️ Foco (temporizador Pomodoro)"],["progreso","📈 Progreso (estadísticas y niveles)"]].map(([k2,l2]) => `<label class="row" style="flex-wrap:nowrap"><input type="checkbox" id="hideNav_${k2}" ${(state.settings.hiddenNav||[]).includes(k2) ? "checked" : ""} style="width:18px;height:18px;accent-color:var(--accent)"><span>${l2}</span></label>`).join("")}</div>
-      <div class="row" style="justify-content:flex-end"><button class="btn btn-p" type="submit">Guardar</button></div>
-    </form>
-    <hr class="sep">
-    <div class="stack"><h3>💾 Tus datos</h3><p class="small muted">📱 Todo se guarda en este móvil, sin conexión y sin límite práctico. Si cambias de móvil o borras el navegador, se pierde: haz una copia de vez en cuando.</p>
-      <p class="small muted">${S.docs.length} documentos · ${S.chats.length} chats · ${Object.values(S.decks).reduce((a, d) => a + d.length, 0)} tarjetas · ${state.sessions.length} sesiones · 💾 última copia: ${daysSince(lsGet("rk.lastBackup")) == null ? "nunca" : daysSince(lsGet("rk.lastBackup")) === 0 ? "hoy" : `hace ${daysSince(lsGet("rk.lastBackup"))} días`}</p>
-      <div class="row"><button class="btn btn-sm" id="exp">⬇️ Descargar copia completa</button><button class="btn btn-sm" id="impBtn">📥 Restaurar copia</button><input type="file" id="impFile" accept=".json,application/json" hidden></div>
-      <p class="tiny muted">La copia incluye todo: asignaturas, plan, sesiones, documentos con sus archivos, chats y tarjetas.</p></div>
-    <hr class="sep">
-    <div class="stack"><h3>☠️ Zona peligrosa</h3><div class="row"><button class="btn btn-sm btn-d" id="wipe">Borrar asignaturas, plan y sesiones</button></div><div id="wipeBox"></div></div>`, root => {
+  const cfg = aiCfg(); const has = !!cfg.key; const last = daysSince(lsGet("rk.lastBackup"));
+  const hid = state.settings.hiddenNav || [];
+  openModal(`<div class="sheet-h"><h2>Ajustes</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
+    <div class="stack" style="gap:22px">
+      <section class="set-sec"><div class="set-h">Inteligencia artificial</div>
+        ${has ? `<div class="set-row" id="aiRow"><span class="dot ok"></span><b>Activada</b><span class="grow"></span><button class="btn btn-sm btn-g" type="button" id="aiChange">Cambiar clave</button></div>` : ""}
+        <div id="keyBox" ${has ? "hidden" : ""}>
+          <div class="row" style="flex-wrap:nowrap;gap:8px"><input class="input" id="stKey" type="password" autocomplete="off" placeholder="Pega tu clave de Gemini"><button class="btn btn-p" type="button" id="aiOn">Activar</button></div>
+          <p class="tiny muted" style="margin-top:8px">Es gratis: <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" style="color:var(--accent)">aistudio.google.com</a> → Create API key.</p>
+        </div>
+        <div id="aiMsg" class="small"></div>
+        <details class="set-adv"><summary>Avanzado</summary><div class="stack" style="gap:10px;margin-top:10px">
+          <label class="field"><span>Velocidad</span><select class="input" id="stSpeed"><option value="fast" ${cfg.speed !== "smart" ? "selected" : ""}>Rápida</option><option value="smart" ${cfg.speed === "smart" ? "selected" : ""}>Más lista (tarda más)</option></select></label>
+          <label class="field"><span>Modelo</span><input class="input" id="stModel" list="modelList" value="${esc(cfg.model)}"><datalist id="modelList"></datalist></label>
+          ${has ? `<button class="btn btn-sm btn-g" type="button" id="aiDel" style="align-self:flex-start">Quitar clave</button>` : ""}
+          <p class="tiny muted">La clave solo se guarda en este dispositivo y solo se envía a Google.</p>
+        </div></details>
+      </section>
+      <form id="setForm" class="set-sec"><div class="set-h">Perfil</div>
+        <label class="field"><span>Nombre</span><input class="input" id="stName" value="${esc(state.profile.name)}" maxlength="40" placeholder="Opcional"></label>
+        <label class="field"><span>Curso</span><input class="input" id="stSchool" value="${esc(state.profile.school)}" maxlength="90" placeholder="p. ej. 4º ESO"></label>
+        <details class="set-adv"><summary>Preferencias</summary><div class="stack" style="gap:12px;margin-top:10px">
+          <label class="field"><span>Objetivo diario (minutos)</span><input class="input num" type="number" id="stGoal" min="15" max="720" step="15" value="${state.profile.goalMin}"></label>
+          <label class="set-check"><input type="checkbox" id="stSound" ${state.settings.sound ? "checked" : ""}><span>Sonido al acabar cada sesión</span></label>
+          <label class="set-check"><input type="checkbox" id="hideNav_foco" ${hid.includes("foco") ? "checked" : ""}><span>Ocultar Foco del menú</span></label>
+          <label class="set-check"><input type="checkbox" id="hideNav_progreso" ${hid.includes("progreso") ? "checked" : ""}><span>Ocultar Progreso del menú</span></label>
+        </div></details>
+        <div class="row" style="justify-content:flex-end"><button class="btn btn-p" type="submit">Guardar</button></div>
+      </form>
+      <section class="set-sec"><div class="set-h">Copia de seguridad</div>
+        <div class="row"><button class="btn btn-sm" type="button" id="exp">Descargar</button><button class="btn btn-sm" type="button" id="impBtn">Restaurar</button><input type="file" id="impFile" accept=".json,application/json" hidden><span class="tiny muted">Última: ${last == null ? "nunca" : last === 0 ? "hoy" : `hace ${last} días`}</span></div>
+      </section>
+      <div><button class="btn btn-sm btn-g" type="button" id="wipe" style="color:var(--bad)">Borrar mis datos</button><div id="wipeBox"></div></div>
+    </div>`, root => {
     const msg = t => { $("#aiMsg", root).innerHTML = t; };
-    const saveKey = () => { const m = $("#stModel", root).value.trim() || DEFAULT_MODEL; const prev = aiCfg(); lsSet(AI_KEY, { key: $("#stKey", root).value.trim(), model: m, speed: $("#stSpeed", root).value, noThink: prev.model === m ? prev.noThink : false }); setupAI(); };
-    $("#aiSave", root).onclick = () => { saveKey(); msg(sample ? "✅ Clave guardada. Pulsa «Probar clave» para comprobarla." : "Clave borrada."); render(); };
-    const del = $("#aiDel", root); del && (del.onclick = () => { lsSet(AI_KEY, { key: "", model: aiCfg().model }); setupAI(); closeModal(); render(); toast("🔑 Clave quitada"); });
-    $("#aiTest", root).onclick = async () => {
-      saveKey(); const key = aiCfg().key; if (!key) { msg("⚠️ Pega primero tu clave."); return; }
-      msg(thinkingHtml("Comprobando…"));
+    const saveCfg = key => { const prev = aiCfg(); const m = $("#stModel", root).value.trim() || prev.model || DEFAULT_MODEL; lsSet(AI_KEY, { ...prev, key: key == null ? prev.key : key, model: m, speed: $("#stSpeed", root).value, noThink: prev.model === m ? prev.noThink : false }); setupAI(); };
+    /* pega la clave → se comprueba y se elige el mejor modelo sin que el alumno vea nada técnico */
+    const activate = async () => {
+      const key = $("#stKey", root).value.trim(); if (!key) { msg("Pega primero la clave."); return; }
+      saveCfg(key); msg(thinkingHtml("Activando…"));
       try {
         const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200", { headers: { "x-goog-api-key": key } });
         if (!r.ok) throw { code: r.status === 429 ? "rate_limited" : "bad_key" };
         const models = ((await r.json()).models || []).filter(m => (m.supportedGenerationMethods || []).includes("generateContent")).map(m => m.name.replace(/^models\//, ""));
         $("#modelList", root).innerHTML = models.map(m => `<option value="${esc(m)}">`).join("");
-        const cur = $("#stModel", root).value.trim();
-        if (!models.includes(cur) || LEGACY_MODELS.test(cur)) { const pick = models.includes(DEFAULT_MODEL) ? DEFAULT_MODEL : (models.filter(m => /flash/.test(m) && !/lite|tts|image|live|audio|preview/.test(m) && !LEGACY_MODELS.test(m)).sort().pop() || models[0]); if (pick) { $("#stModel", root).value = pick; saveKey(); } }
-        const t = await geminiCall("Responde solo con: ¡Listo para estudiar! 📚", { _quiet: true });
-        msg(`✅ Funciona. Modelo: <b>${esc(aiCfg().model)}</b>. Respuesta: ${esc(t.text.trim().slice(0, 80))}`); render();
-      } catch (e) { msg("❌ " + aiErr(e)); }
+        const cur = aiCfg().model;
+        if (!models.includes(cur) || LEGACY_MODELS.test(cur)) { const pick = models.includes(DEFAULT_MODEL) ? DEFAULT_MODEL : (models.filter(m => /flash/.test(m) && !/lite|tts|image|live|audio|preview/.test(m) && !LEGACY_MODELS.test(m)).sort().pop() || models[0]); if (pick) { $("#stModel", root).value = pick; saveCfg(); } }
+        await geminiCall("Responde solo: ok", { _quiet: true });
+        msg(`<span style="color:var(--ok);font-weight:700">Listo. La IA ya funciona.</span>`); $("#stKey", root).value = ""; render();
+      } catch (e) { msg(`<span style="color:var(--bad)">${esc(aiErr(e))}</span>`); }
     };
-    $("#stSpeed", root).onchange = () => { saveKey(); toast($("#stSpeed", root).value === "smart" ? "🧠 Modo más listo" : "⚡ Modo rápido"); };
-    $("#setForm", root).addEventListener("submit", e => { e.preventDefault(); saveKey(); state.profile.name = $("#stName", root).value.trim(); state.profile.school = $("#stSchool", root).value.trim(); state.profile.goalMin = Math.max(15, Math.min(720, Math.round(+$("#stGoal", root).value || 120))); state.settings.sound = $("#stSound", root).checked; state.settings.hiddenNav = ["foco","progreso"].filter(k => { const el = $("#hideNav_"+k, root); return el && el.checked; }); closeModal(); commit(); toast(sample ? "✅ Ajustes guardados · IA activada 🤖" : "✅ Ajustes guardados"); });
+    $("#aiOn", root).onclick = activate;
+    $("#stKey", root).addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); activate(); } });
+    const ch = $("#aiChange", root); if (ch) ch.onclick = () => { $("#keyBox", root).hidden = false; $("#aiRow", root).hidden = true; $("#stKey", root).focus(); };
+    const del = $("#aiDel", root); if (del) del.onclick = () => { lsSet(AI_KEY, { key: "", model: aiCfg().model }); setupAI(); closeModal(); render(); toast("Clave quitada"); };
+    $("#stSpeed", root).onchange = () => saveCfg();
+    $("#stModel", root).onchange = () => saveCfg();
+    $("#setForm", root).addEventListener("submit", e => { e.preventDefault(); saveCfg(); state.profile.name = $("#stName", root).value.trim(); state.profile.school = $("#stSchool", root).value.trim(); state.profile.goalMin = Math.max(15, Math.min(720, Math.round(+$("#stGoal", root).value || 120))); state.settings.sound = $("#stSound", root).checked; state.settings.hiddenNav = ["foco", "progreso"].filter(k => $("#hideNav_" + k, root).checked); closeModal(); commit(); toast("Guardado"); });
     $("#exp", root).onclick = exportAll;
     $("#impBtn", root).onclick = () => $("#impFile", root).click();
     $("#impFile", root).onchange = e => { const f = e.target.files[0]; if (f) importAll(f); };
-    $("#wipe", root).onclick = () => { $("#wipeBox", root).innerHTML = `<div class="banner" style="background:var(--bad-soft);border-color:var(--bad)"><span>Se borran asignaturas, plan y sesiones. Tus documentos, chats y tarjetas se conservan. No se puede deshacer.</span><button class="btn btn-sm btn-d" id="wipeYes">Borrar</button></div>`; $("#wipeYes", root).onclick = () => { const name = state.profile.name; state = blankState(); state.profile.name = name; resetTimer(); closeModal(); commit(false); go("hoy"); render(); toast("🗑️ Datos borrados"); }; };
+    $("#wipe", root).onclick = () => { $("#wipeBox", root).innerHTML = `<div class="banner" style="margin-top:10px;background:var(--bad-soft);border-color:var(--bad)"><span>Se borran asignaturas, plan y sesiones. Documentos, chats y tarjetas se quedan. No se puede deshacer.</span><button class="btn btn-sm btn-d" type="button" id="wipeYes">Borrar</button></div>`; $("#wipeYes", root).onclick = () => { const name = state.profile.name; state = blankState(); state.profile.name = name; resetTimer(); closeModal(); commit(false); go("hoy"); render(); toast("Datos borrados"); }; };
   });
 }
+
 async function exportAll() {
   if (!idb) return; toast("⏳ Preparando copia…");
   try {
@@ -3437,7 +3450,7 @@ function exampleState() {
 }
 
 /* ================= actualizaciones ================= */
-const APP_VERSION = "2026.11.12-1";
+const APP_VERSION = "2026.11.12-2";
 let updateReady = false;
 async function checkUpdate() {
   try {
