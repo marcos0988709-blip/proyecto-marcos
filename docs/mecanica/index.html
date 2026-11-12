@@ -612,8 +612,12 @@ const CURSO_MEC = [
     ["La empresa y su entorno", 1], ["Formas jurídicas de empresa", 2], ["Dirección y organización", 2], ["Inversión: VAN, TIR y payback", 3], ["Financiación de la empresa", 2],
     ["Contabilidad básica: balance y resultados", 3], ["Costes y punto muerto", 3], ["Función productiva y productividad", 2], ["Marketing", 1], ["Recursos humanos", 1]] },
 ];
+const TPL_SHORT = { pia: "PIAC", gdj: "GEGE", rrhh: "RRHH", ofi: "OFI", cac: "CAC", ing: "Inglés", gef: "GEFI", cat: "Catalán", opt: "Inglés opt.", ipo: "IPO", dig: "DIGI", sos: "SOS", mat: "Mates", fis: "Física", qui: "Química", dib: "Dibujo", ade: "Empresa" };
+CURSO_AIF.concat(CURSO_MEC).forEach(t => t.short = TPL_SHORT[t.key] || "");
 const CURSO = PRESET === "mecanica" ? CURSO_MEC : CURSO_AIF;
-const fromTpl = t => ({ id: uid(), tpl: t.key, emoji: t.emoji, name: t.name, kind: "asignatura", color: t.color, exams: [], topics: t.topics.map(([title, w]) => ({ id: uid(), title, w, done: false })) });
+const fromTpl = t => ({ id: uid(), tpl: t.key, emoji: t.emoji, name: t.name, short: t.short || "", kind: "asignatura", color: t.color, exams: [], topics: t.topics.map(([title, w]) => ({ id: uid(), title, w, done: false })) });
+const autoShort = n => { n = String(n || "").trim(); if (n.length <= 16) return n; const w = n.replace(/\(.*?\)/g, "").split(/\s+/).filter(x => x.length >= 4); return w.length >= 2 && w.length <= 5 ? w.map(x => x[0].toUpperCase()).join("") : n.split(" ").slice(0, 2).join(" "); };
+const sName = s => s ? (s.short || autoShort(s.name)) : "";
 const hasTpl = t => state && state.subjects.some(x => x.tpl === t.key || x.name === t.name);
 const tplPicker = (prefix, onlyMissing) => CURSO.filter(t => !onlyMissing || !hasTpl(t)).map(t => `<label class="mod" style="--c:${t.color}"><input type="checkbox" data-${prefix}="${t.key}" ${t.def ? "checked" : ""}>${E(t.emoji)}<span style="min-width:0"><b>${esc(t.name)}</b><span class="tiny muted" style="display:block">${esc(t.ca)} · ${t.topics.length} temas${t.def ? "" : " · según centro"}</span></span></label>`).join("");
 
@@ -636,7 +640,7 @@ function migrate(s) {
   if (!Array.isArray(s.habits)) s.habits = [];
   if (!Array.isArray(s.settings.hiddenNav)) s.settings.hiddenNav = [];
   if (!s.habitChecks || typeof s.habitChecks !== "object") s.habitChecks = {};
-  s.subjects.forEach(x => { x.exams = x.exams || []; x.topics = x.topics || []; x.kind = x.kind || "asignatura"; if (!x.emoji) { const t = CURSO.find(c => c.key === x.tpl || c.name === x.name); x.emoji = t ? t.emoji : (x.kind === "proyecto" ? "🚀" : "📘"); } });
+  s.subjects.forEach(x => { x.exams = x.exams || []; x.topics = x.topics || []; x.kind = x.kind || "asignatura"; if (x.short == null) { const t = [...CURSO_AIF, ...CURSO_MEC].find(c => c.key === x.tpl || c.name === x.name); x.short = t ? t.short : ""; } if (!x.emoji) { const t = CURSO.find(c => c.key === x.tpl || c.name === x.name); x.emoji = t ? t.emoji : (x.kind === "proyecto" ? "🚀" : "📘"); } });
   return s;
 }
 let state = null;
@@ -885,16 +889,16 @@ function render(anim) {
 
 /* ---------- Onboarding: una pantalla, cualquier curso ---------- */
 const STUDY_LV = {
-  eso: { label: "ESO", years: ["1º", "2º", "3º", "4º"], subs: [["Lengua", "📖", 1], ["Matemáticas", "📐", 1], ["Inglés", "🗣️", 1], ["Geografía e Historia", "🌍", 1], ["Biología y Geología", "🧬", 1], ["Física y Química", "🧪", 1], ["Tecnología", "🔧", 0], ["Catalán", "📝", 0], ["Educación Física", "🏃", 0], ["Música", "🎵", 0], ["Plástica", "🎨", 0], ["Francés", "🥐", 0]] },
-  bach: { label: "Bachillerato", years: ["1º", "2º"], subs: [["Lengua", "📖", 1], ["Inglés", "🗣️", 1], ["Historia", "🏛️", 1], ["Filosofía", "💭", 0], ["Matemáticas", "📐", 0], ["Mates CCSS", "📊", 0], ["Física", "🧲", 0], ["Química", "🧪", 0], ["Biología", "🧬", 0], ["Dibujo Técnico", "📏", 0], ["Economía", "💼", 0], ["Historia del Arte", "🖼️", 0], ["Latín", "🏺", 0], ["Catalán", "📝", 0]] },
-  fp: { label: "FP", years: ["1º", "2º"], subs: [["FOL", "🦺", 1], ["Inglés", "🗣️", 1], ["Empresa e iniciativa", "💼", 0], ["Digitalización", "🌐", 0], ["Sostenibilidad", "🌱", 0]] },
+  eso: { label: "ESO", years: ["1º", "2º", "3º", "4º"], subs: [["Caste", "📖", 1, "Lengua castellana"], ["Mates", "📐", 1, "Matemáticas"], ["Inglés", "🗣️", 1, "Inglés"], ["Historia", "🌍", 1, "Geografía e Historia"], ["Bio", "🧬", 1, "Biología y Geología"], ["FyQ", "🧪", 1, "Física y Química"], ["Tecno", "🔧", 0, "Tecnología"], ["Catalán", "📝", 0, "Lengua catalana"], ["EF", "🏃", 0, "Educación Física"], ["Música", "🎵", 0, "Música"], ["Plástica", "🎨", 0, "Educación Plástica"], ["Francés", "🥐", 0, "Francés"]] },
+  bach: { label: "Bachillerato", years: ["1º", "2º"], subs: [["Caste", "📖", 1, "Lengua castellana y Literatura"], ["Inglés", "🗣️", 1, "Inglés"], ["Historia", "🏛️", 1, "Historia de España"], ["Filo", "💭", 0, "Filosofía"], ["Mates", "📐", 0, "Matemáticas"], ["Mates CCSS", "📊", 0, "Matemáticas Aplicadas a las CCSS"], ["Física", "🧲", 0, "Física"], ["Química", "🧪", 0, "Química"], ["Bio", "🧬", 0, "Biología"], ["Dibujo", "📏", 0, "Dibujo Técnico"], ["Eco", "💼", 0, "Economía"], ["Arte", "🖼️", 0, "Historia del Arte"], ["Latín", "🏺", 0, "Latín"], ["Catalán", "📝", 0, "Lengua catalana y Literatura"]] },
+  fp: { label: "FP", years: ["1º", "2º"], subs: [["FOL", "🦺", 1, "Formación y Orientación Laboral"], ["Inglés", "🗣️", 1, "Inglés profesional"], ["EIE", "💼", 0, "Empresa e Iniciativa Emprendedora"], ["DIGI", "🌐", 0, "Digitalización"], ["SOS", "🌱", 0, "Sostenibilidad"]] },
   uni: { label: "Universidad", years: ["1º", "2º", "3º", "4º"], subs: [] },
 };
 const onb = { lvl: "", year: "", picked: new Set(), extra: [], preset: false };
 function onbSubs() {
   const L = STUDY_LV[onb.lvl]; if (!L) return [];
-  if (onb.preset) return CURSO.map(t => [t.name, t.emoji, t.def ? 1 : 0, t]);
-  return L.subs.concat(onb.extra.map(n => [n, "📘", 1]));
+  if (onb.preset) return CURSO.map(t => [t.short || t.name, t.emoji, t.def ? 1 : 0, t.name, t]);
+  return L.subs.concat(onb.extra.map(n => [n, "📘", 1, n]));
 }
 function viewOnboarding() {
   const loading = !dbAnswered && window.claude;
@@ -931,7 +935,7 @@ function bindOnboarding() {
     state = blankState(); state.profile.name = name;
     state.profile.school = onb.preset ? SCHOOL : [onb.year, L.label].filter(Boolean).join(" ");
     let i = 0;
-    state.subjects = onbSubs().filter(s => onb.picked.has(s[0])).map(([n, e, , t]) => t ? fromTpl(t) : ({ id: uid(), emoji: e, name: n, kind: "asignatura", color: COLORS[i++ % COLORS.length], exams: [], topics: [] }));
+    state.subjects = onbSubs().filter(s => onb.picked.has(s[0])).map(([n, e, , full, t]) => t ? fromTpl(t) : ({ id: uid(), emoji: e, name: full || n, short: full && full !== n ? n : "", kind: "asignatura", color: COLORS[i++ % COLORS.length], exams: [], topics: [] }));
     commit(false); go("hoy"); render();
   };
   $("#onbExample") && ($("#onbExample").onclick = () => { state = exampleState(); commit(false); go("hoy"); render(); });
@@ -949,7 +953,7 @@ function viewHoy() {
   const today = dkey(); const mins = minutesOn(today); const goal = state.profile.goalMin || 120;
   const st = streak(); const exams = allUpcomingExams().slice(0, 3); const pr = priorities().slice(0, 3);
   const nm = state.profile.name ? `, ${esc(state.profile.name)}` : "";
-  const hello = `<div class="hello"><div><h1>${greeting()}${nm}</h1><p class="date">${longDate(new Date())}</p></div></div>`;
+  const L = levelInfo(); const hello = `<div class="hello"><div><h1>${greeting()}${nm}</h1><p class="date">${longDate(new Date())} · <a href="#progreso" class="pill mk" style="text-decoration:none">Nivel ${L.lvl} · ${L.title.replace(/^\S+\s/, "")}</a></p></div></div>`;
   if (!state.subjects.length) return `${hello}
     <div class="empty" style="margin-top:22px">${LOGO(72, "rise")}<h2>Añade tus asignaturas</h2><div class="row" style="justify-content:center"><button class="btn btn-p" data-act="new-subject">Añadir</button><button class="btn" data-act="ai-subjects">Crear con IA</button>${(!state.profile.school || state.profile.school === SCHOOL || /administr/i.test(state.profile.school)) ? `<button class="btn" data-act="add-modules">Módulos de AdFi</button>` : ""}</div></div>`;
   const dueTot = state.subjects.reduce((a, x) => a + deckOf(x.id).filter(isDue).length, 0);
@@ -970,7 +974,7 @@ function viewHoy() {
     ${dueTot ? `<button class="card row now-line" data-act="go-review" data-s="${(state.subjects.find(x => deckOf(x.id).some(isDue)) || {}).id}">${ic("spark", 'class="kpi-ic"')}<b style="flex:1;text-align:left">Repaso: ${dueTot} ${dueTot === 1 ? "tarjeta" : "tarjetas"}</b>${ic("play", 'width="16" height="16"')}</button>` : ""}
     <section class="card">
       <div class="card-h"><h2>Exámenes</h2><button class="btn btn-sm" data-act="new-exam">${ic("plus")}Nuevo</button></div>
-      ${exams.length ? exams.map(e => { const d = daysUntil(e.date); return `<div class="exam"><div class="cd ${urg(d)}"><b class="num">${d}</b><small>${d === 1 ? "día" : "días"}</small></div><div style="min-width:0;flex:1"><b style="overflow-wrap:anywhere">${esc(e.title)}</b><div class="small muted ell">${esc(e.s.name)}</div></div>${planBtn(e)}</div>`; }).join("") : `<p class="small muted">Ninguno a la vista.</p>`}
+      ${exams.length ? exams.map(e => { const d = daysUntil(e.date); return `<div class="exam"><div class="cd ${urg(d)}"><b class="num">${d}</b><small>${d === 1 ? "día" : "días"}</small></div><div style="min-width:0;flex:1"><b style="overflow-wrap:anywhere">${esc(e.title)}</b><div class="small muted ell">${esc(sName(e.s))}</div></div>${planBtn(e)}</div>`; }).join("") : `<p class="small muted">Ninguno a la vista.</p>`}
     </section>
     <section class="card">
       <div class="card-h"><h2>Agenda de hoy</h2><a class="btn btn-sm btn-g" href="#plan">Semana</a></div>
@@ -978,7 +982,7 @@ function viewHoy() {
       ${dueTasks.length ? `<h3 style="margin:14px 0 4px">Entregas</h3>${dueTasks.map(taskRow).join("")}` : ""}
     </section>
     ${pr.length ? `<section class="card"><div class="card-h"><h2>Prioridades</h2></div>
-      ${pr.map(({ s, t }) => `<div class="prio"><span class="semo" style="--c:${s.color}">${E(s.emoji)}</span><div style="min-width:0"><b style="overflow-wrap:anywhere">${esc(t.title)}</b><div class="tiny muted ell">${esc(s.name)}</div></div><button class="btn btn-sm" data-act="focus-topic" data-s="${s.id}" data-t="${t.id}" aria-label="Estudiar">${ic("play")}</button></div>`).join("")}
+      ${pr.map(({ s, t }) => `<div class="prio"><span class="semo" style="--c:${s.color}">${E(s.emoji)}</span><div style="min-width:0"><b style="overflow-wrap:anywhere">${esc(t.title)}</b><div class="tiny muted ell">${esc(sName(s))}</div></div><button class="btn btn-sm" data-act="focus-topic" data-s="${s.id}" data-t="${t.id}" aria-label="Estudiar">${ic("play")}</button></div>`).join("")}
     </section>` : ""}
     ${nag}
   </div>`;
@@ -1004,7 +1008,7 @@ function blockRow(b) {
   const s = subj(b.subjectId);
   return `<div class="blk ${b.done ? "done" : ""}" style="--c:${sColor(b.subjectId)}">
     <button class="check" role="checkbox" aria-checked="${!!b.done}" aria-label="Hecho" data-act="toggle-block" data-id="${b.id}">${ic("check")}</button>
-    <div style="min-width:0"><div class="ttl">${s ? E(s.emoji) + " " : ""}${esc(b.title || (s ? s.name : "Estudio"))}</div><div class="tiny muted">${s ? esc(s.name) + " · " : ""}${fmtMin(b.min)}</div></div>
+    <div style="min-width:0"><div class="ttl">${s ? E(s.emoji) + " " : ""}${esc(b.title || (s ? sName(s) : "Estudio"))}</div><div class="tiny muted">${s ? esc(sName(s)) + " · " : ""}${fmtMin(b.min)}</div></div>
     <div class="row" style="gap:6px"><span class="t">${esc(b.start)}</span>${b.done ? "" : `<button class="icon-btn" style="width:34px;height:34px" aria-label="Empezar" data-act="focus-block" data-id="${b.id}">${ic("play")}</button>`}</div>
   </div>`;
 }
@@ -1139,7 +1143,7 @@ function viewFoco() {
     <section class="card timer-card">
       <div class="seg" role="group" aria-label="Fase">${["focus", "short", "long"].map(p => `<button data-phase="${p}" aria-pressed="${timer.phase === p}" ${dis}>${PH[p]}</button>`).join("")}</div>
       <div class="ring" style="--c:${col}"><svg viewBox="0 0 260 260"><circle class="track" cx="130" cy="130" r="118" fill="none" stroke-width="12"/><circle id="ringProg" class="prog" cx="130" cy="130" r="118" fill="none" stroke-width="12" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${off.toFixed(1)}"/></svg>
-        <div class="ring-center"><span class="phase">${s && timer.phase === "focus" ? E(s.emoji) + " " + esc(s.name.split(" ").slice(0, 3).join(" ")) : PH[timer.phase]}</span><span class="clock" id="clock">${txt}</span><div class="cycle-dots" aria-label="${done} de ${n} bloques hasta el descanso largo">${Array.from({ length: n }, (_, i) => `<i class="${i < done ? "on" : ""}"></i>`).join("")}</div></div></div>
+        <div class="ring-center"><span class="phase">${s && timer.phase === "focus" ? E(s.emoji) + " " + esc(sName(s)) : PH[timer.phase]}</span><span class="clock" id="clock">${txt}</span><div class="cycle-dots" aria-label="${done} de ${n} bloques hasta el descanso largo">${Array.from({ length: n }, (_, i) => `<i class="${i < done ? "on" : ""}"></i>`).join("")}</div></div></div>
       <div class="timer-ctrl">
         <button class="icon-btn" style="width:50px;height:50px;border-radius:50%" data-act="t-reset" aria-label="Reiniciar">${ic("reset")}</button>
         ${timer.running ? `<button class="btn btn-p btn-lg" style="min-width:160px" data-act="t-pause">${ic("pause")}Pausar</button>` : `<button class="btn btn-p btn-lg" style="min-width:160px" data-act="t-start">${ic("play")}${timer.remaining != null && timer.remaining < phaseLen(timer.phase) ? "Seguir" : "Empezar"}</button>`}
@@ -1149,14 +1153,14 @@ function viewFoco() {
       <div class="amb"><span class="tiny muted">Sonido</span><div class="chips" style="justify-content:center">${Object.entries(AMBIENT).map(([k, l]) => `<button class="chip" data-amb="${k}" aria-pressed="${(state.settings.ambient || "off") === k}">${l}</button>`).join("")}</div>${(state.settings.ambient || "off") !== "off" ? `<label class="row tiny muted" style="gap:8px;justify-content:center">🔈<input type="range" id="ambVol" min="0.05" max="1" step="0.05" value="${ambVol()}" aria-label="Volumen" style="width:160px;accent-color:var(--accent)">🔊</label>` : ""}</div>
       ${blk ? `<p class="small muted">Del plan: <b>${esc(blk.title)}</b> · ${fmtMin(blk.doneMin || 0)} de ${fmtMin(blk.min)} <button class="btn btn-sm btn-g" data-act="unlink-block">Quitar</button></p>${blockDocs(blk).length ? `<div class="chips" style="justify-content:center">${blockDocs(blk).map(id => { const d = S.docs.find(x => x.id === id); return `<a class="chip" href="#doc-${id}">${E(DOC_EMO[d.type] || "📄")}<span>${esc((d.title || "Apuntes").slice(0, 34))}</span></a>`; }).join("")}<button class="chip" data-act="block-chat" data-id="${blk.id}">${E("💬")}<span>Dudas al tutor</span></button></div>` : ""}` : ""}
       <div class="focus-pick">
-        <label class="field"><span>Asignatura</span><select class="input" id="fSubj"><option value="">Sin asignatura</option>${state.subjects.map(x => `<option value="${x.id}" ${x.id === timer.subjectId ? "selected" : ""}>${x.emoji} ${esc(x.name)}</option>`).join("")}</select></label>
+        <label class="field"><span>Asignatura</span><select class="input" id="fSubj"><option value="">Sin asignatura</option>${state.subjects.map(x => `<option value="${x.id}" ${x.id === timer.subjectId ? "selected" : ""}>${x.emoji} ${esc(sName(x))}</option>`).join("")}</select></label>
         <label class="field"><span>Tema</span><select class="input" id="fTopic" ${s ? "" : "disabled"}><option value="">Repaso general</option>${topics.map(t => `<option value="${t.id}" ${t.id === timer.topicId ? "selected" : ""}>${esc(t.title)}</option>`).join("")}</select></label>
       </div>
     </section>
     <div class="stack" style="gap:14px">
       <section class="card">
         <div class="card-h"><h2>Sesiones de hoy</h2><span class="pill">${fmtMin(minutesOn(dkey()))}</span></div>
-        ${today.length ? today.map(x => `<div class="sess"><span class="emo">${sEmo(x.subjectId)}</span><div style="min-width:0"><b>${esc((subj(x.subjectId) || {}).name || "Sin asignatura")}</b>${x.topicId ? `<div class="tiny muted">${esc(((subj(x.subjectId) || { topics: [] }).topics.find(t => t.id === x.topicId) || {}).title || "")}</div>` : ""}</div><span class="num small muted">${new Date(x.start).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })} · ${x.min}′</span></div>`).join("") : `<p class="muted small">Todavía ninguna. El primer bloque es el que más cuesta: dale a Empezar. 💪</p>`}
+        ${today.length ? today.map(x => `<div class="sess"><span class="emo">${sEmo(x.subjectId)}</span><div style="min-width:0"><b>${esc(sName(subj(x.subjectId)) || "Sin asignatura")}</b>${x.topicId ? `<div class="tiny muted">${esc(((subj(x.subjectId) || { topics: [] }).topics.find(t => t.id === x.topicId) || {}).title || "")}</div>` : ""}</div><span class="num small muted">${new Date(x.start).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })} · ${x.min}′</span></div>`).join("") : `<p class="muted small">Todavía ninguna. El primer bloque es el que más cuesta: dale a Empezar. 💪</p>`}
       </section>
       <details class="card set-adv">
         <summary><b>Duraciones</b> <span class="tiny muted">${state.settings.focus}/${state.settings.short} min</span></summary><div style="margin-top:12px">
@@ -1253,7 +1257,7 @@ function sessionReport(id) {
   const sc = x.score ?? 100; const col = sc >= 85 ? "var(--ok)" : sc >= 60 ? "var(--accent)" : "var(--bad)";
   const verdict = sc >= 90 ? "🏆 Sesión de campeón" : sc >= 75 ? "💪 Buen round" : sc >= 50 ? "😐 Con distracciones" : "🥴 Demasiadas distracciones";
   openModal(`<div class="sheet-h"><h2>Sesión terminada</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
-    <div class="row" style="gap:16px;flex-wrap:nowrap"><div class="score-ring">${ringSvg(sc / 100, 84, 9, col)}<b class="num">${sc}</b></div><div style="min-width:0"><b style="font-size:1.1rem">${verdict}</b><p class="small muted">Productividad ${sc}/100 · ${s ? E(s.emoji) + " " + esc(s.name) : "Sesión libre"}</p>${x.blockTitle ? `<p class="tiny muted">${esc(x.blockTitle)}</p>` : ""}</div></div>
+    <div class="row" style="gap:16px;flex-wrap:nowrap"><div class="score-ring">${ringSvg(sc / 100, 84, 9, col)}<b class="num">${sc}</b></div><div style="min-width:0"><b style="font-size:1.1rem">${verdict}</b><p class="small muted">Productividad ${sc}/100 · ${s ? E(s.emoji) + " " + esc(sName(s)) : "Sesión libre"}</p>${x.blockTitle ? `<p class="tiny muted">${esc(x.blockTitle)}</p>` : ""}</div></div>
     <div class="rep-grid"><div><b>${x.min}′</b><small>de foco</small></div><div><b>${x.leaves || 0}</b><small>salidas de la app</small></div><div><b>${fmtSecs(x.awayS || 0)}</b><small>fuera de la app</small></div><div><b>${fmtMin(minutesOn(dkey()))}</b><small>hoy en total</small></div></div>
     <div class="field"><span>¿Qué tal te has sentido?</span><div class="seg" role="group" aria-label="Sensación">${FEEL.map((f, i) => `<button type="button" data-feel="${i + 1}" aria-pressed="${x.feel === i + 1}">${f}</button>`).join("")}</div></div>
     <div id="coachOut" class="coach">${x.coach ? `<div class="prose small"><b>🤖 Coach:</b> ${md(x.coach)}</div>` : sample ? thinkingHtml("El coach está mirando tu sesión…") : `<p class="small muted">🔑 Con tu clave de Gemini, el coach te comenta cada sesión.</p>`}</div>
@@ -1273,7 +1277,7 @@ function examStats(e, s) {
 }
 function examReviewCard() {
   const r = examsToReview()[0]; if (!r) return "";
-  return `<section class="card row" style="flex-wrap:nowrap;gap:12px;border-color:rgba(245,184,65,.4)"><div style="flex:1;min-width:0"><b style="overflow-wrap:anywhere">¿Qué tal «${esc(r.e.title)}»?</b><div class="small muted">${esc(r.s.name)}</div></div><button class="btn btn-sm btn-p" data-act="exam-review" data-id="${r.e.id}">Contar</button></section>`;
+  return `<section class="card row" style="flex-wrap:nowrap;gap:12px;border-color:rgba(245,184,65,.4)"><div style="flex:1;min-width:0"><b style="overflow-wrap:anywhere">¿Qué tal «${esc(r.e.title)}»?</b><div class="small muted">${esc(sName(r.s))}</div></div><button class="btn btn-sm btn-p" data-act="exam-review" data-id="${r.e.id}">Contar</button></section>`;
 }
 function examReviewModal(id, edit) {
   const f = findExam(id); if (!f) return; const { e, s } = f;
@@ -1309,7 +1313,7 @@ function examReport(id) {
   const f = findExam(id); if (!f || !f.e.result) return; const { e, s } = f; const r = e.result; const st = examStats(e, s);
   const big = r.grade != null ? `<b class="num" style="font-size:2.6rem;line-height:1;color:${r.grade >= 5 ? "var(--ok)" : "var(--bad)"}">${fmtGrade(r.grade)}</b>` : `<span class="emo" style="font-size:2.6rem">${FEEL[(r.feel || 3) - 1]}</span>`;
   openModal(`<div class="sheet-h"><h2>Informe del examen</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
-    <div class="row" style="gap:16px;flex-wrap:nowrap">${big}<div style="min-width:0"><b style="overflow-wrap:anywhere">${esc(e.title)}</b><p class="small muted">${E(s.emoji)} ${esc(s.name)} · ${shortDate(parseD(e.date))}${r.feel ? " · " + FEEL[r.feel - 1] + " " + FEEL_TXT[r.feel - 1] : ""}</p></div></div>
+    <div class="row" style="gap:16px;flex-wrap:nowrap">${big}<div style="min-width:0"><b style="overflow-wrap:anywhere">${esc(e.title)}</b><p class="small muted">${E(s.emoji)} ${esc(sName(s))} · ${shortDate(parseD(e.date))}${r.feel ? " · " + FEEL[r.feel - 1] + " " + FEEL_TXT[r.feel - 1] : ""}</p></div></div>
     <div class="rep-grid"><div><b>${fmtMin(st.min)}</b><small>estudiado antes</small></div><div><b>${st.n}</b><small>sesiones en ${st.days} ${st.days === 1 ? "día" : "días"}</small></div><div><b>${st.planned ? `${st.done}/${st.planned}` : "—"}</b><small>sesiones del plan hechas</small></div><div><b>${st.score ?? "—"}</b><small>productividad media</small></div></div>
     ${AI_NOTE}<div id="exCoach" class="coach">${r.coach ? `<div class="prose small">${md(r.coach)}</div>` : sample ? thinkingHtml("El coach está analizando tu examen…") : `<p class="small muted">🔑 Con tu clave de Gemini, el coach te analiza cada examen.</p>`}</div>
     <div class="row" style="justify-content:flex-end">${sample ? `<button class="btn" type="button" data-exchat>Hablarlo con el coach</button>` : ""}<button class="btn btn-g" type="button" data-exedit>Cambiar nota</button><button class="btn btn-p" data-close>Cerrar</button></div>`, root => {
@@ -1325,7 +1329,7 @@ function prodCard() {
   const avg = ses.length ? Math.round(ses.reduce((a, x) => a + x.score, 0) / ses.length) : null; const lv = ses.reduce((a, x) => a + (x.leaves || 0), 0);
   return `<section class="card"><div class="card-h"><h2>Productividad · 7 días</h2>${avg != null ? `<span class="pill ${avg >= 80 ? "ok" : avg >= 60 ? "warn" : "bad"}">${avg}/100</span>` : ""}</div>
     ${ses.length ? `<div class="rep-grid" style="margin-top:0"><div><b>${avg}</b><small>concentración media</small></div><div><b>${ses.length}</b><small>sesiones medidas</small></div><div><b>${lv}</b><small>salidas de la app</small></div><div><b>${Math.max(...ses.map(x => x.score))}</b><small>mejor sesión</small></div></div>` : ""}
-    ${res.length ? `<h3 style="margin:6px 0 6px">Tus exámenes</h3>${res.map(({ e, s }) => `<button class="exam" style="width:100%;text-align:left;background:none;border-left:0;border-right:0;border-top:0;color:inherit;cursor:pointer;font:inherit" data-act="exam-review" data-id="${e.id}"><div class="cd ${e.result.grade != null && e.result.grade < 5 ? "bad" : ""}"><b class="num">${e.result.grade != null ? fmtGrade(e.result.grade) : FEEL[(e.result.feel || 3) - 1]}</b><small>nota</small></div><div style="min-width:0"><b style="overflow-wrap:anywhere">${esc(e.title)}</b><div class="small muted">${E(s.emoji)} ${esc(s.name)} · ver informe</div></div></button>`).join("")}` : ""}
+    ${res.length ? `<h3 style="margin:6px 0 6px">Tus exámenes</h3>${res.map(({ e, s }) => `<button class="exam" style="width:100%;text-align:left;background:none;border-left:0;border-right:0;border-top:0;color:inherit;cursor:pointer;font:inherit" data-act="exam-review" data-id="${e.id}"><div class="cd ${e.result.grade != null && e.result.grade < 5 ? "bad" : ""}"><b class="num">${e.result.grade != null ? fmtGrade(e.result.grade) : FEEL[(e.result.feel || 3) - 1]}</b><small>nota</small></div><div style="min-width:0"><b style="overflow-wrap:anywhere">${esc(e.title)}</b><div class="small muted">${E(s.emoji)} ${esc(sName(s))} · ver informe</div></div></button>`).join("")}` : ""}
   </section>`;
 }
 /* el icono y el nombre de fuera los guarda el iPhone al instalar: hay que reinstalar con copia */
@@ -1345,7 +1349,7 @@ function viewAsignaturas() {
     <div class="row between"><div><h1>Asignaturas</h1><p class="muted">${list.length ? `${list.reduce((a, s) => a + s.topics.filter(t => !t.done).length, 0)} temas pendientes` : ""}</p></div>
       <div class="row"><button class="btn" data-act="ai-subjects">Crear con IA</button>${(!state.profile.school || state.profile.school === SCHOOL || /administr/i.test(state.profile.school)) && CURSO.some(t => !hasTpl(t)) ? `<button class="btn" data-act="add-modules">${PRESET_BTN}</button>` : ""}<button class="btn btn-p" data-act="new-subject">Nueva</button></div></div>
     ${list.length ? `<div class="grid g3">${list.map(s => { const p = progress(s), ex = nextExam(s); const d = ex ? daysUntil(ex.date) : null; return `<button class="card subj-card" style="--c:${s.color}" data-go="asig-${s.id}">
-      <div class="row" style="align-items:flex-start;flex-wrap:nowrap;gap:12px"><span class="semo" style="--c:${s.color}">${E(s.emoji)}</span><span class="nm" style="flex:1">${esc(s.name)}</span></div>
+      <div class="row" style="align-items:flex-start;flex-wrap:nowrap;gap:12px"><span class="semo" style="--c:${s.color}">${E(s.emoji)}</span><span class="nm" style="flex:1">${esc(sName(s))}</span></div>
       <div><div class="row between small" style="margin-bottom:6px"><span class="muted">${s.topics.filter(t => t.done).length}/${s.topics.length} temas</span><b class="num">${Math.round(p * 100)} %</b></div><div class="bar" style="--c:${s.color}"><i style="width:${p * 100}%"></i></div></div>
       <div class="subj-meta"><span>${fmtH(subjMinutes(s.id))}</span>${docsOf(s.id).length ? `<span>${docsOf(s.id).length} doc.</span>` : ""}${ex ? `<span class="pill ${urg(d)}" style="margin-left:auto">Examen en ${d} d</span>` : ""}</div>
     </button>`; }).join("")}</div>` : `<div class="empty"><p>Aún no hay asignaturas.</p><div class="row" style="justify-content:center"><button class="btn btn-p" data-act="ai-subjects">Crear con IA</button>${(!state.profile.school || state.profile.school === SCHOOL || /administr/i.test(state.profile.school)) ? `<button class="btn" data-act="add-modules">${PRESET_BTN}</button>` : ""}<button class="btn" data-act="new-subject">Otra</button></div></div>`}
@@ -1427,10 +1431,11 @@ function bindAsig() {
 function subjectModal(s) {
   const isNew = !s; s = s || { name: "", kind: "asignatura", color: COLORS[state.subjects.length % COLORS.length], emoji: "📘" };
   let color = s.color, kind = s.kind, emoji = s.emoji || "📘";
-  openModal(`<div class="sheet-h"><h2>${isNew ? "➕ Nueva asignatura o proyecto" : "✏️ Editar"}</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
+  openModal(`<div class="sheet-h"><h2>${isNew ? "Nueva asignatura" : "Editar"}</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
     <form id="subjForm" class="stack" style="gap:14px">
       <div class="seg" role="group" aria-label="Tipo"><button type="button" data-kind="asignatura" aria-pressed="${kind === "asignatura"}">Asignatura</button><button type="button" data-kind="proyecto" aria-pressed="${kind === "proyecto"}">Proyecto</button></div>
-      <label class="field"><span>Nombre</span><input class="input" id="sName" value="${esc(s.name)}" placeholder="p. ej. Contabilidad y fiscalidad" maxlength="80" required></label>
+      <label class="field"><span>Nombre</span><input class="input" id="sName" value="${esc(s.name)}" placeholder="p. ej. Gestión financiera" maxlength="80" required></label>
+      <label class="field"><span>Abreviatura</span><input class="input" id="sShort" value="${esc(s.short || "")}" placeholder="p. ej. GEFI" maxlength="16"></label>
       <div class="field"><span>Emoji</span><div class="emojis">${EMOJIS.map(e => `<button type="button" class="emo" data-emoji="${e}" aria-pressed="${e === emoji}" aria-label="${e}">${e}</button>`).join("")}</div></div>
       <div class="field"><span>Color</span><div class="colors">${COLORS.map(c => `<button type="button" style="--c:${c}" data-color="${c}" aria-pressed="${c === color}" aria-label="Color"></button>`).join("")}</div></div>
       <div class="row between"><div class="row">${isNew ? "" : `<button type="button" class="btn btn-d" id="delSubj">Eliminar</button>`}</div><div class="row"><button type="button" class="btn btn-g" data-close>Cancelar</button><button class="btn btn-p" type="submit">${isNew ? "Crear" : "Guardar"}</button></div></div>
@@ -1441,9 +1446,9 @@ function subjectModal(s) {
     $$("[data-emoji]", root).forEach(b => b.onclick = () => { emoji = b.dataset.emoji; $$("[data-emoji]", root).forEach(x => x.setAttribute("aria-pressed", x === b)); });
     setTimeout(() => $("#sName", root).focus(), 50);
     $("#subjForm", root).addEventListener("submit", e => {
-      e.preventDefault(); const name = $("#sName", root).value.trim(); if (!name) return;
-      if (isNew) { const ns = { id: uid(), name, kind, color, emoji, exams: [], topics: [] }; state.subjects.push(ns); closeModal(); commit(false); ui.asigTab = "temas"; go("asig-" + ns.id); }
-      else { Object.assign(s, { name, kind, color, emoji }); closeModal(); commit(); }
+      e.preventDefault(); const name = $("#sName", root).value.trim(); if (!name) return; const short = $("#sShort", root).value.trim();
+      if (isNew) { const ns = { id: uid(), name, short, kind, color, emoji, exams: [], topics: [] }; state.subjects.push(ns); closeModal(); commit(false); ui.asigTab = "temas"; go("asig-" + ns.id); }
+      else { Object.assign(s, { name, short, kind, color, emoji }); closeModal(); commit(); }
     });
     const del = $("#delSubj", root);
     del && (del.onclick = () => {
@@ -1476,7 +1481,7 @@ function aiSubjectsModal() {
         const r = await sample.json(`Eres orientador académico en España. El alumno estudia: «${c}». Devuelve las asignaturas o módulos oficiales habituales de ese curso (máximo 12), cada uno con sus temas principales en el orden del temario (6-14 por asignatura) y la importancia de cada tema para el examen (3 = clave, 2 = media, 1 = baja). Elige un emoji representativo por asignatura. Nombres en español.\n\nResponde SOLO con JSON: [{"name":"","emoji":"","topics":[{"t":"","w":2}]}]`);
         const list = (Array.isArray(r) ? r : []).filter(x => x && x.name).slice(0, 14).map(x => ({ name: String(x.name).slice(0, 80), emoji: (String(x.emoji || "📘").match(/\p{Extended_Pictographic}[\uFE0F\u200D\p{Extended_Pictographic}]*/u) || ["📘"])[0], topics: (Array.isArray(x.topics) ? x.topics : []).filter(t => t && (t.t || typeof t === "string")).slice(0, 20).map(t => ({ t: String(t.t || t).slice(0, 110), w: [1, 2, 3].includes(+t.w) ? +t.w : 2 })) }));
         if (!list.length) throw { code: "invalid_json" };
-        out.innerHTML = `<p class="small muted" style="margin:6px 0 10px">Desmarca las que no tengas. Luego podrás editar temas y añadir tus fechas de examen.</p><div class="mods">${list.map((x, i) => `<label class="mod" style="--c:${COLORS[(state.subjects.length + i) % COLORS.length]}"><input type="checkbox" checked data-ais="${i}">${E(x.emoji)}<span style="min-width:0"><b>${esc(x.name)}</b><span class="tiny muted" style="display:block">${x.topics.length} temas</span></span></label>`).join("")}</div>
+        out.innerHTML = `<p class="small muted" style="margin:6px 0 10px">Desmarca las que no tengas. Luego podrás editar temas y añadir tus fechas de examen.</p><div class="mods">${list.map((x, i) => `<label class="mod" style="--c:${COLORS[(state.subjects.length + i) % COLORS.length]}"><input type="checkbox" checked data-ais="${i}">${E(x.emoji)}<span style="min-width:0"><b>${esc(sName(x))}</b><span class="tiny muted" style="display:block">${x.topics.length} temas</span></span></label>`).join("")}</div>
           <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn btn-p" id="aisAdd">Añadir seleccionadas</button></div>`;
         $("#aisAdd", root).onclick = () => {
           let n = 0; list.forEach((x, i) => { const cb = $(`[data-ais="${i}"]`, root); if (!cb || !cb.checked) return; state.subjects.push({ id: uid(), name: x.name, emoji: x.emoji, kind: "asignatura", color: COLORS[state.subjects.length % COLORS.length], exams: [], topics: x.topics.map(t => ({ id: uid(), title: t.t, w: t.w, done: false })) }); n++; });
@@ -1563,7 +1568,7 @@ function viewDoc() {
   if (!loaded && docLoading !== d.id) { docLoading = d.id; loadText(d.id).then(() => { docLoading = null; render(); }).catch(() => { docLoading = null; textCache.set(d.id, ""); render(); }); }
   const isNote = d.type === "note"; const furl = fileUrl(d) || d.link || "";
   return `<div class="stack" style="gap:14px">
-    <a class="btn btn-sm btn-g" href="${s ? "#asig-" + s.id : "#asignaturas"}" style="align-self:flex-start" data-act="tab-docs">${ic("back")}${s ? esc(s.name) : "Asignaturas"}</a>
+    <a class="btn btn-sm btn-g" href="${s ? "#asig-" + s.id : "#asignaturas"}" style="align-self:flex-start" data-act="tab-docs">${ic("back")}${s ? esc(sName(s)) : "Asignaturas"}</a>
     <div class="row" style="flex-wrap:nowrap;align-items:center"><span class="emo" style="font-size:32px">${DOC_EMO[d.type] || "📄"}</span><input class="input" id="docTitle" data-keep value="${esc(d.title || "")}" style="font-family:var(--f-display);font-weight:800;font-size:1.3rem;background:transparent;border-color:transparent" maxlength="120" aria-label="Título"></div>
     <div class="row">
       <button class="btn btn-p" data-act="doc-chat" data-id="${d.id}" ${sample && s ? "" : "disabled"}>Preguntar a la IA</button>
@@ -1571,7 +1576,7 @@ function viewDoc() {
       ${furl ? `<a class="btn" href="${esc(furl)}" target="_blank" rel="noopener">${d.link ? "Abrir enlace" : "Abrir archivo"}</a>` : ""}
       ${d.type === "image" && d.fileId ? `<button class="btn" data-act="doc-ocr" data-id="${d.id}" ${sample && imgLimits ? "" : "disabled"}>Leer texto con IA</button>` : ""}
       <button class="btn btn-d" data-act="doc-del" data-id="${d.id}">Eliminar</button>
-      <span class="tiny muted" id="docStatus">${s ? E(s.emoji) + " " + esc(s.name) : ""} · ${DOC_LBL[d.type] || ""}${d.size ? " · " + fmtSize(d.size) : ""}</span>
+      <span class="tiny muted" id="docStatus">${s ? E(s.emoji) + " " + esc(sName(s)) : ""} · ${DOC_LBL[d.type] || ""}${d.size ? " · " + fmtSize(d.size) : ""}</span>
     </div>
     <div id="docDel"></div>
     ${d.type === "image" && furl ? `<img class="doc-img" src="${esc(furl)}" alt="${esc(d.title || "Imagen")}">` : ""}
@@ -1757,7 +1762,7 @@ function viewChat() {
   const docs = s ? docsOf(s.id) : []; const ctx = c.ctx || [];
   const starters = s && s.kind === "proyecto" ? ["🧭 ¿Por dónde empiezo?", "🗓️ Hazme un plan de 2 semanas", "⚠️ ¿Qué riesgos tiene?"] : ["📌 Resúmeme lo más importante", "🧮 Ponme un caso práctico tipo examen", "📐 ¿Qué fórmulas me tengo que saber?", "🎯 ¿Qué es lo que más cae en el examen?"];
   return `<div class="chat-page">
-    <div class="row between" style="flex-wrap:nowrap"><a class="btn btn-sm btn-g" href="${s ? "#asig-" + s.id : "#tutor"}" data-act="tab-chats">${ic("back")}${s ? E(s.emoji) + " " + esc(s.name.split(" ").slice(0, 4).join(" ")) : "Tutor"}</a>
+    <div class="row between" style="flex-wrap:nowrap"><a class="btn btn-sm btn-g" href="${s ? "#asig-" + s.id : "#tutor"}" data-act="tab-chats">${ic("back")}${s ? E(s.emoji) + " " + esc(sName(s)) : "Tutor"}</a>
       <div class="row" style="gap:6px"><button class="btn btn-sm btn-g" data-act="chat-rename" data-id="${c.id}" aria-label="Renombrar"></button><button class="btn btn-sm btn-g" data-act="chat-del" data-id="${c.id}" aria-label="Eliminar"></button></div></div>
     <h1 style="font-size:clamp(1.3rem,3.4vw,1.8rem);overflow-wrap:anywhere">${esc(c.title || "💬 Nuevo chat")}</h1>
     <div id="chatDel"></div>
@@ -2235,7 +2240,7 @@ function mmToDeck(it) {
   const have = deckOf(s.id); const seen = new Set(have.map(c => String(c.q).trim().toLowerCase()));
   const add = out.filter(x => !seen.has(x.q.toLowerCase())).slice(0, 40).map(x => ({ id: uid(), q: x.q, a: x.a, box: 0, due: dkey() }));
   if (!add.length) { toast("Ya tenías estas tarjetas en tu mazo"); return; }
-  saveDeck(s.id, have.concat(add)).then(() => toast(`${add.length} tarjetas añadidas al repaso de ${s.name.split(" ").slice(0, 3).join(" ")}`));
+  saveDeck(s.id, have.concat(add)).then(() => toast(`${add.length} tarjetas añadidas al repaso de ${sName(s)}`));
 }
 
 /* ---------- Estudio IA (estilo NotebookLM) ---------- */
@@ -2294,7 +2299,7 @@ async function genStudio(kind) {
       item.title = "🧠 " + tree.t.slice(0, 90); item.tree = tree;
     } else {
       const r = await sample(`${STUDIO_PROMPT[kind]} Sé concreto y fiel a los documentos del alumno; si falta información, usa el temario estándar del módulo. En español.\n\n${src}`, { onText: ({ text }) => { const o = out(); if (o) o.innerHTML = `<div class="prose">${md(text)}</div>`; } });
-      item.md = r.text; item.title = `${STUDIO[kind].e} ${STUDIO[kind].n} · ${s.name.split(" ").slice(0, 3).join(" ")}`;
+      item.md = r.text; item.title = `${STUDIO[kind].e} ${STUDIO[kind].n} · ${sName(s)}`;
     }
     const id = uid(); await sPut("studio", id, item); studioBusy = false; toast(`${STUDIO[kind].n} listo`); go("studio-" + id);
   } catch (e) { studioBusy = false; render(); const o = out(); if (o) o.innerHTML = `<p class="ai-off">⚠️ ${aiErr(e)}</p>`; }
@@ -2354,7 +2359,7 @@ function viewStudio() {
     body = `<div class="row" style="margin-bottom:12px"><button class="btn btn-sm" data-act="studio-note">Guardar como nota</button><button class="btn btn-sm btn-g" data-act="studio-copy">Copiar</button></div><section class="card prose">${md(it.md)}</section>`;
   }
   return `<div class="stack" style="gap:14px">
-    <div class="row between" style="flex-wrap:nowrap"><a class="btn btn-sm btn-g" href="${s ? "#asig-" + s.id : "#asignaturas"}" data-act="tab-studio">${ic("back")}${s ? E(s.emoji) + " " + esc(s.name.split(" ").slice(0, 4).join(" ")) : "Asignaturas"}</a><button class="btn btn-sm btn-g" data-act="studio-del" aria-label="Eliminar"></button></div>
+    <div class="row between" style="flex-wrap:nowrap"><a class="btn btn-sm btn-g" href="${s ? "#asig-" + s.id : "#asignaturas"}" data-act="tab-studio">${ic("back")}${s ? E(s.emoji) + " " + esc(sName(s)) : "Asignaturas"}</a><button class="btn btn-sm btn-g" data-act="studio-del" aria-label="Eliminar"></button></div>
     <h1 style="font-size:clamp(1.3rem,3.6vw,1.9rem);overflow-wrap:anywhere">${esc(it.title || "")}</h1>
     <div id="studioDel"></div>${body}${it.kind === "podcast" ? "" : AI_NOTE}</div>`;
 }
@@ -2376,16 +2381,16 @@ function viewTutor() {
     <div class="row between"><div><h1>Tutor</h1></div>
       <button class="btn btn-p" data-act="new-chat" data-s="${f}" ${sample ? "" : "disabled"}>Nuevo chat</button></div>
     ${!sample ? `<p class="ai-off">IA apagada. <button class="btn btn-sm" data-act="open-settings">Activar</button></p>` : ""}
-    <div class="chips"><button class="chip" data-tf="" aria-pressed="${!f}"><span>Todas</span></button>${state.subjects.map(x => `<button class="chip" style="--c:${x.color}" data-tf="${x.id}" aria-pressed="${x.id === f}">${E(x.emoji)}<span>${esc(x.name.split(" ").slice(0, 3).join(" "))}</span></button>`).join("")}</div>
+    <div class="chips"><button class="chip" data-tf="" aria-pressed="${!f}"><span>Todas</span></button>${state.subjects.map(x => `<button class="chip" style="--c:${x.color}" data-tf="${x.id}" aria-pressed="${x.id === f}">${E(x.emoji)}<span>${esc(sName(x))}</span></button>`).join("")}</div>
     <section class="card">${!storeReady ? `<p class="muted small">${E("⏳")} Cargando chats…</p>` : chats.length ? chats.map(chatRow).join("") : `<div class="empty"><span class="emo big">💬</span><p>Sin chats${f ? " en esta asignatura" : ""}. Abre uno y pregunta lo que quieras.</p></div>`}</section>
     <section class="card"><div class="card-h"><h2>Estudiar con IA</h2></div>
-      <div class="chips">${state.subjects.map(x => `<button class="chip" style="--c:${x.color}" data-act="go-study" data-s="${x.id}">${E(x.emoji)}<span>${esc(x.name.split(" ").slice(0, 4).join(" "))}</span></button>`).join("")}</div></section>
+      <div class="chips">${state.subjects.map(x => `<button class="chip" style="--c:${x.color}" data-act="go-study" data-s="${x.id}">${E(x.emoji)}<span>${esc(sName(x))}</span></button>`).join("")}</div></section>
   </div>`;
 }
 function bindTutor() { $$("[data-tf]").forEach(b => b.onclick = () => { ui.tutorFilter = b.dataset.tf; saveUi(); render(); }); }
 function pickSubjectModal(cb) {
   openModal(`<div class="sheet-h"><h2>¿De qué asignatura?</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
-    <div class="stack">${state.subjects.map(x => `<button class="btn" style="justify-content:flex-start;white-space:normal;text-align:left" data-pick="${x.id}">${E(x.emoji)} ${esc(x.name)}</button>`).join("")}</div>`, root => {
+    <div class="stack">${state.subjects.map(x => `<button class="btn" style="justify-content:flex-start;white-space:normal;text-align:left" data-pick="${x.id}">${E(x.emoji)} ${esc(sName(x))}</button>`).join("")}</div>`, root => {
     $$("[data-pick]", root).forEach(b => b.onclick = () => { closeModal(); cb(b.dataset.pick); });
   });
 }
@@ -2421,6 +2426,23 @@ function freeSlots(k, ignoreAI = true) {
   for (const [a, b] of busy) { if (b <= cur) continue; if (a > cur) out.push([cur, Math.min(a, to)]); cur = Math.max(cur, b); if (cur >= to) break; }
   if (cur < to) out.push([cur, to]);
   return out.filter(([a, b]) => b - a >= 25);
+}
+/* si un plan fijo (gym, clase, evento) pisa una sesión de estudio, la sesión se mueve sola al hueco libre más cercano */
+function fixClashes() {
+  const today = dkey(); const moved = [];
+  const clash = b => itemsOn(b.date).some(x => x.id !== b.id && !x.allDay && (x.kind === "event" || x.kind === "class") && toMin(b.start) < toMin(x.start) + x.min && toMin(b.start) + b.min > toMin(x.start));
+  for (const b of state.plan.filter(x => (x.kind || "study") === "study" && !x.done && x.date >= today).sort((a, c) => a.date.localeCompare(c.date))) {
+    if (!clash(b)) continue;
+    const f = b.examId && findExam(b.examId); const until = f ? f.e.date : dkey(addDays(parseD(b.date), 7));
+    const keep = state.plan; state.plan = keep.filter(x => x !== b); let placed = false;
+    for (let d = parseD(b.date); dkey(d) < until || (!f && dkey(d) <= until); d = addDays(d, 1)) {
+      const k = dkey(d); if (k < today) continue;
+      const sl = freeSlots(k, false).find(([a, z]) => z - a >= Math.min(b.min, 25)); if (!sl) continue;
+      Object.assign(b, { date: k, start: toHHMM(sl[0]), min: Math.min(b.min, sl[1] - sl[0]) }); placed = true; break;
+    }
+    state.plan = keep; if (placed) moved.push(b); else state.plan = state.plan.filter(x => x !== b);
+  }
+  return moved.length;
 }
 function planDays() {
   const today = dkey();
@@ -2560,30 +2582,32 @@ function examModal(sid, examId) {
   const found = examId ? findExam(examId) : null; const ex = found ? found.e : null;
   let s = found ? found.s : (subj(sid) || state.subjects[0]);
   if (!s) { toast("Crea antes una asignatura"); return; }
-  let inten = (ex && ex.intensity) || "normal";
+  let inten = (ex && ex.intensity) || "normal"; let startD = ex && ex.startDays ? ex.startDays : 0;
   const docList = x => { const ds = docsOf(x.id).filter(d => d.chars || d.type === "image"); return ds.length ? ds.map(d => `<label class="mod" style="--c:${x.color}"><input type="checkbox" data-exdoc="${d.id}" ${!ex || examDocs(ex).includes(d.id) ? "checked" : ""}>${E(DOC_EMO[d.type] || "📄")}<span style="min-width:0;overflow-wrap:anywhere">${esc(d.title || "Sin título")}</span></label>`).join("") : `<p class="tiny muted">Esta asignatura todavía no tiene apuntes. Puedes crear el plan igual y subirlos después en 📄 Documentos.</p>`; };
   openModal(`<div class="sheet-h"><h2>${ex ? "Plan del examen" : "Nuevo examen"}</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
     <form id="exForm" class="stack" style="gap:12px">
-      <label class="field"><span>📚 Asignatura</span><select class="input" id="exSubj" ${ex ? "disabled" : ""}>${state.subjects.map(x => `<option value="${x.id}" ${x.id === s.id ? "selected" : ""}>${x.emoji} ${esc(x.name)}</option>`).join("")}</select></label>
+      <label class="field"><span>📚 Asignatura</span><select class="input" id="exSubj" ${ex ? "disabled" : ""}>${state.subjects.map(x => `<option value="${x.id}" ${x.id === s.id ? "selected" : ""}>${x.emoji} ${esc(sName(x))}</option>`).join("")}</select></label>
       <div class="grid" style="grid-template-columns:minmax(0,1fr) auto;gap:10px">
         <label class="field"><span>📝 Qué examen</span><input class="input" id="exTitle" value="${esc(ex ? ex.title : "")}" placeholder="p. ej. Examen RA2" maxlength="80" required></label>
         <label class="field"><span>📅 Fecha</span><input class="input" type="date" id="exDate" value="${ex ? ex.date : ""}" min="${dkey()}" required style="width:auto"></label>
       </div>
-      <label class="field"><span>🎯 Qué entra (temas, RA, tipo de ejercicios)</span><textarea class="input" id="exTopics" rows="3" maxlength="600" placeholder="p. ej. Balance de situación, cuenta de pérdidas y ganancias, principios contables">${esc((ex && ex.topics) || "")}</textarea></label>
+      <div class="field"><span>Empezar a estudiar</span><div class="seg" role="group" aria-label="Cuándo empezar">${[[0, "Desde hoy"], [2, "2 días antes"], [3, "3 días antes"], [5, "5 días antes"], [7, "1 semana antes"]].map(([k, l]) => `<button type="button" data-exstart="${k}" aria-pressed="${k === startD}">${l}</button>`).join("")}</div></div>
+      <label class="field"><span>Apartados que entran (opcional: si lo dejas vacío, las sesiones serán «Estudiar»)</span><textarea class="input" id="exTopics" rows="3" maxlength="600" placeholder="p. ej. Balance, PyG, principios contables">${esc((ex && ex.topics) || "")}</textarea></label>
       ${scheduleWarn()}
       <div class="field"><span>📎 Apuntes de este examen</span><div class="mods" id="exDocs">${docList(s)}</div></div>
       <div class="field"><span>⚡ Intensidad</span><div class="seg" role="group" aria-label="Intensidad">${Object.entries(EX_INT).map(([k, v]) => `<button type="button" data-exint="${k}" aria-pressed="${k === inten}">${v.n} · ${fmtMin(v.min)}/día</button>`).join("")}</div></div>
-      <p class="tiny muted">Rocky reparte las sesiones desde hoy hasta el examen en tus huecos libres, sin tocar clases, gym ni planes. La víspera: repaso final y simulacro.</p>
+      
       <div class="row" style="justify-content:flex-end"><button class="btn btn-g" type="button" id="exSave">Solo guardar</button><button class="btn btn-p" type="submit">${ex && ex.planned ? "🔄 Rehacer el plan" : "🥊 Crear plan de estudio"}</button></div>
     </form>`, root => {
     $("#exSubj", root).onchange = e => { s = subj(e.target.value) || s; $("#exDocs", root).innerHTML = docList(s); };
+    $$("[data-exstart]", root).forEach(b => b.onclick = () => { startD = +b.dataset.exstart; $$("[data-exstart]", root).forEach(x => x.setAttribute("aria-pressed", x === b)); });
     $$("[data-exint]", root).forEach(b => b.onclick = () => { inten = b.dataset.exint; $$("[data-exint]", root).forEach(x => x.setAttribute("aria-pressed", x === b)); });
     const collect = () => {
       const title = $("#exTitle", root).value.trim(), date = $("#exDate", root).value;
       if (!title || !isK(date)) { toast("Pon qué examen es y la fecha"); return null; }
       if (date < dkey()) { toast("Esa fecha ya ha pasado"); return null; }
       const obj = ex || { id: uid() };
-      Object.assign(obj, { title, date, topics: $("#exTopics", root).value.trim(), docIds: $$("[data-exdoc]", root).filter(c => c.checked).map(c => c.dataset.exdoc), intensity: inten });
+      Object.assign(obj, { title, date, topics: $("#exTopics", root).value.trim(), docIds: $$("[data-exdoc]", root).filter(c => c.checked).map(c => c.dataset.exdoc), intensity: inten, startDays: startD });
       if (!ex) s.exams.push(obj);
       return obj;
     };
@@ -2592,14 +2616,14 @@ function examModal(sid, examId) {
     if (!ex) setTimeout(() => $("#exTitle", root).focus(), 60);
   });
 }
-function examDays(ex) { const out = []; for (let d = new Date(); dkey(d) < ex.date && out.length < 28; d = addDays(d, 1)) out.push(dkey(d)); return out; }
+function examDays(ex) { const from = ex.startDays ? dkey(addDays(parseD(ex.date), -ex.startDays)) : ""; const out = []; for (let d = new Date(); dkey(d) < ex.date && out.length < 28; d = addDays(d, 1)) if (dkey(d) >= from) out.push(dkey(d)); return out; }
 function simplePlan(ex, days, cap) {
   const parts = String(ex.topics || "").split(/[,;\n·]+| y /).map(x => x.trim()).filter(x => x.length > 2);
   const raw = []; let i = 0;
   days.forEach((k, di) => {
     const last = di === days.length - 1; const sl = freeSlots(k, false); if (!sl.length) return;
-    let st = sl[0][0]; const blocks = last ? ["Repaso final: lo que más cae", "Simulacro de examen"] : cap(k) >= 90 ? ["Teoría", "Ejercicios tipo examen"] : ["Teoría y ejercicios"];
-    for (const t of blocks) { const topic = parts.length ? parts[i++ % parts.length] : ex.title; raw.push({ date: k, start: toHHMM(st), min: 50, title: last ? t : `${t}: ${topic}`.slice(0, 80) }); st += 60; }
+    let st = sl[0][0]; const n = cap(k) >= 90 ? 2 : 1;
+    for (let j = 0; j < n; j++) { const title = last ? (j ? "Simulacro de examen" : "Repaso final") : parts.length ? `Estudiar: ${parts[i++ % parts.length]}` : `Estudiar: ${ex.title}`; raw.push({ date: k, start: toHHMM(st), min: 50, title: title.slice(0, 80) }); st += 60; }
   });
   return raw;
 }
@@ -2612,23 +2636,22 @@ async function planExam(examId) {
   state.plan = state.plan.filter(b => !(b.examId === ex.id && !b.done));
   examBusy = ex.id; render();
   let raw = [], resumen = "", viaAI = false;
-  if (sample) {
+  if (sample && ex.topics) {
     try {
       const dc = await docsContext(examDocs(ex), 14000);
       const dayInfo = days.map(k => `- ${k} (${DOWL[dowOf(k)]}${daysUntil(k) === 0 ? ", HOY" : ""}): máximo ${cap(k)} min. Huecos libres: ${freeSlots(k, false).map(([a, b]) => toHHMM(a) + "-" + toHHMM(b)).join(", ") || "NINGUNO"}`).join("\n");
       const prompt = `Eres el entrenador de estudio de Rocky, una app para estudiantes. ${COURSE_CTX()} Prepara al alumno para este examen con el mínimo tiempo y la máxima nota.
 EXAMEN: «${ex.title}» de ${s.name}, el ${ex.date} (${DOWL[dowOf(ex.date)].toLowerCase()}), dentro de ${daysUntil(ex.date)} días.
-QUÉ ENTRA: ${ex.topics || "(no lo ha dicho: dedúcelo de los apuntes y de los temas del módulo)"}
-${subjContext(s)}
+APARTADOS QUE ENTRAN (los ha escrito el alumno): ${ex.topics}
 ${dc.text ? `APUNTES DEL ALUMNO (extracto):\n${dc.text}\n` : ""}
 DÍAS DISPONIBLES:
 ${dayInfo}
 REGLAS OBLIGATORIAS:
 1. Pon bloques SOLO dentro de los huecos libres de cada día y no superes el máximo de minutos de cada día. Si un día no tiene huecos, sáltalo.
 2. Bloques de 25 a 60 minutos (lo ideal, 45-50) con 10 minutos entre bloques.
-3. Orden: primero entender la teoría con ejemplos, después ejercicios tipo examen y después repasar lo fallado. Reparte los temas entre los días; no lo metas todo el mismo día.
+3. Usa SOLO los apartados que ha escrito el alumno, con sus mismas palabras. No inventes apartados, subtemas ni temas nuevos, aunque salgan en los apuntes. Reparte esos apartados entre los días, en el orden que los ha escrito.
 4. El último día disponible (la víspera): «Repaso final: …» y «Simulacro de examen». Si hay 4 días o más, pon también un simulacro corto a mitad de camino.
-5. Títulos concretos de máximo 60 caracteres que digan QUÉ hacer, por ejemplo «Teoría: masas patrimoniales y balance» o «Ejercicios: cuenta de PyG (BAII y BAI)».
+5. Títulos de máximo 60 caracteres con este formato: «Estudiar: <apartado>» o «Ejercicios: <apartado>», usando el apartado tal cual lo ha escrito el alumno.
 Responde SOLO con JSON: {"resumen":"1-2 frases con la estrategia","bloques":[{"date":"AAAA-MM-DD","start":"HH:MM","min":50,"title":"texto"}]}`;
       const r = await sample.json(prompt);
       raw = (r && Array.isArray(r.bloques)) ? r.bloques : []; resumen = String((r && r.resumen) || ""); viaAI = true;
@@ -2636,12 +2659,16 @@ Responde SOLO con JSON: {"resumen":"1-2 frases con la estrategia","bloques":[{"d
   }
   let blocks = fitBlocks(raw, days, { keepAI: true, cap });
   if (!blocks.length) { blocks = fitBlocks(simplePlan(ex, days, cap), days, { keepAI: true, cap }); viaAI = false; }
+  if (viaAI) { /* red de seguridad: si la IA se inventa un apartado, se cambia por uno de los del alumno */
+    const parts = String(ex.topics).split(/[,;\n·]+| y /).map(x => x.trim()).filter(x => x.length > 2); const low = t => t.toLowerCase();
+    let i = 0; blocks.forEach(b => { if (/repaso|simulacro/i.test(b.title) || parts.some(p => low(b.title).includes(low(p)))) return; b.title = `Estudiar: ${parts[i++ % parts.length] || ex.title}`.slice(0, 80); });
+  }
   blocks.forEach(b => Object.assign(b, { subjectId: s.id, examId: ex.id, docIds: examDocs(ex) }));
   examBusy = null;
   if (!blocks.length) { toast("No hay huecos libres antes del examen. Revisa tu horario de estudio en 🗓️ Agenda › 🏫 Horario."); render(); return; }
   state.plan = state.plan.concat(blocks); ex.planned = Date.now();
   const tot = blocks.reduce((a, b) => a + b.min, 0);
-  lastAction = { title: `Plan de «${ex.title}»: ${blocks.length} sesiones · ${fmtMin(tot)}`, text: resumen || (viaAI ? "" : "Plan básico repartido por días. Con tu clave de Gemini, Rocky lo hace por temas."), list: blocks.slice(0, 6).map(b => `${fmtDay(b.date)} · ${b.start} · ${esc(b.title)}`).concat(blocks.length > 6 ? [`…y ${blocks.length - 6} más en la Agenda`] : []) };
+  lastAction = { title: `Plan de «${ex.title}»: ${blocks.length} sesiones · ${fmtMin(tot)}`, text: resumen, list: blocks.slice(0, 6).map(b => `${fmtDay(b.date)} · ${b.start} · ${esc(b.title)}`).concat(blocks.length > 6 ? [`…y ${blocks.length - 6} más en la Agenda`] : []) };
   commit(false); toast("Plan listo. ¡A entrenar!"); go("hoy"); render();
 }
 function missedBlocks() {
@@ -2687,7 +2714,7 @@ function nowCard() {
   return `<section class="card now-card" style="--c:${sColor(b.subjectId)}">
     <span class="eyebrow" style="color:var(--accent)">${label}</span>
     <h2 class="now-t">${s ? E(s.emoji) + " " : ""}${esc(b.title)}</h2>
-    <p class="small muted">${b.start}–${toHHMM(toMin(b.start) + b.min)} · ${fmtMin(b.min)}${s ? " · " + esc(s.name) : ""}</p>
+    <p class="small muted">${b.start}–${toHHMM(toMin(b.start) + b.min)} · ${fmtMin(b.min)}${s ? " · " + esc(sName(s)) : ""}</p>
     ${f ? `<p class="small" style="margin-top:4px">${esc(f.e.title)} · <b>${daysUntil(f.e.date) === 1 ? "mañana" : `en ${daysUntil(f.e.date)} días`}</b>${docs.length ? ` · ${docs.length} ${docs.length === 1 ? "apunte" : "apuntes"}` : ""}</p>` : ""}
     <div class="row" style="margin-top:12px"><button class="btn btn-p btn-lg" data-act="focus-block" data-id="${b.id}">${ic("play")}Empezar</button>${rest ? `<span class="tiny muted">+${rest} ${rest === 1 ? "sesión" : "sesiones"} más hoy</span>` : `<span class="tiny muted">Última de hoy</span>`}<button class="btn btn-sm btn-g" data-act="ics-alarms" title="Que el calendario del móvil te avise antes de cada sesión">Avisos</button></div>
     ${miss ? `<p class="small" style="margin-top:10px">Te has saltado <b>${miss} ${miss === 1 ? "sesión" : "sesiones"}</b>. <button class="btn btn-sm btn-m" data-act="replan-missed">Recolocar</button></p>` : ""}
@@ -2778,7 +2805,7 @@ function opDesc(o) {
     case "done": return `✅ Marcar como hecho <b>${esc(it.title || "")}</b>`;
     case "add_task": return `✅ Tarea: <b>${t}</b>${isK(o.due) ? " · entrega " + fmtDay(o.due) : ""}`;
     case "add_class": return `🏫 Clase cada ${dowsTxt(o)} ${normT(o.start)}–${normT(o.end)}: <b>${t || esc((subj(o.subjectId) || {}).name || "")}</b>`;
-    case "add_exam": return `🚨 Examen de <b>${esc(subj(o.subjectId).name)}</b> · ${fmtDay(o.date)}${t ? " · " + t : ""}`;
+    case "add_exam": return `🚨 Examen de <b>${esc(sName(subj(o.subjectId)))}</b> · ${fmtDay(o.date)}${t ? " · " + t : ""}`;
     case "organize": return `🪄 Organizar la semana con IA${o.note ? ": " + esc(o.note) : ""}`;
   }
   return "";
@@ -2809,7 +2836,7 @@ function applyOps(ops, auto) {
       case "organize": organize = o; break;
     }
   }
-  if (n) { commit(); toast(`Hecho: ${n} ${n === 1 ? "cambio" : "cambios"}`); }
+  if (n) { const mv = fixClashes(); commit(); toast(`Hecho: ${n} ${n === 1 ? "cambio" : "cambios"}${mv ? ` · ${mv} ${mv === 1 ? "sesión movida" : "sesiones movidas"}` : ""}`); }
   if (organize) organizeWeek(organize.note || "", !!auto);
 }
 
@@ -2819,7 +2846,7 @@ function agendaRow(x) {
   const time = x.allDay ? "Todo el día" : `${x.start}–${toHHMM(toMin(x.start) + x.min)}`;
   return `<div class="blk ${x.done ? "done" : ""}" style="--c:${ev ? "#A4A8B6" : sColor(x.subjectId)}">
     ${cls || ev ? `<span class="emo" style="width:23px;text-align:center;font-size:18px">${KIND[x.kind].e}</span>` : `<button class="check" role="checkbox" aria-checked="${!!x.done}" aria-label="Hecho" data-act="toggle-block" data-id="${x.id}">${ic("check")}</button>`}
-    <div style="min-width:0"><div class="ttl">${s && !cls ? E(s.emoji) + " " : ""}${esc(x.title || (s ? s.name : "Estudio"))}</div><div class="tiny muted">${time}${s ? " · " + esc(s.name) : ""}${x.room ? " · " + esc(x.room) : ""}${x.taskId ? " · tarea" : ""}</div></div>
+    <div style="min-width:0"><div class="ttl">${s && !cls ? E(s.emoji) + " " : ""}${esc(x.title || (s ? sName(s) : "Estudio"))}</div><div class="tiny muted">${time}${s ? " · " + esc(sName(s)) : ""}${x.room ? " · " + esc(x.room) : ""}${x.taskId ? " · tarea" : ""}</div></div>
     <div class="row" style="gap:6px">${!cls && !ev && !x.done ? `<button class="icon-btn" style="width:34px;height:34px" aria-label="Empezar" data-act="focus-block" data-id="${x.id}">${ic("play")}</button>` : ""}<button class="icon-btn" style="width:34px;height:34px" data-act="${cls || x.weekly ? "edit-class" : "edit-block"}" data-id="${cls || x.weekly ? x.ref : x.id}" aria-label="Editar">${ic("pencil", 'width="16" height="16"')}</button></div>
   </div>`;
 }
@@ -2827,7 +2854,7 @@ function taskRow(t) {
   const s = subj(t.subjectId); const d = t.due ? daysUntil(t.due) : null;
   return `<div class="blk ${t.status === "done" ? "done" : ""}" style="--c:${sColor(t.subjectId)}">
     <button class="check" role="checkbox" aria-checked="${t.status === "done"}" aria-label="Hecha" data-act="task-done" data-id="${t.id}">${ic("check")}</button>
-    <div style="min-width:0"><div class="ttl">${esc(t.title)}</div><div class="tiny muted">${s ? E(s.emoji) + " " + esc(s.name) + " · " : ""}${PRIO[t.prio || 2]} · ${fmtMin(t.est || 45)}</div></div>
+    <div style="min-width:0"><div class="ttl">${esc(t.title)}</div><div class="tiny muted">${s ? E(s.emoji) + " " + esc(sName(s)) + " · " : ""}${PRIO[t.prio || 2]} · ${fmtMin(t.est || 45)}</div></div>
     <div class="row" style="gap:6px">${t.due ? `<span class="pill ${t.status === "done" ? "neutral" : d < 0 ? "bad" : urg(d)}">${d < 0 ? "Vencida" : d === 0 ? "Hoy" : d === 1 ? "Mañana" : fmtDay(t.due)}</span>` : ""}<button class="icon-btn" style="width:34px;height:34px" data-act="task-edit" data-id="${t.id}" aria-label="Editar">${ic("pencil", 'width="16" height="16"')}</button></div>
   </div>`;
 }
@@ -2891,7 +2918,7 @@ function weekGrid(days) {
   const nowM = new Date().getHours() * 60 + new Date().getMinutes();
   const evHtml = (x, isProp) => {
     const top = Math.max(0, (toMin(x.start) - st) / 60 * GRID_H), h = Math.max(18, x.min / 60 * GRID_H - 2); const s = subj(x.subjectId);
-    return `<button class="ev ${x.kind} ${isProp ? "prop" : ""} ${x.done ? "done" : ""}" style="top:${top}px;height:${h}px;--c:${x.kind === "event" ? "#A4A8B6" : sColor(x.subjectId)}" ${isProp ? "" : `data-act="${x.kind === "class" || x.weekly ? "edit-class" : "edit-block"}" data-id="${x.kind === "class" || x.weekly ? x.ref : x.id}"`}><b>${s && x.kind !== "event" ? s.emoji + " " : x.kind === "event" ? "📌 " : ""}${esc(x.title || (s ? s.name : "Estudio"))}</b>${h > 30 ? `<span>${x.start}–${toHHMM(toMin(x.start) + x.min)}${x.room ? " · " + esc(x.room) : ""}</span>` : ""}</button>`;
+    return `<button class="ev ${x.kind} ${isProp ? "prop" : ""} ${x.done ? "done" : ""}" style="top:${top}px;height:${h}px;--c:${x.kind === "event" ? "#A4A8B6" : sColor(x.subjectId)}" ${isProp ? "" : `data-act="${x.kind === "class" || x.weekly ? "edit-class" : "edit-block"}" data-id="${x.kind === "class" || x.weekly ? x.ref : x.id}"`}><b>${s && x.kind !== "event" ? s.emoji + " " : x.kind === "event" ? "📌 " : ""}${esc(x.title || (s ? sName(s) : "Estudio"))}</b>${h > 30 ? `<span>${x.start}–${toHHMM(toMin(x.start) + x.min)}${x.room ? " · " + esc(x.room) : ""}</span>` : ""}</button>`;
   };
   return `<div class="wk" id="wkGrid"><div class="wk-in" style="--gh:${GRID_H}px">
     <div class="wk-corner"></div>${days.map(k => `<div class="wk-dh ${k === today ? "today" : ""}"><span>${DOWL[dowOf(k)].slice(0, 3)}</span><b>${parseD(k).getDate()}</b></div>`).join("")}
@@ -2905,7 +2932,7 @@ function weekList(days) {
   return `<div class="stack" style="gap:12px">${days.map(k => {
     const its = itemsOn(k).filter(x => !(propDays.has(k) && x.ai && !x.done)); const pr = prop.filter(b => b.date === k); const ex = examsOn(k), td = tasksDueOn(k);
     return `<section class="card ${k === today ? "today-card" : ""}" id="day-${k}"><div class="card-h"><h3>${k === today ? "Hoy · " : ""}${DOWL[dowOf(k)]} ${parseD(k).getDate()}</h3><button class="btn btn-sm btn-g" data-act="new-block" data-date="${k}">Añadir</button></div>
-      ${ex.map(e => `<div class="banner" style="background:var(--bad-soft);border-color:var(--bad);margin-bottom:8px"><span>🚨 <b>Examen:</b> ${esc(e.s.name)} · ${esc(e.title)}</span></div>`).join("")}
+      ${ex.map(e => `<div class="banner" style="background:var(--bad-soft);border-color:var(--bad);margin-bottom:8px"><span>🚨 <b>Examen:</b> ${esc(sName(e.s))} · ${esc(e.title)}</span></div>`).join("")}
       ${td.map(t => `<div class="banner" style="background:var(--warn-soft);border-color:var(--warn);margin-bottom:8px"><span>✅ <b>Entrega:</b> ${esc(t.title)}</span></div>`).join("")}
       ${its.length || pr.length ? its.map(agendaRow).join("") + pr.map(b => `<div class="blk" style="--c:${sColor(b.subjectId)};border:1.5px dashed var(--marker);border-radius:11px;padding:9px 10px;margin-top:6px;background:var(--marker-soft)"><span class="emo">🪄</span><div style="min-width:0"><div class="ttl">${esc(b.title)}</div><div class="tiny muted">${b.start}–${toHHMM(toMin(b.start) + b.min)} · propuesta</div></div><span></span></div>`).join("") : `<p class="tiny muted">Nada todavía.</p>`}
     </section>`; }).join("")}</div>`;
@@ -2975,7 +3002,7 @@ function blockModal(b, date, start) {
     <form id="blkForm" class="stack" style="gap:12px">
       <div class="seg" role="group" aria-label="Tipo"><button type="button" data-kind="study" aria-pressed="${kind === "study"}">Estudio</button><button type="button" data-kind="event" aria-pressed="${kind === "event"}">Evento / plan</button></div>
       <label class="field"><span>Título</span><input class="input" id="bTitle" value="${esc(b.title)}" placeholder="${kind === "event" ? "p. ej. Fútbol, médico, trabajo…" : "p. ej. Ejercicios de amortización"}" maxlength="120"></label>
-      <label class="field" id="bSubjF" ${kind === "event" ? "hidden" : ""}><span>Asignatura</span><select class="input" id="bSubj"><option value="">Otra</option>${state.subjects.map(s => `<option value="${s.id}" ${s.id === b.subjectId ? "selected" : ""}>${s.emoji} ${esc(s.name)}</option>`).join("")}</select></label>
+      <label class="field" id="bSubjF" ${kind === "event" ? "hidden" : ""}><span>Asignatura</span><select class="input" id="bSubj"><option value="">Otra</option>${state.subjects.map(s => `<option value="${s.id}" ${s.id === b.subjectId ? "selected" : ""}>${s.emoji} ${esc(sName(s))}</option>`).join("")}</select></label>
       <div class="grid" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
         <label class="field"><span>Día</span><input class="input" type="date" id="bDate" value="${b.date}" required></label>
         <label class="field"><span>Hora</span><input class="input" type="time" id="bStart" value="${esc(b.start)}" required></label>
@@ -2988,7 +3015,7 @@ function blockModal(b, date, start) {
     $("#blkForm", root).addEventListener("submit", e => { e.preventDefault();
       const sid = kind === "event" ? "" : $("#bSubj", root).value; const v = { kind, subjectId: sid, title: $("#bTitle", root).value.trim() || (kind === "event" ? "Evento" : (subj(sid) || {}).name || "Estudio"), date: $("#bDate", root).value, start: $("#bStart", root).value, min: Math.max(5, Math.min(720, Math.round(+$("#bMin", root).value || 50))) };
       if (!isK(v.date) || !isT(v.start)) return;
-      if (isNew) state.plan.push({ id: uid(), done: false, ...v }); else Object.assign(b, v, { ai: false }); closeModal(); commit(); });
+      if (isNew) state.plan.push({ id: uid(), done: false, ...v }); else Object.assign(b, v, { ai: false }); const mv = kind === "study" ? 0 : fixClashes(); closeModal(); commit(); if (mv) toast(`${mv} ${mv === 1 ? "sesión movida" : "sesiones movidas"} para no chocar`); });
     const del = $("#bDel", root); del && (del.onclick = () => { state.plan = state.plan.filter(x => x.id !== b.id); closeModal(); commit(); });
     const f = $("#bFocus", root); f && (f.onclick = () => { closeModal(); focusBlock(b.id); });
   });
@@ -2997,7 +3024,7 @@ function classModal(c, dow) {
   const isNew = !c; c = c || { dow: dow ?? 0, start: "08:00", end: "10:00", subjectId: (state.subjects[0] || {}).id || "", title: "", room: "" };
   openModal(`<div class="sheet-h"><h2>${isNew ? "➕ Nueva clase" : "🏫 Clase"}</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
     <form id="clsForm" class="stack" style="gap:12px">
-      <label class="field"><span>Asignatura</span><select class="input" id="cSubj"><option value="">Otra</option>${state.subjects.map(s => `<option value="${s.id}" ${s.id === c.subjectId ? "selected" : ""}>${s.emoji} ${esc(s.name)}</option>`).join("")}</select></label>
+      <label class="field"><span>Asignatura</span><select class="input" id="cSubj"><option value="">Otra</option>${state.subjects.map(s => `<option value="${s.id}" ${s.id === c.subjectId ? "selected" : ""}>${s.emoji} ${esc(sName(s))}</option>`).join("")}</select></label>
       <label class="field"><span>Nombre (opcional)</span><input class="input" id="cTitle" value="${esc(c.title || "")}" placeholder="p. ej. Tutoría, Educación física…" maxlength="80"></label>
       <div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
         <label class="field"><span>Día</span><select class="input" id="cDow">${DOWL.map((d, i) => `<option value="${i}" ${i === c.dow ? "selected" : ""}>${d}</option>`).join("")}</select></label>
@@ -3010,7 +3037,7 @@ function classModal(c, dow) {
     $("#clsForm", root).addEventListener("submit", e => { e.preventDefault();
       const v = { subjectId: $("#cSubj", root).value, title: $("#cTitle", root).value.trim(), dow: +$("#cDow", root).value, room: $("#cRoom", root).value.trim(), start: $("#cStart", root).value, end: $("#cEnd", root).value };
       if (!isT(v.start) || !isT(v.end) || toMin(v.end) <= toMin(v.start)) { toast("La hora de fin tiene que ser después del inicio"); return; }
-      if (isNew) state.timetable.push({ id: uid(), ...v }); else Object.assign(c, v); closeModal(); commit(); toast(isNew ? "🏫 Clase añadida" : "✅ Guardado"); });
+      if (isNew) state.timetable.push({ id: uid(), ...v }); else Object.assign(c, v); const mv = fixClashes(); closeModal(); commit(); toast((isNew ? "Añadido" : "Guardado") + (mv ? ` · ${mv} ${mv === 1 ? "sesión movida" : "sesiones movidas"}` : "")); });
     const del = $("#cDel", root); del && (del.onclick = () => { state.timetable = state.timetable.filter(x => x.id !== c.id); closeModal(); commit(); });
   });
 }
@@ -3019,7 +3046,7 @@ function taskModal(t, fresh) {
   openModal(`<div class="sheet-h"><h2>${fresh ? "✅ Detalles de la tarea" : isNew ? "➕ Nueva tarea" : "✅ Tarea"}</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
     <form id="tskForm" class="stack" style="gap:12px">
       <label class="field"><span>Qué hay que hacer</span><input class="input" id="tTitle" value="${esc(t.title)}" maxlength="120" required></label>
-      <label class="field"><span>Asignatura</span><select class="input" id="tSubj"><option value="">Ninguna</option>${state.subjects.map(s => `<option value="${s.id}" ${s.id === t.subjectId ? "selected" : ""}>${s.emoji} ${esc(s.name)}</option>`).join("")}</select></label>
+      <label class="field"><span>Asignatura</span><select class="input" id="tSubj"><option value="">Ninguna</option>${state.subjects.map(s => `<option value="${s.id}" ${s.id === t.subjectId ? "selected" : ""}>${s.emoji} ${esc(sName(s))}</option>`).join("")}</select></label>
       <div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
         <label class="field"><span>Fecha de entrega</span><input class="input" type="date" id="tDue" value="${esc(t.due || "")}"></label>
         <label class="field"><span>Tiempo estimado (min)</span><input class="input num" type="number" id="tEst" min="10" max="600" step="5" value="${t.est || 45}"></label>
@@ -3096,7 +3123,7 @@ function exportICS() {
   const from = dkey(addDays(now, -7)), to = dkey(addDays(now, 120));
   for (const b of state.plan) {
     if (b.date < from || b.date > to) continue; const s = subj(b.subjectId); const kind = b.kind || "study";
-    const title = (kind === "event" ? "📌 " : (s ? s.emoji + " " : "📚 ")) + (b.title || (s ? s.name : "Estudio"));
+    const title = (kind === "event" ? "📌 " : (s ? s.emoji + " " : "📚 ")) + (b.title || (s ? sName(s) : "Estudio"));
     if (b.allDay) { ev(b.id, ["DTSTART;VALUE=DATE:" + icsD(b.date), "DTEND;VALUE=DATE:" + icsD(dkey(addDays(parseD(b.date), 1))), "SUMMARY:" + icsEsc(title)]); continue; }
     const endM = toMin(b.start) + b.min; const endK = endM >= 1440 ? dkey(addDays(parseD(b.date), 1)) : b.date;
     const alarm = kind === "study" && !b.done && b.date >= dkey(now) ? ["BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:" + icsEsc("🥊 En 10 min: " + title), "TRIGGER:-PT10M", "END:VALARM"] : [];
@@ -3182,7 +3209,7 @@ function viewProgreso() {
       <section class="card"><div class="card-h"><h2>Esta semana</h2><span class="tiny muted">verde = objetivo de ${goal} min</span></div>
         <div class="weekbars">${wk.map(x => `<div class="wb"><b>${x.v || ""}</b><i class="${x.v >= goal ? "goal" : ""}" style="height:${(x.v / maxW * 100).toFixed(1)}%;${x.k > todayK ? "opacity:.25" : ""}"></i><small>${x.d.toLocaleDateString("es-ES", { weekday: "short" }).slice(0, 2)}</small></div>`).join("")}</div></section>
       <section class="card"><div class="card-h"><h2>Por asignatura · 30 días</h2></div>
-        ${per.length ? per.map(({ s, v }) => `<div class="hbar"><span class="row" style="gap:7px;flex-wrap:nowrap;min-width:0"><span class="emo">${s.emoji}</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.name)}</span></span><div class="bar" style="--c:${s.color}"><i style="width:${(v / maxP * 100).toFixed(1)}%"></i></div><span class="num small muted">${fmtH(v)}</span></div>`).join("") : `<p class="muted small">Sin datos aún.</p>`}
+        ${per.length ? per.map(({ s, v }) => `<div class="hbar"><span class="row" style="gap:7px;flex-wrap:nowrap;min-width:0"><span class="emo">${s.emoji}</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(sName(s))}</span></span><div class="bar" style="--c:${s.color}"><i style="width:${(v / maxP * 100).toFixed(1)}%"></i></div><span class="num small muted">${fmtH(v)}</span></div>`).join("") : `<p class="muted small">Sin datos aún.</p>`}
         ${per.length > 1 && per[per.length - 1].v < maxP * .2 ? `<p class="tiny muted" style="margin-top:10px"><b>${esc(per[per.length - 1].s.name)}</b> se está quedando atrás.</p>` : ""}</section>
     </div>
   </div>`;
@@ -3458,7 +3485,7 @@ function exampleState() {
 }
 
 /* ================= actualizaciones ================= */
-const APP_VERSION = "2026.11.12-4";
+const APP_VERSION = "2026.11.12-5";
 let updateReady = false;
 async function checkUpdate() {
   try {
