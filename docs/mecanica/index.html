@@ -579,7 +579,7 @@ const I = {
   check: '<path d="M5 12.5l4.5 4.5L19 7"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>', plus: '<path d="M12 5v14M5 12h14"/>',
   play: '<path d="M7 4.5v15l12-7.5z" fill="currentColor"/>', pause: '<path d="M7 4h4v16H7zM13 4h4v16h-4z" fill="currentColor"/>',
   reset: '<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/>', skip: '<path d="M5 4l10 8-10 8z" fill="currentColor"/><path d="M19 5v14"/>',
-  back: '<path d="M15 18l-6-6 6-6"/>', pencil: '<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
+  back: '<path d="M15 18l-6-6 6-6"/>', camera: '<path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.8l1.4-2h4.6l1.4 2h1.8A2.5 2.5 0 0 1 20 8.5v9A2.5 2.5 0 0 1 17.5 20h-11A2.5 2.5 0 0 1 4 17.5z"/><circle cx="12" cy="12.8" r="3.6"/>', pencil: '<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
   home: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9v11h13V9"/><path d="M10 20v-6h4v6"/>', timer: '<circle cx="12" cy="13.5" r="7.5"/><path d="M12 10v3.5l2.5 2M9.5 2.5h5"/>',
   book: '<path d="M4 19.5V5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2 2 2 0 0 0 2 2h13"/>', calendar: '<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
   chat: '<path d="M20.5 12a8.5 8.5 0 0 1-12.4 7.6L3.5 21l1.4-4.4A8.5 8.5 0 1 1 20.5 12z"/>', chart: '<path d="M4 20V11M10 20V5M16 20v-6M3 20.5h18"/>',
@@ -997,7 +997,7 @@ function viewHoy() {
   const today = dkey(); const mins = minutesOn(today); const goal = state.profile.goalMin || 120;
   const st = streak(); const exams = allUpcomingExams().slice(0, 3); const pr = priorities().slice(0, 3);
   const nm = state.profile.name ? `, ${esc(state.profile.name)}` : "";
-  const L = levelInfo(); const hello = `<div class="hello"><div><h1>${greeting()}${nm}</h1><p class="date">${longDate(new Date())} · <a href="#progreso" class="pill mk" style="text-decoration:none">Nivel ${L.lvl} · ${L.title.replace(/^\S+\s/, "")}</a></p></div></div>`;
+  const L = levelInfo(); const hello = `<div class="hello"><div><h1>${greeting()}${nm}</h1><p class="date">${longDate(new Date())} · <a href="#progreso" class="pill mk" style="text-decoration:none">Nivel ${L.lvl} · ${L.title.replace(/^\S+\s/, "")}</a></p></div>${state.subjects.length ? `<button class="btn" data-act="snap">${ic("camera")}Foto a un ejercicio</button>` : ""}</div>`;
   if (!state.subjects.length) return `${hello}
     <div class="empty" style="margin-top:22px">${LOGO(72, "rise")}<h2>Añade tus asignaturas</h2><div class="row" style="justify-content:center"><button class="btn btn-p" data-act="new-subject">Añadir</button><button class="btn" data-act="ai-subjects">Crear con IA</button>${(!state.profile.school || state.profile.school === SCHOOL || /administr/i.test(state.profile.school)) ? `<button class="btn" data-act="add-modules">Módulos de AdFi</button>` : ""}</div></div>`;
   const dueTot = state.subjects.reduce((a, x) => a + deckOf(x.id).filter(isDue).length, 0);
@@ -1450,7 +1450,7 @@ function tabDocs(s) {
 function tabChats(s) {
   const chats = chatsOf(s.id);
   return `<section class="card">
-    <div class="card-h"><p class="small muted">Abre tantos chats como quieras: uno por tema, por duda o por examen. Cada chat lee los documentos que elijas.</p><button class="btn btn-p" data-act="new-chat" data-s="${s.id}" ${sample ? "" : "disabled"}>Nuevo chat</button></div>
+    <div class="row" style="justify-content:flex-end"><button class="btn" data-act="snap" data-s="${s.id}" ${sample ? "" : "disabled"}>${ic("camera")}Foto a un ejercicio</button><button class="btn btn-p" data-act="new-chat" data-s="${s.id}" ${sample ? "" : "disabled"}>Nuevo chat</button></div>
     ${!sample ? `<p class="ai-off">IA apagada. <button class="btn btn-sm" data-act="open-settings">Activar</button></p>` : ""}
     ${!storeReady ? `<p class="muted small">${E("⏳")} Cargando chats…</p>` : chats.length ? chats.map(chatRow).join("") : `<div class="empty"><span class="emo big">💬</span><p>Sin chats todavía. Empieza uno y pregúntale lo que no entiendas.</p></div>`}
   </section>`;
@@ -2335,7 +2335,7 @@ Entre 6 y 9 escenas. La primera es un gancho (una pregunta o un dato que enganch
 Cada escena tiene:
 - "titulo": máximo 7 palabras.
 - "etiqueta": 1-2 palabras (por ejemplo «Concepto», «Ejemplo», «Ojo al examen», «Truco»).
-- "narracion": 2-4 frases (30-60 palabras), tono cercano y con energía, como un buen youtuber educativo de España. Se lee en voz alta: sin emojis, símbolos ni Markdown.
+- "narracion": 2-4 frases (30-60 palabras), tono cercano y con energía, como un buen youtuber educativo de España. Se lee en voz alta: sin emojis, símbolos ni Markdown, pero con tildes y buena ortografía.
 - "visual": UNO de estos objetos (varía los tipos entre escenas):
   {"tipo":"lista","items":["máximo 4, muy cortos"]}
   {"tipo":"pasos","items":["máximo 5 pasos cortos"]}
@@ -2343,7 +2343,7 @@ Cada escena tiene:
   {"tipo":"barras","items":[{"label":"…","valor":10}],"unidad":"%"}  (solo con números reales del contenido)
   {"tipo":"comparar","a":{"titulo":"…","puntos":["…"]},"b":{"titulo":"…","puntos":["…"]}}
   {"tipo":"formula","texto":"BAI = BAII − gastos financieros","nota":"corto"}
-Sé fiel al contenido del alumno.
+Escribe todo con tildes y ortografía correcta. Sé fiel al contenido del alumno.
 ${src}
 
 Responde SOLO con JSON: {"title":"título corto","scenes":[{"titulo":"…","etiqueta":"…","narracion":"…","visual":{…}}]}`);
@@ -2371,7 +2371,7 @@ Título del pódcast: «${idx.title || sName(s)}». Índice completo: ${ap.join(
 En esta parte tratad SOLO estos apartados, a fondo: ${g[k].join(" · ")}. Cada apartado con explicación clara, un ejemplo (con números si aplica) y una pregunta típica de examen que el otro responde.
 ${k === 0 ? "Empezad con un gancho y presentad de qué va el pódcast." : `Seguid la conversación justo donde se quedó (sin saludar otra vez). Final de la parte anterior:\n${prev}`}
 ${k === 2 ? "Terminad con un repaso de 5 ideas clave para el examen y una despedida corta." : "No os despidáis: la charla sigue en la siguiente parte."}
-Longitud: 900-1100 palabras, 30-45 intervenciones de 1-4 frases. Se lee en voz alta: nada de Markdown, emojis ni símbolos.
+Longitud: 900-1100 palabras, 30-45 intervenciones de 1-4 frases. Se lee en voz alta: nada de Markdown, emojis ni símbolos, pero con tildes y buena ortografía.
 ${src}
 
 Responde SOLO con JSON: {"lines":[{"s":"A","t":"frase"}]}`);
@@ -2381,7 +2381,7 @@ Responde SOLO con JSON: {"lines":[{"s":"A","t":"frase"}]}`);
         if (lines.length < 20) throw { code: "invalid_json" };
         r = { title: idx.title };
       } else {
-        r = await sample.json(`Escribe el GUION de un pódcast educativo en español de España entre dos profesores jóvenes, Laura (A) y Dani (B), que explican este contenido a un alumno de forma amena, clara y con ejemplos cotidianos. ${COURSE_CTX()} Duración 5-7 minutos (850-1150 palabras), 24-40 intervenciones cortas (1-3 frases cada una). Empieza presentando el tema, cubre lo más importante para el examen (80/20), incluye algún ejemplo con números si aplica, haz que uno pregunte las dudas típicas y el otro las resuelva, y termina con un resumen de 3 ideas clave. Las frases se van a leer en voz alta: nada de Markdown, emojis, paréntesis ni símbolos raros; escribe porcentajes y siglas como se pronuncian si ayuda.\n${src}\n\nResponde SOLO con JSON: {"title":"título corto","lines":[{"s":"A","t":"frase"}]}`);
+        r = await sample.json(`Escribe el GUION de un pódcast educativo en español de España entre dos profesores jóvenes, Laura (A) y Dani (B), que explican este contenido a un alumno de forma amena, clara y con ejemplos cotidianos. ${COURSE_CTX()} Duración 5-7 minutos (850-1150 palabras), 24-40 intervenciones cortas (1-3 frases cada una). Empieza presentando el tema, cubre lo más importante para el examen (80/20), incluye algún ejemplo con números si aplica, haz que uno pregunte las dudas típicas y el otro las resuelva, y termina con un resumen de 3 ideas clave. Las frases se van a leer en voz alta: nada de Markdown, emojis, paréntesis ni símbolos raros, pero sí con tildes y buena ortografía; escribe porcentajes y siglas como se pronuncian si ayuda.\n${src}\n\nResponde SOLO con JSON: {"title":"título corto","lines":[{"s":"A","t":"frase"}]}`);
         lines = cleanL(r);
       }
       if (lines.length < 4) throw { code: "invalid_json" };
@@ -2574,6 +2574,152 @@ async function vidPrepare(it) {
   if (box) box.innerHTML = `<span class="small" style="color:var(--ok)">Voz lista: ${ok} escenas</span>`;
 }
 
+/* ===== Foto al ejercicio: foto → chat de la asignatura que lo explica paso a paso ===== */
+const SNAP_Q = "Explícame el ejercicio de la foto: primero dame una pista, después resuélvelo paso a paso explicando el porqué de cada paso, luego la solución final y al final ponme un ejercicio parecido para practicar (sin la solución).";
+async function shrinkImage(file, max = 1600) {
+  try {
+    const bmp = await createImageBitmap(file); const k = Math.min(1, max / Math.max(bmp.width, bmp.height));
+    const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+    c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+    return await new Promise(r => c.toBlob(b => r(b || file), "image/jpeg", 0.85));
+  } catch (e) { return file; }
+}
+let snapSid = null;
+function snapModal(sid) {
+  if (!sample) { settingsModal(); return; }
+  if (!state.subjects.length) { toast("Añade antes una asignatura"); return; }
+  snapSid = subj(sid) ? sid : (subj(lsGet("rk.snapSid")) ? lsGet("rk.snapSid") : state.subjects[0].id);
+  openModal(`<div class="sheet-h"><h2>Foto a un ejercicio</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
+    <div class="chips" id="snapSubs">${state.subjects.map(x => `<button type="button" class="chip" style="--c:${x.color}" data-snaps="${x.id}" aria-pressed="${x.id === snapSid}">${E(x.emoji)}<span>${esc(sName(x))}</span></button>`).join("")}</div>
+    <div class="row" style="flex-wrap:nowrap"><button class="btn btn-p btn-lg" style="flex:1;justify-content:center" type="button" id="snapCam">${ic("camera")}Hacer foto</button><button class="btn btn-lg" type="button" id="snapGal">Galería</button></div>
+    <input type="file" id="snapCamIn" accept="image/*" capture="environment" hidden><input type="file" id="snapGalIn" accept="image/*" hidden>`, root => {
+    $$("[data-snaps]", root).forEach(b => b.onclick = () => { snapSid = b.dataset.snaps; $$("[data-snaps]", root).forEach(x => x.setAttribute("aria-pressed", x === b)); });
+    $("#snapCam", root).onclick = () => $("#snapCamIn", root).click();
+    $("#snapGal", root).onclick = () => $("#snapGalIn", root).click();
+    const go2 = e => { const f = e.target.files && e.target.files[0]; if (f) { closeModal(); snapSolve(f, snapSid); } };
+    $("#snapCamIn", root).onchange = go2; $("#snapGalIn", root).onchange = go2;
+  });
+}
+async function snapSolve(file, sid) {
+  lsSet("rk.snapSid", sid); toast("Leyendo el ejercicio…");
+  try {
+    const img = await shrinkImage(file); const fileId = uid(), id = uid(), now = Date.now();
+    await idbPut("files", fileId, img);
+    const title = "Ejercicio " + new Date().toLocaleString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+    await sPut("docs", id, { subjectId: sid, title, type: "image", fileId, size: img.size, chars: 0, parts: 0, snap: true, createdAt: now, updatedAt: now });
+    await newChat(sid, [id], SNAP_Q);
+  } catch (e) { toast(e && e.code === "quota" ? "El móvil no tiene más espacio para Rocky." : "No se pudo leer la foto"); }
+}
+
+/* ===== Descargar el vídeo resumen: se dibuja en un canvas vertical y se graba con su voz ===== */
+function cvWrap(g, text, maxW) { const words = String(text || "").split(/\s+/); const lines = []; let cur = ""; for (const w of words) { const t = cur ? cur + " " + w : w; if (g.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t; } if (cur) lines.push(cur); return lines; }
+function cvRound(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+const ease = t => 1 - Math.pow(1 - Math.max(0, Math.min(1, t)), 3);
+function drawScene(g, W, H, sc, t, i, n, tot, dur = 6) {
+  const GOLD = "#F5B841", INK = "#FFFFFF", MUT = "#A4A8B6", P = 90;
+  g.fillStyle = "#08080b"; g.fillRect(0, 0, W, H);
+  let gr = g.createRadialGradient(W * .85, 0, 0, W * .85, 0, W * .9); gr.addColorStop(0, "rgba(245,184,65,.30)"); gr.addColorStop(1, "rgba(245,184,65,0)"); g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  gr = g.createRadialGradient(0, H, 0, 0, H, W * .8); gr.addColorStop(0, "rgba(255,74,61,.20)"); gr.addColorStop(1, "rgba(255,74,61,0)"); g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  g.strokeStyle = "rgba(255,255,255,.04)"; g.lineWidth = 2; const off = (tot * 12) % 60;
+  for (let x = -60 + off; x < W; x += 60) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); }
+  for (let y = -60 + off * 2 % 60; y < H; y += 60) { g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); }
+  /* barra de progreso */
+  const sw = (W - P * 2 - (n - 1) * 10) / n; for (let k = 0; k < n; k++) { g.fillStyle = k < i ? GOLD : k === i ? "rgba(245,184,65,.55)" : "rgba(255,255,255,.12)"; cvRound(g, P + k * (sw + 10), 70, sw, 10, 5); g.fill(); }
+  const fade = (d) => { const a = ease((t - d) / .6); g.globalAlpha = a; return (1 - a) * 40; };
+  /* etiqueta + título */
+  let dy = fade(0); g.font = "800 34px Figtree, system-ui, sans-serif"; const lab = String(sc.etiqueta || "").toUpperCase(); const lw = g.measureText(lab).width + 48;
+  if (lab) { g.fillStyle = GOLD; cvRound(g, P, 150 + dy, lw, 64, 32); g.fill(); g.fillStyle = "#000"; g.fillText(lab, P + 24, 194 + dy); }
+  g.globalAlpha = 1; dy = fade(.15); g.fillStyle = INK;
+  const T = String(sc.titulo || "").toUpperCase(); let fs = 128, tl;
+  for (;;) { g.font = `${fs}px Anton, "Arial Narrow", Impact, sans-serif`; tl = cvWrap(g, T, W - P * 2); const wide = T.split(/\s+/).some(w => g.measureText(w).width > W - P * 2); if ((!wide && tl.length <= 3) || fs <= 70) break; fs -= 8; }
+  const lh = Math.round(fs * 1.05); tl.slice(0, 4).forEach((l, k) => g.fillText(l, P, 230 + lh + k * lh + dy));
+  g.globalAlpha = 1; let y = 230 + lh + Math.min(4, tl.length) * lh + 50;
+  /* subtítulo por trozos, al ritmo de la voz */
+  g.font = "600 44px Figtree, system-ui, sans-serif"; const capAll = cvWrap(g, sc.narracion || "", W - P * 2); const pages = []; for (let k = 0; k < capAll.length; k += 3) pages.push(capAll.slice(k, k + 3));
+  const cap = pages.length ? pages[Math.min(pages.length - 1, Math.floor(t / Math.max(1, dur) * pages.length))] : []; const capTop = H - 150 - 3 * 58 - 40;
+  const room = capTop - 30 - y;
+  const v = sc.visual || {}; const arr = (a, m) => (Array.isArray(a) ? a : []).slice(0, m);
+  const item = (k) => { const d = .5 + k * .45; const a = ease((t - d) / .55); g.globalAlpha = a; return (1 - a) * 50; };
+  if (v.tipo === "dato") {
+    const a = ease((t - .4) / .7); g.globalAlpha = a; g.save(); g.translate(P, y + 300); g.scale(.6 + .4 * a, .6 + .4 * a);
+    const lg = g.createLinearGradient(0, -280, 0, 0); lg.addColorStop(0, "#FFE59C"); lg.addColorStop(.55, GOLD); lg.addColorStop(1, "#C98410"); g.fillStyle = lg; g.font = "300px Anton, Impact, sans-serif"; g.fillText(String(v.valor || ""), 0, 0); g.restore();
+    dy = item(1); g.fillStyle = MUT; g.font = "600 52px Figtree, system-ui, sans-serif"; cvWrap(g, v.texto || "", W - P * 2).slice(0, 3).forEach((l, k) => g.fillText(l, P, y + 400 + k * 66 + dy));
+  } else if (v.tipo === "barras") {
+    const it = arr(v.items, 5).filter(x => x && isFinite(+x.valor)); const mx = Math.max(1, ...it.map(x => Math.abs(+x.valor)));
+    it.forEach((x, k) => { dy = item(k); const yy = y + k * 170 + dy; g.fillStyle = INK; g.font = "700 46px Figtree, system-ui, sans-serif"; g.fillText(String(x.label || "").slice(0, 28), P, yy + 40);
+      g.fillStyle = "rgba(255,255,255,.08)"; cvRound(g, P, yy + 64, W - P * 2, 46, 14); g.fill();
+      const wv = (W - P * 2) * Math.abs(+x.valor) / mx * ease((t - .6 - k * .35) / 1); const bg = g.createLinearGradient(P, 0, P + wv, 0); bg.addColorStop(0, "#C98410"); bg.addColorStop(1, "#FFE59C"); g.fillStyle = bg; if (wv > 2) { cvRound(g, P, yy + 64, wv, 46, 14); g.fill(); }
+      g.fillStyle = GOLD; g.font = "700 44px 'JetBrains Mono', monospace"; const vt = String(x.valor) + (v.unidad || ""); g.fillText(vt, W - P - g.measureText(vt).width, yy + 40); });
+  } else if (v.tipo === "comparar") {
+    const bh = Math.max(240, Math.min(400, (room - 90) / 2));
+    [v.a, v.b].filter(Boolean).forEach((c, k) => { dy = item(k); const yy = y + k * (bh + 90) + dy; g.fillStyle = "rgba(255,255,255,.06)"; cvRound(g, P, yy, W - P * 2, bh, 36); g.fill();
+      g.fillStyle = GOLD; g.font = "800 58px Figtree, system-ui, sans-serif"; g.fillText(String(c.titulo || "").slice(0, 26), P + 44, yy + 90);
+      g.fillStyle = INK; g.font = "600 46px Figtree, system-ui, sans-serif"; let ly = yy + 160; arr(c.puntos, 3).forEach(pt => { cvWrap(g, "• " + pt, W - P * 2 - 88).slice(0, 2).forEach(l => { if (ly < yy + bh - 20) g.fillText(l, P + 44, ly); ly += 58; }); });
+      if (k === 0) { g.globalAlpha = 1; g.fillStyle = "#FF4A3D"; g.font = "72px Anton, Impact, sans-serif"; g.fillText("VS", W / 2 - 40, yy + bh + 68); } });
+  } else if (v.tipo === "formula") {
+    dy = item(0); g.font = "700 58px 'JetBrains Mono', monospace"; const fl = cvWrap(g, v.texto || "", W - P * 2 - 80).slice(0, 4);
+    g.fillStyle = "rgba(245,184,65,.10)"; g.strokeStyle = "rgba(245,184,65,.5)"; g.lineWidth = 3; cvRound(g, P, y + dy, W - P * 2, fl.length * 76 + 80, 30); g.fill(); g.stroke();
+    g.fillStyle = INK; fl.forEach((l, k) => g.fillText(l, P + 40, y + 88 + k * 76 + dy));
+    if (v.nota) { dy = item(1); g.fillStyle = MUT; g.font = "600 48px Figtree, system-ui, sans-serif"; cvWrap(g, v.nota, W - P * 2).slice(0, 3).forEach((l, k) => g.fillText(l, P, y + fl.length * 76 + 180 + k * 62 + dy)); }
+  } else {
+    const steps = v.tipo === "pasos"; let yy = y;
+    arr(v.items, steps ? 5 : 4).forEach((x, k) => { dy = item(k); g.font = "700 54px Figtree, system-ui, sans-serif"; const ls = cvWrap(g, x, W - P * 2 - 110).slice(0, 3);
+      if (steps) { g.fillStyle = GOLD; g.beginPath(); g.arc(P + 38, yy + 30 + dy, 38, 0, Math.PI * 2); g.fill(); g.fillStyle = "#000"; g.font = "800 40px 'JetBrains Mono', monospace"; g.fillText(String(k + 1), P + 26, yy + 44 + dy); g.font = "700 54px Figtree, system-ui, sans-serif"; }
+      else { g.fillStyle = GOLD; cvRound(g, P, yy + 10 + dy, 30, 30, 8); g.fill(); }
+      g.fillStyle = INK; ls.forEach((l, j) => { if (yy + 50 + j * 66 < capTop - 20) g.fillText(l, P + 110, yy + 50 + j * 66 + dy); }); yy += ls.length * 66 + 60; });
+  }
+  g.globalAlpha = 1;
+  g.font = "600 44px Figtree, system-ui, sans-serif";
+  g.fillStyle = "rgba(0,0,0,.55)"; cvRound(g, P - 30, H - 150 - cap.length * 58 - 40, W - P * 2 + 60, cap.length * 58 + 60, 28); g.fill();
+  g.fillStyle = "#E8E8EE"; cap.forEach((l, k) => g.fillText(l, P, H - 150 - (cap.length - 1 - k) * 58));
+  g.fillStyle = GOLD; g.font = "44px Anton, Impact, sans-serif"; g.fillText("ROCKY", W - P - g.measureText("ROCKY").width, H - 60);
+}
+let vidRec = null;
+async function vidDownload(it) {
+  if (vidRec) { vidRec.stop = true; return; }
+  if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) { toast("Este navegador no puede grabar vídeo. Prueba desde Chrome o un iPhone actualizado."); return; }
+  vidPause(); stopMediaAudio();
+  const box = $("#vidPrep"); const say = h => { const b = $("#vidPrep"); if (b) b.innerHTML = h; };
+  const W = 1080, H = 1920, n = it.scenes.length;
+  /* 1) las voces */
+  const blobs = [];
+  if (useAIVoice()) for (let i = 0; i < n; i++) { say(thinkingHtml(`Preparando la voz… ${i + 1}/${n}`)); try { blobs.push(await ttsGet(`${it.id}:v${i}`, VID_PROMPT + it.scenes[i].narracion, VOICES.narrador)); } catch (e) { toast(aiErr(e) + " El vídeo irá sin voz."); blobs.length = 0; break; } }
+  try { await Promise.all(["128px Anton", "700 54px Figtree", "700 44px 'JetBrains Mono'"].map(f => document.fonts.load(f))); } catch (e) {}
+  const AC = window.AudioContext || window.webkitAudioContext; const ac = new AC(); const dest = ac.createMediaStreamDestination();
+  const bufs = []; for (const b of blobs) { try { bufs.push(await ac.decodeAudioData(await b.arrayBuffer())); } catch (e) { bufs.push(null); } }
+  const durs = it.scenes.map((sc, i) => bufs[i] ? bufs[i].duration + .7 : Math.max(4.5, (sc.narracion || "").length * .062));
+  const starts = []; durs.reduce((a, d, i) => (starts[i] = a, a + d), 0); const total = starts[n - 1] + durs[n - 1] + .8;
+  /* 2) grabación en tiempo real */
+  const cv = document.createElement("canvas"); cv.width = W; cv.height = H; const g = cv.getContext("2d");
+  const stream = cv.captureStream(30); if (bufs.some(Boolean)) dest.stream.getAudioTracks().forEach(tr => stream.addTrack(tr));
+  const mime = ["video/mp4;codecs=avc1,mp4a", "video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].find(m => MediaRecorder.isTypeSupported(m)) || "";
+  const rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 6e6 } : {}); const chunks = [];
+  rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+  vidRec = { stop: false }; const t0 = ac.currentTime + .3;
+  bufs.forEach((b, i) => { if (!b) return; const s = ac.createBufferSource(); s.buffer = b; s.connect(dest); s.start(t0 + starts[i] + .3); });
+  const btn = $("#vidDl"); if (btn) btn.textContent = "Cancelar";
+  rec.start(500);
+  await new Promise(res => {
+    const frame = () => {
+      const el = ac.currentTime - t0; if (vidRec.stop || el >= total) { res(); return; }
+      let i = 0; while (i < n - 1 && el >= starts[i + 1]) i++;
+      drawScene(g, W, H, it.scenes[i], Math.max(0, el - starts[i]), i, n, el, durs[i]);
+      say(`<span class="small muted">Grabando el vídeo… ${Math.min(99, Math.round(el / total * 100))} % · no cierres esta pantalla</span>`);
+      requestAnimationFrame(frame);
+    };
+    drawScene(g, W, H, it.scenes[0], 0, 0, n, 0); requestAnimationFrame(frame);
+  });
+  const cancelled = vidRec.stop; vidRec = null;
+  await new Promise(r => { rec.onstop = r; rec.stop(); }); try { ac.close(); } catch (e) {}
+  if (btn) btn.textContent = "Descargar vídeo";
+  if (cancelled) { say(""); return; }
+  const type = (mime || "video/webm").split(";")[0]; const blob = new Blob(chunks, { type }); const name = `Rocky - ${(it.title || "video").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Za-z0-9 _-]+/g, "").replace(/\s+/g, " ").slice(0, 50).trim() || "video"}.${type.includes("mp4") ? "mp4" : "webm"}`;
+  const file = new File([blob], name, { type });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: it.title || "Vídeo resumen" }); say(`<span class="small" style="color:var(--ok)">Vídeo listo</span>`); return; } catch (e) {} }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+  say(`<span class="small" style="color:var(--ok)">Vídeo descargado (${(blob.size / 1048576).toFixed(1).replace(".", ",")} MB)</span>`);
+}
+
 const mmOpen = new Set();
 function mmNode(n, path, depth, root) {
   const kids = n.c && n.c.length; const open = depth === 0 || mmOpen.has(path);
@@ -2592,7 +2738,7 @@ function viewStudio() {
       <div class="v-stage ${playing ? "" : "paused"}" id="vidStage" data-act="vid-toggle">${vScene(it.scenes[i], i, it.scenes.length)}<svg class="v-logo" viewBox="0 0 120 120" aria-hidden="true"><use href="#rkMarkSym"/></svg><span class="v-play">${ic("play")}</span></div>
       <p class="v-cap small" id="vidCap">${esc(it.scenes[i].narracion)}</p>
       <div class="row" style="justify-content:center"><button class="icon-btn" data-act="vid-prev" aria-label="Anterior">${ic("back")}</button><button class="big" id="vidBtn" data-act="vid-toggle" aria-label="Reproducir o pausar">${playing ? ic("pause") : ic("play")}</button><button class="icon-btn" data-act="vid-next" aria-label="Siguiente" style="transform:scaleX(-1)">${ic("back")}</button></div>
-      <div class="row" style="justify-content:center">${voiceSw}${useAIVoice() ? `<button class="btn btn-sm btn-g" data-act="vid-prep">Preparar voz</button>` : ""}</div><div id="vidPrep" style="text-align:center"></div>
+      <div class="row" style="justify-content:center">${voiceSw}<button class="btn btn-sm" id="vidDl" data-act="vid-dl">Descargar vídeo</button></div><div id="vidPrep" style="text-align:center"></div>
     </div>`;
   } else if (it.kind === "podcast") {
     const playing = (pod && pod.id === it.id && pod.playing) || (podAI && podAI.id === it.id && podAI.playing); const idx = podAI && podAI.id === it.id ? podAI.line : pod && pod.id === it.id ? pod.i : -1;
@@ -2630,7 +2776,7 @@ function viewTutor() {
   const chats = S.chats.filter(c => !f || c.subjectId === f);
   return `<div class="stack" style="gap:18px">
     <div class="row between"><div><h1>Tutor</h1></div>
-      <button class="btn btn-p" data-act="new-chat" data-s="${f}" ${sample ? "" : "disabled"}>Nuevo chat</button></div>
+      <div class="row"><button class="btn" data-act="snap" data-s="${f}" ${sample ? "" : "disabled"} aria-label="Foto a un ejercicio">${ic("camera")}Foto</button><button class="btn btn-p" data-act="new-chat" data-s="${f}" ${sample ? "" : "disabled"}>Nuevo chat</button></div></div>
     ${!sample ? `<p class="ai-off">IA apagada. <button class="btn btn-sm" data-act="open-settings">Activar</button></p>` : ""}
     <div class="chips"><button class="chip" data-tf="" aria-pressed="${!f}"><span>Todas</span></button>${state.subjects.map(x => `<button class="chip" style="--c:${x.color}" data-tf="${x.id}" aria-pressed="${x.id === f}">${E(x.emoji)}<span>${esc(sName(x))}</span></button>`).join("")}</div>
     <section class="card">${!storeReady ? `<p class="muted small">${E("⏳")} Cargando chats…</p>` : chats.length ? chats.map(chatRow).join("") : `<div class="empty"><span class="emo big">💬</span><p>Sin chats${f ? " en esta asignatura" : ""}. Abre uno y pregunta lo que quieras.</p></div>`}</section>
@@ -3584,6 +3730,8 @@ document.addEventListener("click", e => {
     case "add-link": linkModal(cur.id); break;
     case "studio-gen": if (a.dataset.k === "podcast") openModal(`<div class="sheet-h"><h2>Pódcast</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div><div class="stack" style="gap:10px"><button class="btn btn-lg" data-close data-act="studio-pod" data-len="corto">Corto · 5 min</button><button class="btn btn-lg btn-p" data-close data-act="studio-pod" data-len="largo">Largo · 15-20 min</button></div>`); else genStudio(a.dataset.k); break;
     case "studio-pod": genStudio("podcast", { len: a.dataset.len }); break;
+    case "snap": snapModal(a.dataset.s || (S.view === "asig" ? S.param : "")); break;
+    case "vid-dl": { const it = S.studio.find(x => x.id === S.param); if (it) vidDownload(it); break; }
     case "voice-mode": lsSet("rk.voice", a.dataset.v); podStop(); podAI = null; vidPause(); stopMediaAudio(); render(); break;
     case "vid-toggle": { const it = S.studio.find(x => x.id === S.param); if (!it) break; if (vid && vid.id === it.id && vid.playing) vidPause(); else vidPlay(it, vid && vid.id === it.id && !vid.ended ? vid.i : 0); break; }
     case "vid-prev": { const it = S.studio.find(x => x.id === S.param); if (it) vidPlay(it, Math.max(0, (vid && vid.id === it.id ? vid.i : 0) - 1)); break; }
@@ -3744,7 +3892,7 @@ function exampleState() {
 }
 
 /* ================= actualizaciones ================= */
-const APP_VERSION = "2026.11.12-6";
+const APP_VERSION = "2026.11.13-1";
 let updateReady = false;
 async function checkUpdate() {
   try {
