@@ -352,6 +352,12 @@ details.set-adv summary{cursor:pointer;color:var(--muted);font-size:.86rem;font-
 .wb b{font-family:var(--f-mono);font-size:.7rem;color:var(--muted);font-weight:500}
 
 .ell{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hb-body{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;background:none;border:0;padding:0;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.hb-st{display:inline-flex;align-items:center;gap:3px;font-weight:800;font-size:.85rem;color:var(--accent)}
+.hb-grid{display:grid;gap:5px;align-items:center;overflow-x:auto}
+.hb-d{font-size:.7rem;color:var(--muted);text-align:center}.hb-d.today{color:var(--accent);font-weight:800}
+.hb-n{font-size:.82rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:6px}
+.hb-c{aspect-ratio:1;border-radius:5px;background:var(--line)}.hb-c.on{background:var(--accent);box-shadow:0 0 8px -2px var(--accent)}.hb-c.off{background:transparent;border:1px dashed var(--line)}
 .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .kpi{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--line);border-radius:14px;background:var(--sheet);color:var(--ink);text-decoration:none;min-width:0}
 .kpi b{display:block;font-size:1.05rem;line-height:1.1}.kpi b small{font-size:.75rem;color:var(--muted)}
@@ -578,7 +584,7 @@ const I = {
   check: '<path d="M5 12.5l4.5 4.5L19 7"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>', plus: '<path d="M12 5v14M5 12h14"/>',
   play: '<path d="M7 4.5v15l12-7.5z" fill="currentColor"/>', pause: '<path d="M7 4h4v16H7zM13 4h4v16h-4z" fill="currentColor"/>',
   reset: '<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/>', skip: '<path d="M5 4l10 8-10 8z" fill="currentColor"/><path d="M19 5v14"/>',
-  back: '<path d="M15 18l-6-6 6-6"/>', camera: '<path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.8l1.4-2h4.6l1.4 2h1.8A2.5 2.5 0 0 1 20 8.5v9A2.5 2.5 0 0 1 17.5 20h-11A2.5 2.5 0 0 1 4 17.5z"/><circle cx="12" cy="12.8" r="3.6"/>', pencil: '<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
+  back: '<path d="M15 18l-6-6 6-6"/>', bell: '<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0"/>', camera: '<path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.8l1.4-2h4.6l1.4 2h1.8A2.5 2.5 0 0 1 20 8.5v9A2.5 2.5 0 0 1 17.5 20h-11A2.5 2.5 0 0 1 4 17.5z"/><circle cx="12" cy="12.8" r="3.6"/>', pencil: '<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
   home: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9v11h13V9"/><path d="M10 20v-6h4v6"/>', timer: '<circle cx="12" cy="13.5" r="7.5"/><path d="M12 10v3.5l2.5 2M9.5 2.5h5"/>',
   book: '<path d="M4 19.5V5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2 2 2 0 0 0 2 2h13"/>', calendar: '<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
   chat: '<path d="M20.5 12a8.5 8.5 0 0 1-12.4 7.6L3.5 21l1.4-4.4A8.5 8.5 0 1 1 20.5 12z"/>', chart: '<path d="M4 20V11M10 20V5M16 20v-6M3 20.5h18"/>',
@@ -1024,6 +1030,7 @@ function viewHoy() {
       ${agenda.length ? agenda.map(agendaRow).join("") : `<div class="row"><span class="small muted" style="flex:1">Nada para hoy.</span><button class="btn btn-sm" data-act="new-block" data-date="${today}">${ic("plus")}Añadir</button></div>`}
       ${dueTasks.length ? `<h3 style="margin:14px 0 4px">Entregas</h3>${dueTasks.map(taskRow).join("")}` : ""}
     </section>
+    ${habitsTodayCard()}
     ${pr.length ? `<section class="card"><div class="card-h"><h2>Prioridades</h2></div>
       ${pr.map(({ s, t }) => `<div class="prio"><span class="semo" style="--c:${s.color}">${E(s.emoji)}</span><div style="min-width:0"><b style="overflow-wrap:anywhere">${esc(t.title)}</b><div class="tiny muted ell">${esc(sName(s))}</div></div><button class="btn btn-sm" data-act="focus-topic" data-s="${s.id}" data-t="${t.id}" aria-label="Estudiar">${ic("play")}</button></div>`).join("")}
     </section>` : ""}
@@ -3293,19 +3300,68 @@ function viewPlan() {
     ${body}
   </div>`;
 }
+/* ===== Hábitos: casillas diarias con hora y días, racha y avisos en el calendario del móvil ===== */
+const HDAYS = ["L", "M", "X", "J", "V", "S", "D"];
+const HABIT_TPL = [["Gym o deporte", "17:00", [0, 1, 2, 3, 4]], ["Repasar 15 min", "19:00", [0, 1, 2, 3, 4, 6]], ["Beber 2 L de agua", "", [0, 1, 2, 3, 4, 5, 6]], ["Preparar la mochila", "21:30", [6, 0, 1, 2, 3]], ["Leer 10 min", "22:30", [0, 1, 2, 3, 4, 5, 6]], ["Dormir antes de las 0:00", "23:30", [0, 1, 2, 3, 4, 5, 6]]];
+const hDays = h => Array.isArray(h.days) && h.days.length ? h.days : [0, 1, 2, 3, 4, 5, 6];
+const habitsOn = k => (state.habits || []).filter(h => hDays(h).includes(dowOf(k))).sort((a, b) => (a.time || "99").localeCompare(b.time || "99"));
+const habitDone = (h, k) => ((state.habitChecks || {})[k] || []).includes(h.id);
+function habitStreak(h) {
+  let n = 0; let d = new Date(); if (!habitDone(h, dkey(d))) d = addDays(d, -1);
+  for (let i = 0; i < 400; i++, d = addDays(d, -1)) { const k = dkey(d); if (!hDays(h).includes(dowOf(k))) continue; if (habitDone(h, k)) n++; else break; }
+  return n;
+}
+const habitRow = (h, k) => { const dn = habitDone(h, k); const st = habitStreak(h);
+  return `<div class="blk ${dn ? "done" : ""}" style="--c:${dn ? "var(--ok)" : "var(--accent)"}"><button class="check" role="checkbox" aria-checked="${dn}" aria-label="Hecho" data-act="habit-toggle" data-id="${h.id}">${ic("check")}</button>
+    <button class="hb-body" data-act="habit-edit" data-id="${h.id}"><span class="ttl">${esc(h.title)}</span><span class="tiny muted">${h.time ? h.time : "Cualquier hora"}${st > 1 ? ` · ${st} seguidos` : ""}</span></button>${st > 1 ? `<span class="hb-st">${ic("flame", 'width="16" height="16"')}${st}</span>` : ""}</div>`; };
+function habitsTodayCard() {
+  const k = dkey(); const hs = habitsOn(k); if (!hs.length) return "";
+  const done = hs.filter(h => habitDone(h, k)).length; const pend = hs.filter(h => !habitDone(h, k));
+  return `<section class="card"><div class="card-h"><h2>Hábitos de hoy</h2><span class="pill ${done === hs.length ? "ok" : ""}">${done}/${hs.length}</span></div>
+    ${pend.length ? pend.slice(0, 4).map(h => habitRow(h, k)).join("") + (pend.length > 4 ? `<a class="tiny muted" href="#plan" data-act="go-habits">y ${pend.length - 4} más</a>` : "") : `<p class="small muted">Todos hechos. Día perfecto.</p>`}</section>`;
+}
 function habitView() {
-  const today = dkey(); const habits = state.habits || []; const hcMap = state.habitChecks || {};
-  const todaySet = new Set(hcMap[today] || []);
-  const done = habits.filter(h => todaySet.has(h.id)).length;
-  const histDays = Array.from({length: 14}, (_, i) => dkey(addDays(new Date(), -13 + i)));
-  const DOW_S = ['L','M','X','J','V','S','D'];
-  const history = habits.length ? `<section class="card"><div class="card-h"><h2>Racha · últimas 2 semanas</h2></div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.82em"><thead><tr><th style="text-align:left;padding:4px 8px;font-weight:600">Hábito</th>${histDays.map(d => `<th style="text-align:center;padding:4px 2px;min-width:26px"><span class="tiny">${DOW_S[(new Date(d+'T12:00').getDay()+6)%7]}</span><br><span class="tiny muted">${new Date(d+'T12:00').getDate()}</span></th>`).join('')}</tr></thead><tbody>${habits.map(h => `<tr><td style="padding:4px 8px;white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis">${esc(h.title)}</td>${histDays.map(d => { const dk = new Set((hcMap[d]||[])).has(h.id); return `<td style="text-align:center;padding:2px">${dk ? '✅' : d === today ? '<span style="color:var(--accent)">◯</span>' : '<span class="muted" style="font-size:.8em">·</span>'}</td>`; }).join('')}</tr>`).join('')}</tbody></table></div></section>` : '';
+  const k = dkey(); const all = state.habits || []; const hs = habitsOn(k); const done = hs.filter(h => habitDone(h, k)).length;
+  const days = Array.from({ length: 14 }, (_, i) => dkey(addDays(new Date(), -13 + i)));
+  const tpl = HABIT_TPL.filter(([t]) => !all.some(h => h.title === t));
   return `<section class="card">
-    <div class="card-h"><h2>Hábitos de hoy</h2><span class="tiny muted">${done}/${habits.length}${done === habits.length && habits.length > 0 ? " · ¡Día perfecto! 🌟" : ""}</span></div>
-    ${habits.length === 0 ? `<p class="muted" style="margin-bottom:12px">Añade tus hábitos diarios: gym, leer, repasar apuntes…</p>` : `<div class="stack" style="gap:8px;margin-bottom:12px">${habits.map(h => `<div class="blk ${todaySet.has(h.id) ? "done" : ""}" style="--c:${todaySet.has(h.id) ? "#4CAF50" : "var(--accent)"}"><button class="check" role="checkbox" aria-checked="${todaySet.has(h.id)}" data-act="habit-toggle" data-id="${h.id}">${ic("check")}</button><div style="min-width:0;flex:1"><div class="ttl">${esc(h.title)}</div></div><button class="icon-btn emo" style="width:32px;height:32px;font-size:13px" data-act="habit-del" data-id="${h.id}" aria-label="Quitar hábito">🗑️</button></div>`).join("")}</div>`}
-    <form class="row" id="habitForm"><input class="input" id="habitIn" placeholder="Nuevo hábito, p.ej. «Gym ✓», «Repasar 30 min»" maxlength="80"><button class="btn btn-p" type="submit">${ic("plus")} Añadir</button></form>
+    <div class="card-h"><h2>Hoy</h2><span class="pill ${hs.length && done === hs.length ? "ok" : ""}">${done}/${hs.length}</span></div>
+    ${hs.length ? hs.map(h => habitRow(h, k)).join("") : `<p class="small muted">${all.length ? "Hoy no toca ningún hábito." : "Aún no tienes hábitos."}</p>`}
+    <div class="row" style="margin-top:12px"><button class="btn btn-p" data-act="habit-new">${ic("plus")}Nuevo hábito</button>${all.some(h => h.time) ? `<button class="btn" data-act="habit-ics">${ic("bell")}Avisos al calendario</button>` : ""}</div>
+    ${tpl.length ? `<div class="chips" style="margin-top:12px">${tpl.map(([t], i) => `<button class="chip" data-act="habit-tpl" data-i="${HABIT_TPL.findIndex(x => x[0] === t)}">${ic("plus", 'width="14" height="14"')}<span>${esc(t)}</span></button>`).join("")}</div>` : ""}
   </section>
-  ${history}`;
+  ${all.length ? `<section class="card"><div class="card-h"><h2>Últimas 2 semanas</h2></div><div class="hb-grid" style="grid-template-columns:minmax(90px,1fr) repeat(14,minmax(14px,22px))">
+    <span></span>${days.map(d => `<span class="hb-d ${d === k ? "today" : ""}">${HDAYS[dowOf(d)]}</span>`).join("")}
+    ${all.map(h => `<span class="hb-n">${esc(h.title)}</span>${days.map(d => `<i class="hb-c ${habitDone(h, d) ? "on" : hDays(h).includes(dowOf(d)) ? "" : "off"}"></i>`).join("")}`).join("")}
+  </div></section>` : ""}`;
+}
+function habitModal(h) {
+  const isNew = !h; h = h || { title: "", time: "", days: [0, 1, 2, 3, 4, 5, 6] }; let days = [...hDays(h)];
+  openModal(`<div class="sheet-h"><h2>${isNew ? "Nuevo hábito" : "Editar hábito"}</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
+    <form id="hbForm" class="stack" style="gap:12px">
+      <label class="field"><span>Hábito</span><input class="input" id="hbT" value="${esc(h.title)}" maxlength="60" placeholder="p. ej. Preparar el bocata" required></label>
+      <label class="field"><span>Hora del aviso (opcional)</span><input class="input" type="time" id="hbH" value="${esc(h.time || "")}" style="width:auto"></label>
+      <div class="field"><span>Días</span><div class="chips">${HDAYS.map((d, i) => `<button type="button" class="chip" data-hd="${i}" aria-pressed="${days.includes(i)}">${d}</button>`).join("")}</div></div>
+      <div class="row between"><div>${isNew ? "" : `<button type="button" class="btn btn-sm btn-g" id="hbDel" style="color:var(--bad)">Quitar</button>`}</div><div class="row"><button type="button" class="btn btn-g" data-close>Cancelar</button><button class="btn btn-p" type="submit">${isNew ? "Añadir" : "Guardar"}</button></div></div>
+    </form>`, root => {
+    $$("[data-hd]", root).forEach(b => b.onclick = () => { const i = +b.dataset.hd; days = days.includes(i) ? days.filter(x => x !== i) : [...days, i].sort(); b.setAttribute("aria-pressed", days.includes(i)); });
+    $("#hbForm", root).addEventListener("submit", e => { e.preventDefault(); const title = $("#hbT", root).value.trim(); if (!title) return; if (!days.length) { toast("Elige al menos un día"); return; }
+      const v = { title, time: $("#hbH", root).value || "", days }; if (isNew) state.habits = [...(state.habits || []), { id: uid(), ...v }]; else Object.assign(h, v); closeModal(); commit(); toast(isNew ? "Hábito añadido" : "Guardado"); });
+    const del = $("#hbDel", root); if (del) del.onclick = () => { state.habits = state.habits.filter(x => x.id !== h.id); for (const d in state.habitChecks || {}) state.habitChecks[d] = state.habitChecks[d].filter(x => x !== h.id); closeModal(); commit(); toast("Hábito quitado"); };
+    if (isNew) setTimeout(() => $("#hbT", root).focus(), 60);
+  });
+}
+/* los hábitos con hora pasan al calendario del móvil como eventos semanales con aviso: así salen en el widget de la pantalla de bloqueo */
+function exportHabitsICS() {
+  const hs = (state.habits || []).filter(h => h.time); if (!hs.length) { toast("Pon hora a algún hábito"); return; }
+  const now = new Date(); const stamp = now.toISOString().replace(/[-:]/g, "").replace(/\.\d+/, ""); const mon = mondayOf(now);
+  const L = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Rocky//ES", "CALSCALE:GREGORIAN", "METHOD:PUBLISH", "X-WR-CALNAME:Rocky · Hábitos"];
+  for (const h of hs) { const d = hDays(h); const first = dkey(addDays(mon, d[0])); const end = toHHMM(Math.min(1439, toMin(h.time) + 5));
+    L.push("BEGIN:VEVENT", `UID:hb${h.id}@rocky`, "DTSTAMP:" + stamp, "DTSTART:" + icsDT(first, h.time), "DTEND:" + icsDT(first, end), "RRULE:FREQ=WEEKLY;BYDAY=" + d.map(i => BYDAY[i]).join(","), "SUMMARY:" + icsEsc("☑ " + h.title), "DESCRIPTION:" + icsEsc("Márcalo en Rocky"), "BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:" + icsEsc(h.title), "TRIGGER:PT0M", "END:VALARM", "END:VEVENT"); }
+  L.push("END:VCALENDAR");
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([L.join("\r\n")], { type: "text/calendar" })); a.download = "rocky-habitos.ics";
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+  toast("Ábrelo y toca «Añadir todo»: el móvil te avisará a la hora de cada hábito.");
 }
 function weekGrid(days) {
   const st = toMin(state.settings.gridStart), en = toMin(state.settings.gridEnd); const hours = []; for (let m = st; m < en; m += 60) hours.push(m);
@@ -3376,7 +3432,6 @@ function bindPlan() {
   $$("[data-agtab]").forEach(b => b.onclick = () => { ui.agTab = b.dataset.agtab; saveUi(); render(); });
   const af = $("#asForm"); af && af.addEventListener("submit", e => { e.preventDefault(); const v = $("#asIn").value.trim(); if (!v) return; $("#asIn").value = ""; runAssistant(v); });
   bindVoice();
-  const hf = $("#habitForm"); hf && hf.addEventListener("submit", e => { e.preventDefault(); const v = $("#habitIn").value.trim(); if (!v) return; $("#habitIn").value = ""; state.habits = [...(state.habits||[]), {id:uid(),title:v}]; commit(); toast("Hábito añadido"); });
   $$(".wk-col").forEach(col => col.onclick = e => { if (e.target.closest(".ev")) return; const r = col.getBoundingClientRect(); const m = toMin(state.settings.gridStart) + Math.floor((e.clientY - r.top) / GRID_H * 4) * 15; blockModal(null, col.dataset.date, toHHMM(m)); });
   const wk = $("#wkGrid");
   if (wk) {
@@ -3840,6 +3895,11 @@ document.addEventListener("click", e => {
       if (idx2 >= 0) arr2.splice(idx2, 1); else arr2.push(hid2);
       state.habitChecks[today3] = arr2; commit(false); render(); break;
     }
+    case "habit-new": habitModal(); break;
+    case "habit-edit": { const h = (state.habits || []).find(x => x.id === a.dataset.id); if (h) habitModal(h); break; }
+    case "habit-tpl": { const t = HABIT_TPL[+a.dataset.i]; if (t) { state.habits = [...(state.habits || []), { id: uid(), title: t[0], time: t[1], days: t[2] }]; commit(); toast("Hábito añadido"); } break; }
+    case "habit-ics": exportHabitsICS(); break;
+    case "go-habits": ui.agTab = "habitos"; saveUi(); go("plan"); break;
     case "habit-del": {
       const hid3 = a.dataset.id; state.habits = (state.habits || []).filter(h => h.id !== hid3);
       for (const dk2 in (state.habitChecks||{})) state.habitChecks[dk2] = (state.habitChecks[dk2]||[]).filter(x=>x!==hid3);
@@ -3890,7 +3950,7 @@ function exampleState() {
 }
 
 /* ================= actualizaciones ================= */
-const APP_VERSION = "2026.11.14-1";
+const APP_VERSION = "2026.11.14-2";
 let updateReady = false;
 async function checkUpdate() {
   try {
