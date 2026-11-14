@@ -754,6 +754,15 @@ async function connect() {
 
 /* ================= IA: Gemini con la clave gratis del alumno ================= */
 const AI_KEY = "pupitre.gemini";
+/* Servidor gratis de Rocky (server/worker.js). Vacío = apagado: cada alumno usa su propia clave.
+   Cuando esté subido a Cloudflare, se pone aquí su dirección y la IA funciona sin clave. */
+const ROCKY_SERVER = "";
+const GOOGLE_AI = "https://generativelanguage.googleapis.com/v1beta";
+const deviceId = () => { let d = lsGet("rk.device"); if (!d) { d = (crypto.randomUUID ? crypto.randomUUID() : uid() + uid() + uid()).replace(/-/g, ""); lsSet("rk.device", d); } return d; };
+/* con clave propia se habla directo con Google; sin clave, a través del servidor de Rocky */
+const aiBase = () => aiCfg().key || !ROCKY_SERVER ? GOOGLE_AI : ROCKY_SERVER.replace(/\/$/, "") + "/ai";
+const aiHeaders = (json = true) => ({ ...(json ? { "Content-Type": "application/json" } : {}), ...(aiCfg().key ? { "x-goog-api-key": aiCfg().key } : { "X-Rocky-Device": deviceId() }) });
+const aiReady = () => !!(aiCfg().key || ROCKY_SERVER);
 /* Modelos comprobados con Gemini real (nov 2026): gemini-flash-latest va saturado y los 2.x ya no existen para cuentas nuevas */
 const DEFAULT_MODEL = "gemini-3.5-flash";
 const LEGACY_MODELS = /^(gemini-flash-latest|gemini-2\.\d.*|gemini-1\..*)$/;
@@ -781,7 +790,7 @@ async function geminiCall(input, opts = {}, json = false) {
   finally { AIB.n = Math.max(0, AIB.n - 1); if (!AIB.n) { AIB.status = ""; } aiBusyUI(); }
 }
 async function geminiCallInner(input, opts = {}, json = false) {
-  const cfg = aiCfg(); if (!cfg.key) throw { code: "no_key" };
+  const cfg = aiCfg(); if (!aiReady()) throw { code: "no_key" };
   const first = cfg.model;
   const chain = [first, ...FALLBACK_MODELS.filter(m => m !== first)];
   let lastErr = null, timeouts = 0;
@@ -820,14 +829,14 @@ async function geminiOnce(model, input, opts = {}, json = false) {
   if (opts.tools) body.tools = opts.tools;
   const fast = cfg.speed !== "smart" && !(cfg.noThinkModels || []).includes(model) && !opts._noThink;
   if (fast) body.generationConfig.thinkingConfig = { thinkingBudget: json ? 512 : 0 };
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:streamGenerateContent?alt=sse`;
+  const url = `${aiBase()}/models/${encodeURIComponent(model)}:streamGenerateContent?alt=sse`;
   const ctl = new AbortController(); let timedOut = false;
   const to = setTimeout(() => { timedOut = true; ctl.abort(); }, json ? 150000 : 90000);
   if (opts.signal) { if (opts.signal.aborted) ctl.abort(); else opts.signal.addEventListener("abort", () => ctl.abort()); }
   let stalled = false, gotData = false; const wd = setTimeout(() => { if (!gotData) { stalled = true; ctl.abort(); } }, 25000);
   const abortCode = () => timedOut ? "timeout" : stalled ? "overloaded" : "cancelled";
   let res;
-  try { res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": cfg.key }, body: JSON.stringify(body), signal: ctl.signal }); }
+  try { res = await fetch(url, { method: "POST", headers: aiHeaders(), body: JSON.stringify(body), signal: ctl.signal }); }
   catch (e) { clearTimeout(to); clearTimeout(wd); if (e && e.name === "AbortError") throw { code: abortCode(), stalled }; throw { code: "network", message: String(e && e.message || e) }; }
   if (!res.ok && res.status === 400 && fast) {
     const m = await res.clone().json().catch(() => ({})); const em = (m.error && m.error.message) || "";
@@ -855,7 +864,7 @@ async function geminiOnce(model, input, opts = {}, json = false) {
   clearTimeout(to); done2();
   if (!text) {
     /* Plan B: algunos navegadores no leen bien el streaming; se pide la respuesta entera */
-    const r2 = await fetch(url.replace(":streamGenerateContent?alt=sse", ":generateContent"), { method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": cfg.key }, body: JSON.stringify(body), signal: opts.signal }).catch(() => null);
+    const r2 = await fetch(url.replace(":streamGenerateContent?alt=sse", ":generateContent"), { method: "POST", headers: aiHeaders(), body: JSON.stringify(body), signal: opts.signal }).catch(() => null);
     if (r2 && r2.ok) { const j = await r2.json().catch(() => ({})); const c = j.candidates && j.candidates[0]; text = ((c && c.content && c.content.parts) || []).map(p => p.thought ? "" : (p.text || "")).join(""); if (text && opts.onText) { try { opts.onText({ text, delta: text }); } catch (e) {} } if (!text && c && c.finishReason) throw { code: "empty_completion", message: "finishReason: " + c.finishReason }; }
   }
   if (!text) throw { code: "empty_completion" };
@@ -869,7 +878,7 @@ function parseJSONLoose(t) {
   throw { code: "invalid_json", text: t };
 }
 function setupAI() {
-  if (!aiCfg().key) { sample = null; imgLimits = null; return; }
+  if (!aiReady()) { sample = null; imgLimits = null; return; }
   const f = (input, opts) => geminiCall(input, opts || {});
   /* si la respuesta llega cortada (mala conexión o Gemini saturado), se repite una vez sola */
   f.json = async (input, opts) => { const o = opts || {}; try { return parseJSONLoose((await geminiCall(input, o, true)).text); } catch (e) { if (!e || e.code !== "invalid_json" || (o.signal && o.signal.aborted)) throw e; if (o.onStatus) o.onStatus("La respuesta llegó cortada, repitiendo…"); return parseJSONLoose((await geminiCall(input, o, true)).text); } };
@@ -2445,7 +2454,7 @@ const VOICES = { Laura: "Leda", Dani: "Puck", narrador: "Puck" };
 let ttsModelName = null;
 async function ttsModel() {
   if (ttsModelName) return ttsModelName;
-  const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200", { headers: { "x-goog-api-key": aiCfg().key } });
+  const r = await fetch(`${aiBase()}/models?pageSize=200`, { headers: aiHeaders(false) });
   if (!r.ok) throw { code: r.status === 429 ? "rate_limited" : "no_tts" };
   const ms = ((await r.json()).models || []).filter(m => (m.supportedGenerationMethods || []).includes("generateContent")).map(m => m.name.replace(/^models\//, "")).filter(n => /tts/i.test(n)).sort();
   ttsModelName = ms.filter(n => /flash/i.test(n)).pop() || ms.pop();
@@ -2461,12 +2470,12 @@ function pcmToWav(b64, rate) {
   return new Blob([buf], { type: "audio/wav" });
 }
 async function tts(text, voice) {
-  if (!aiCfg().key) throw { code: "no_key" };
+  if (!aiReady()) throw { code: "no_key" };
   const model = await ttsModel();
   const speechConfig = typeof voice === "string" ? { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } }
     : { multiSpeakerVoiceConfig: { speakerVoiceConfigs: Object.entries(voice).map(([speaker, v]) => ({ speaker, voiceConfig: { prebuiltVoiceConfig: { voiceName: v } } })) } };
   for (let a = 0; ; a++) {
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, { method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": aiCfg().key },
+    const r = await fetch(`${aiBase()}/models/${encodeURIComponent(model)}:generateContent`, { method: "POST", headers: aiHeaders(),
       body: JSON.stringify({ contents: [{ parts: [{ text }] }], generationConfig: { responseModalities: ["AUDIO"], speechConfig } }) }).catch(() => null);
     if (r && r.ok) {
       const j = await r.json().catch(() => ({})); const parts = (((j.candidates || [])[0] || {}).content || {}).parts || [];
@@ -3674,6 +3683,7 @@ function settingsModal() {
     <div class="stack" style="gap:22px">
       <section class="set-sec"><div class="set-h">Inteligencia artificial</div>
         ${has ? `<div class="set-row" id="aiRow"><span class="dot ok"></span><b>Activada</b><span class="grow"></span><button class="btn btn-sm btn-g" type="button" id="aiChange">Cambiar clave</button></div>` : ""}
+        ${!has && ROCKY_SERVER ? `<p class="small"><span class="dot ok"></span> <b>Funciona con la IA gratis de Rocky.</b> <span class="muted">Si tienes clave propia, pégala y no tendrás límite diario.</span></p>` : ""}
         <div id="keyBox" ${has ? "hidden" : ""}>
           <div class="row" style="flex-wrap:nowrap;gap:8px"><input class="input" id="stKey" type="password" autocomplete="off" placeholder="Pega tu clave de Gemini"><button class="btn btn-p" type="button" id="aiOn">Activar</button></div>
           <p class="tiny muted" style="margin-top:8px">Es gratis: <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" style="color:var(--accent)">aistudio.google.com</a> → Create API key.</p>
@@ -3951,7 +3961,7 @@ function exampleState() {
 }
 
 /* ================= actualizaciones ================= */
-const APP_VERSION = "2026.11.14-2";
+const APP_VERSION = "2026.11.14-3";
 let updateReady = false;
 async function checkUpdate() {
   try {

@@ -1,0 +1,32 @@
+// Pruebas del servidor de Rocky con KV en memoria y Google simulado
+import worker from './worker.js';
+const store = new Map();
+const env = { GEMINI_KEY: 'k-servidor', ALLOWED: 'https://rocky.test', DAILY_LIMIT: '3', ROCKY: { get: async k => store.get(k) ?? null, put: async (k, v) => { store.set(k, v); } } };
+const calls = [];
+globalThis.fetch = async (url, init) => { calls.push({ url, key: init.headers['x-goog-api-key'] }); return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: 'ok' }] } }] }), { headers: { 'Content-Type': 'application/json' } }); };
+const O = { Origin: 'https://rocky.test', 'X-Rocky-Device': 'dispositivo-123', 'Content-Type': 'application/json' };
+const req = (path, init = {}) => worker.fetch(new Request('https://rocky.workers.dev' + path, init), env);
+let fails = 0; const check = (name, cond, extra = '') => { console.log((cond ? 'OK  ' : 'FALLO ') + name + (extra ? ' · ' + extra : '')); if (!cond) fails++; };
+const body = JSON.stringify({ contents: [{ parts: [{ text: 'hola' }] }] });
+
+let r = await req('/health'); check('salud', r.status === 200);
+r = await req('/ai/models?pageSize=200', { headers: O }); check('lista de modelos', r.status === 200 && calls.at(-1).url.endsWith('/models?pageSize=200') && calls.at(-1).key === 'k-servidor');
+r = await req('/ai/models/gemini-3.5-flash:streamGenerateContent?alt=sse', { method: 'POST', headers: O, body }); check('generar (stream) con la clave del servidor', r.status === 200 && calls.at(-1).key === 'k-servidor');
+r = await req('/ai/models/gemini-3.5-flash:generateContent', { method: 'POST', headers: { ...O, Origin: 'https://malo.test' }, body }); check('otro origen bloqueado', r.status === 403);
+r = await req('/ai/models/gemini-3.5-flash:generateContent', { method: 'POST', headers: { Origin: O.Origin }, body }); check('sin dispositivo → 400', r.status === 400);
+r = await req('/ai/files/abc', { method: 'POST', headers: O, body }); check('ruta no permitida → 404', r.status === 404);
+r = await req('/ai/models/x:generateContent', { headers: O }); check('GET a generar → 405', r.status === 405);
+for (let i = 0; i < 2; i++) await req('/ai/models/gemini-3.5-flash:generateContent', { method: 'POST', headers: O, body });
+r = await req('/ai/models/gemini-3.5-flash:generateContent', { method: 'POST', headers: O, body }); check('límite diario (3) → 429', r.status === 429, (await r.json()).error.message);
+r = await req('/ai/models/gemini-3.5-flash:generateContent', { method: 'POST', headers: { ...O, 'X-Rocky-Device': 'otro-dispositivo' }, body }); check('otro dispositivo sigue pudiendo', r.status === 200);
+const code = 'AbCdEfGhIjKlMnOpQrStUv12';
+r = await req('/sync/' + code, { headers: O }); check('sync vacío → 404', r.status === 404);
+r = await req('/sync/' + code, { method: 'PUT', headers: O, body: JSON.stringify({ state: { subjects: [1] }, at: 1 }) }); check('guardar sync', r.status === 200);
+r = await req('/sync/' + code, { headers: O }); check('leer sync', r.status === 200 && (await r.json()).state.subjects.length === 1);
+r = await req('/sync/corto', { headers: O }); check('código corto rechazado', r.status === 400);
+r = await req('/sync/' + code, { method: 'PUT', headers: O, body: 'no es json' }); check('sync basura rechazado', r.status === 400);
+r = await req('/cal/' + code, { method: 'PUT', headers: O, body: 'BEGIN:VCALENDAR\r\nEND:VCALENDAR' }); check('subir calendario', r.status === 200);
+r = await req('/cal/' + code + '.ics'); check('leer calendario sin Origin (app Calendario)', r.status === 200 && r.headers.get('Content-Type').startsWith('text/calendar'));
+r = await req('/cal/' + code, { method: 'PUT', headers: { ...O, Origin: 'https://malo.test' }, body: 'BEGIN:VCALENDAR' }); check('subir calendario desde otro origen bloqueado', r.status === 403);
+r = await req('/ai/models', { method: 'OPTIONS', headers: O }); check('preflight CORS', r.status === 204 && r.headers.get('Access-Control-Allow-Origin') === O.Origin);
+console.log(fails ? `\n${fails} FALLOS` : '\nTodo bien');

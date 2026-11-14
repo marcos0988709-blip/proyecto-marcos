@@ -1,0 +1,15 @@
+name = "rocky"
+main = "worker.js"
+compatibility_date = "2026-11-01"
+
+# Orígenes que pueden usar el servidor (la web de Rocky). Cambia "TU-USUARIO" por el de GitHub.
+[vars]
+ALLOWED = "https://TU-USUARIO.github.io"
+DAILY_LIMIT = "60"
+
+# Espacio KV: crea uno en Cloudflare (Storage & Databases → KV) y pega aquí su id.
+[[kv_namespaces]]
+binding = "ROCKY"
+id = "PEGA_AQUI_EL_ID_DEL_KV"
+
+# La clave de Gemini NO va aquí: se guarda como secreto (ver README).
