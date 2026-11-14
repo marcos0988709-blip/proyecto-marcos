@@ -571,8 +571,8 @@ const W_TXT = { 1: "baja", 2: "media", 3: "clave" };
 const DOC_EMO = { note: "📝", pdf: "📕", docx: "📘", image: "🖼️", text: "📄", file: "📎", web: "🔗", youtube: "▶️" };
 const DOC_LBL = { note: "Nota", pdf: "PDF", docx: "Word", image: "Imagen", text: "Texto", file: "Archivo", web: "Web", youtube: "YouTube" };
 const PRESET = (document.querySelector('meta[name="pupitre-preset"]') || {}).content || "aif";
-const SCHOOL = PRESET === "mecanica" ? "URV · 1º Grado en Ingeniería Mecánica" : "Escola Joan XXIII · 1r CFGS Administració i Finances";
-const PRESET_LABEL = PRESET === "mecanica" ? "⚙️ 1º Mecánica · URV" : "🏫 1º AdFi · Joan XXIII";
+const SCHOOL = PRESET === "mecanica" ? "URV · 1º Grado en Ingeniería Mecánica" : "1º CFGS Administración y Finanzas";
+const PRESET_LABEL = PRESET === "mecanica" ? "1º Mecánica" : "1º AdFi";
 const PRESET_BTN = PRESET === "mecanica" ? "Asignaturas de Mecánica" : "Módulos de AdFi";
 
 const I = {
@@ -1329,9 +1329,9 @@ function examReviewModal(id, edit) {
   let feel = (e.result && e.result.feel) || 0;
   openModal(`<div class="sheet-h"><h2>¿Qué tal «${esc(e.title)}»?</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
     <form id="erForm" class="stack" style="gap:12px">
-      <label class="field"><span>📝 Nota (si ya la sabes)</span><input class="input num" type="text" id="erGrade" inputmode="decimal" maxlength="5" placeholder="p. ej. 7,5" value="${e.result && e.result.grade != null ? fmtGrade(e.result.grade) : ""}"></label>
+      <label class="field"><span>Nota (si ya la sabes)</span><input class="input num" type="text" id="erGrade" inputmode="decimal" maxlength="5" placeholder="p. ej. 7,5" value="${e.result && e.result.grade != null ? fmtGrade(e.result.grade) : ""}"></label>
       <div class="field"><span>¿Cómo te salió?</span><div class="seg" role="group" aria-label="Sensación">${FEEL.map((x, i) => `<button type="button" data-erfeel="${i + 1}" aria-pressed="${feel === i + 1}">${x}</button>`).join("")}</div></div>
-      <label class="field"><span>💭 ¿Qué cayó o qué te costó? (opcional)</span><textarea class="input" id="erNote" rows="3" maxlength="500" placeholder="p. ej. Cayó mucho balance y me lié con la amortización acumulada">${esc((e.result && e.result.note) || "")}</textarea></label>
+      <label class="field"><span>¿Qué cayó o qué te costó? (opcional)</span><textarea class="input" id="erNote" rows="3" maxlength="500" placeholder="p. ej. Cayó mucho balance y me lié con la amortización acumulada">${esc((e.result && e.result.note) || "")}</textarea></label>
       <div class="row" style="justify-content:flex-end"><button class="btn btn-p" type="submit">Ver mi informe</button></div>
     </form>`, root => {
     $$("[data-erfeel]", root).forEach(b => b.onclick = () => { feel = +b.dataset.erfeel; $$("[data-erfeel]", root).forEach(y => y.setAttribute("aria-pressed", y === b)); });
@@ -1382,7 +1382,7 @@ function iconTipCard() {
   if (!standalone || lsGet("rk.iconTip")) return "";
   return `<section class="card" style="border-color:rgba(245,184,65,.45)"><div class="card-h"><h2>¿Fuera sigue poniendo «Pupitre»?</h2><button class="x-btn" data-act="icon-tip-off" aria-label="Ocultar">${ic("x")}</button></div>
     <p class="small muted" style="margin-bottom:8px">El iPhone guarda el nombre y el icono de cuando instalaste la app y no los cambia solo. Para ver ROCKY con el guante, sin perder nada:</p>
-    <ol class="small" style="margin:0 0 10px;padding-left:18px"><li>Toca <b>⬇️ Descargar copia</b> y guárdala en <b>Archivos</b>. Comprueba que está.</li><li>Mantén pulsado el icono de fuera → <b>Eliminar app</b>.</li><li>Abre la web en <b>Safari</b> → <b>Compartir</b> → <b>Añadir a pantalla de inicio</b>. Ya saldrá Rocky 🥊.</li><li>Abre Rocky → ⚙️ Ajustes → <b>📥 Restaurar copia</b> y elige el archivo.</li></ol>
+    <ol class="small" style="margin:0 0 10px;padding-left:18px"><li>Toca <b>⬇️ Descargar copia</b> y guárdala en <b>Archivos</b>. Comprueba que está.</li><li>Mantén pulsado el icono de fuera → <b>Eliminar app</b>.</li><li>Abre la web en <b>Safari</b> → <b>Compartir</b> → <b>Añadir a pantalla de inicio</b>. Ya saldrá Rocky 🥊.</li><li>Abre Rocky → Ajustes → <b>📥 Restaurar copia</b> y elige el archivo.</li></ol>
     <div class="row"><button class="btn btn-p btn-sm" data-act="icon-backup">⬇️ Descargar copia</button><button class="btn btn-sm btn-g" data-act="icon-tip-off">Ya lo tengo</button></div></section>`;
 }
 
@@ -1450,7 +1450,7 @@ function tabDocs(s) {
 function tabChats(s) {
   const chats = chatsOf(s.id);
   return `<section class="card">
-    <div class="row" style="justify-content:flex-end"><button class="btn" data-act="snap" data-s="${s.id}" ${sample ? "" : "disabled"}>${ic("camera")}Foto a un ejercicio</button><button class="btn btn-p" data-act="new-chat" data-s="${s.id}" ${sample ? "" : "disabled"}>Nuevo chat</button></div>
+    <div class="row" style="justify-content:flex-end"><button class="btn" data-act="snap" data-s="${s.id}">${ic("camera")}Foto a un ejercicio</button><button class="btn btn-p" data-act="new-chat" data-s="${s.id}">Nuevo chat</button></div>
     ${!sample ? `<p class="ai-off">IA apagada. <button class="btn btn-sm" data-act="open-settings">Activar</button></p>` : ""}
     ${!storeReady ? `<p class="muted small">${E("⏳")} Cargando chats…</p>` : chats.length ? chats.map(chatRow).join("") : `<div class="empty"><span class="emo big">💬</span><p>Sin chats todavía. Empieza uno y pregúntale lo que no entiendas.</p></div>`}
   </section>`;
@@ -1511,7 +1511,7 @@ function modulesModal() {
 }
 
 function aiSubjectsModal() {
-  if (!sample) { toast("Pega tu clave de Gemini en ⚙️ Ajustes"); settingsModal(); return; }
+  if (!sample) { toast("Activa la IA en Ajustes"); settingsModal(); return; }
   const course = /administr/i.test(state.profile.school || "") ? "" : (state.profile.school || "");
   openModal(`<div class="sheet-h"><h2>Crear asignaturas con IA</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
     <form id="aisForm" class="stack"><label class="field"><span>¿Qué estudias?</span><input class="input" id="aisIn" value="${esc(course)}" placeholder="p. ej. 1º DAM, 2º Bachillerato Sociales, Grado en ADE…" maxlength="90" required></label>
@@ -1594,7 +1594,7 @@ async function handleFiles(files, sid) {
       await sPut("docs", id, { subjectId: sid, title: f.name.replace(/\.[^.]+$/, "").slice(0, 120), type, fileId, size: f.size, chars: text.length, parts, createdAt: now, updatedAt: now });
       ok++;
       if (type === "image" && sample) await ocrDoc({ id, subjectId: sid, title: f.name.replace(/\.[^.]+$/, "").slice(0, 120), type, fileId, size: f.size, chars: 0, parts: 0, createdAt: now, updatedAt: now }, true);
-      if (type === "pdf" && !text) toast(`${f.name}: es un PDF escaneado sin texto${sample ? "" : ". Pon tu clave de Gemini en ⚙️ Ajustes y vuelve a subirlo para que la IA lo lea"}.`);
+      if (type === "pdf" && !text) toast(`${f.name}: es un PDF escaneado sin texto${sample ? "" : ". Pon tu clave de Gemini en Ajustes y vuelve a subirlo para que la IA lo lea"}.`);
     } catch (e) { toast(e && e.code === "quota" ? "💾 El móvil no tiene más espacio para Rocky. Libera espacio o borra documentos viejos." : `❌ ${f.name}: ${(e && (e.msg || e.message)) || "no se pudo subir"}`); }
   }
   if (ok) toast(`${ok} ${ok === 1 ? "documento subido" : "documentos subidos"}`);
@@ -1697,11 +1697,11 @@ async function ocrDoc(d, quiet) {
 function aiErr(e) {
   const c = e && e.code;
   if (c === "no_tts") return "Tu clave no tiene voces de IA disponibles."; if (c === "tts_failed") return "No se pudo generar la voz."; const extra = e && e.message && !["cancelled", "no_key"].includes(c) ? ` (${String(e.message).slice(0, 160)})` : "";
-  return ({ not_granted: "Has denegado el acceso a la IA. Actívalo en los permisos del artefacto.", rate_limited: "Has llegado al límite gratis de Gemini por ahora. Espera un minuto (o hasta mañana si es el límite diario).", prompt_too_large: "Demasiado texto a la vez. Quita algún documento del contexto.", invalid_json: "La respuesta no salió en el formato esperado. Dale otra vez.", cancelled: "Parado.", refused: "La IA no ha querido responder a eso. Reformula la pregunta.", images_unavailable: "No se pudo enviar la imagen.", no_key: "Falta tu clave de Gemini: pégala en ⚙️ Ajustes.", bad_key: "La clave de Gemini no es válida. Revísala en ⚙️ Ajustes.", bad_model: "Ese modelo de Gemini no está disponible con tu clave. Pulsa «Probar clave» en ⚙️ Ajustes.", network: "Sin conexión a internet. Prueba otra vez cuando tengas señal.", empty_completion: "La IA no ha devuelto nada. Prueba otra vez.", overloaded: "Gemini está saturado ahora mismo y he probado varios modelos sin suerte. Espera 1-2 minutos y vuelve a intentarlo.", timeout: "Gemini está tardando demasiado (puede que vaya saturado). Prueba otra vez en un momento o quita algún documento del contexto 📎.", upstream_error: "Gemini ha dado un error." }[c] || "No se pudo contactar con la IA. Prueba de nuevo en un momento.") + extra;
+  return ({ not_granted: "Has denegado el acceso a la IA. Actívalo en los permisos del artefacto.", rate_limited: "Has llegado al límite gratis de Gemini por ahora. Espera un minuto (o hasta mañana si es el límite diario).", prompt_too_large: "Demasiado texto a la vez. Quita algún documento del contexto.", invalid_json: "La respuesta no salió en el formato esperado. Dale otra vez.", cancelled: "Parado.", refused: "La IA no ha querido responder a eso. Reformula la pregunta.", images_unavailable: "No se pudo enviar la imagen.", no_key: "Falta tu clave de Gemini: pégala en Ajustes.", bad_key: "La clave de Gemini no es válida. Revísala en Ajustes.", bad_model: "Ese modelo de Gemini no está disponible con tu clave. Pulsa «Probar clave» en Ajustes.", network: "Sin conexión a internet. Prueba otra vez cuando tengas señal.", empty_completion: "La IA no ha devuelto nada. Prueba otra vez.", overloaded: "Gemini está saturado ahora mismo y he probado varios modelos sin suerte. Espera 1-2 minutos y vuelve a intentarlo.", timeout: "Gemini está tardando demasiado (puede que vaya saturado). Prueba otra vez en un momento o quita algún documento del contexto 📎.", upstream_error: "Gemini ha dado un error." }[c] || "No se pudo contactar con la IA. Prueba de nuevo en un momento.") + extra;
 }
 const thinkingHtml = (t = "Pensando…") => `<span class="thinking"><i></i><i></i><i></i> ${t}</span>`;
 const COURSE_CTX = () => { const sc = state.profile.school || ""; return /administr/i.test(sc) || !sc
-  ? `Contexto del alumno: ${sc || "1º de CFGS Administración y Finanzas"} (Jesuïtes Bellvitge, L'Hospitalet de Llobregat, Cataluña). Usa la normativa española vigente (PGC 2007, IVA, Estatuto de los Trabajadores, Ley 39/2015) y el currículo del ciclo. Responde en español; si el alumno escribe en catalán, responde en catalán con la terminología catalana.`
+  ? `Contexto del alumno: ${sc || "1º de CFGS Administración y Finanzas"} en Cataluña. Usa la normativa española vigente (PGC 2007, IVA, Estatuto de los Trabajadores, Ley 39/2015) y el currículo del ciclo. Responde en español; si el alumno escribe en catalán, responde en catalán con la terminología catalana.`
   : `Contexto del alumno: estudia «${sc}» en España. Adapta el nivel, el temario y los ejemplos a ese curso y a su currículo oficial. Responde en español; si el alumno escribe en catalán, responde en catalán.`; };
 function subjContext(s) {
   const ex = s.exams.filter(e => daysUntil(e.date) >= 0).map(e => `${e.title} (${e.date}, en ${daysUntil(e.date)} días)`).join("; ") || "sin fecha";
@@ -1792,7 +1792,7 @@ let aiCtl = null;
 
 /* ---------- Chats ---------- */
 async function newChat(sid, ctx, first) {
-  if (!sample) { { toast("Pega tu clave de Gemini en ⚙️ Ajustes"); settingsModal(); }; return; }
+  if (!sample) { { toast("Activa la IA en Ajustes"); settingsModal(); }; return; }
   const id = uid(), now = Date.now();
   const def = ctx || docsOf(sid).filter(d => d.chars || d.type === "image").slice(0, 5).map(d => d.id);
   try { msgCache.set(id, []); await sPut("chatmsgs", id, { messages: [] }); await sPut("chats", id, { subjectId: sid, title: "", n: 0, ctx: def, createdAt: now, updatedAt: now }); go("chat-" + id); if (first) setTimeout(() => sendChat(id, first), 80); }
@@ -1951,9 +1951,9 @@ function mockPane(s, t, dis) {
       <div class="row" style="margin-top:14px"><button class="btn btn-p" data-act="mock-new">Nuevo simulacro</button></div>${histHtml}`;
   }
   return `<div class="row" style="align-items:flex-end;margin-top:14px">
-      <label class="field" style="width:150px"><span>📝 Preguntas test</span><select class="input" id="mockN"><option>10</option><option selected>15</option><option>20</option></select></label>
-      <label class="field" style="width:150px"><span>✍️ De desarrollo</span><select class="input" id="mockO"><option value="0">Ninguna</option><option value="2" selected>2</option><option value="3">3</option></select></label>
-      <label class="field" style="width:130px"><span>⏱️ Tiempo</span><select class="input" id="mockDur"><option value="20">20 min</option><option value="30">30 min</option><option value="45" selected>45 min</option><option value="60">60 min</option></select></label>
+      <label class="field" style="width:150px"><span>Preguntas test</span><select class="input" id="mockN"><option>10</option><option selected>15</option><option>20</option></select></label>
+      <label class="field" style="width:150px"><span>De desarrollo</span><select class="input" id="mockO"><option value="0">Ninguna</option><option value="2" selected>2</option><option value="3">3</option></select></label>
+      <label class="field" style="width:130px"><span>Tiempo</span><select class="input" id="mockDur"><option value="20">20 min</option><option value="30">30 min</option><option value="45" selected>45 min</option><option value="60">60 min</option></select></label>
       <button class="btn btn-p" data-act="mock-start" ${dis}>Empezar simulacro</button></div>
     <p class="tiny muted" style="margin-top:10px">Como el examen real: con tiempo y sin ver soluciones hasta entregar. Te pongo nota sobre 10, corrijo el desarrollo y te digo qué repasar.</p>${histHtml}`;
 }
@@ -2026,8 +2026,8 @@ function tabEstudiar(s) {
       <div id="sumOut" class="prose" style="margin-top:14px">${t.summary ? md(t.summary) : ""}</div>${t.summary ? AI_NOTE : ""}`;
   } else if (ui.studyTab === "test") {
     const q = t.quiz;
-    body = `<div class="row" style="align-items:flex-end;margin-top:14px"><label class="field" style="flex:1;min-width:200px"><span>📌 Tema</span><select class="input" id="quizTopic"><option value="">Todo el módulo</option>${s.topics.map(x => `<option value="${x.id}">${esc(x.title)}</option>`).join("")}</select></label>
-      <label class="field" style="width:160px"><span>🎚️ Dificultad</span><select class="input" id="quizDiff"><option value="media">Media</option><option value="examen" selected>Nivel examen</option><option value="dificil">Difícil</option></select></label>
+    body = `<div class="row" style="align-items:flex-end;margin-top:14px"><label class="field" style="flex:1;min-width:200px"><span>Tema</span><select class="input" id="quizTopic"><option value="">Todo el módulo</option>${s.topics.map(x => `<option value="${x.id}">${esc(x.title)}</option>`).join("")}</select></label>
+      <label class="field" style="width:160px"><span>Dificultad</span><select class="input" id="quizDiff"><option value="media">Media</option><option value="examen" selected>Nivel examen</option><option value="dificil">Difícil</option></select></label>
       <button class="btn btn-p" data-act="ai-quiz" ${dis}>${q ? "Nuevo test" : "Generar test"}</button><button class="btn" data-act="cards-quiz" title="Sin IA: con las tarjetas que tienes en el mazo">Test con mis tarjetas</button></div><div id="quizOut" style="margin-top:12px">`;
     if (q) {
       const answered = q.items.filter(x => x.picked != null).length, right = q.items.filter(x => x.picked === x.answer).length;
@@ -2176,7 +2176,7 @@ function linkModal(sid) {
   });
 }
 async function addLink(sid, url) {
-  if (!sample) { toast("Pega tu clave de Gemini en ⚙️ Ajustes"); settingsModal(); return; }
+  if (!sample) { toast("Activa la IA en Ajustes"); settingsModal(); return; }
   const yt = /(youtube\.com|youtu\.be)\//i.test(url);
   toast(yt ? "▶️ Viendo el vídeo… (puede tardar un poco)" : "🔗 Leyendo la página…");
   try {
@@ -2323,7 +2323,7 @@ function tabStudio(s) {
 }
 async function genStudio(kind, opts = {}) {
   const s = subj(S.param); if (!s) return;
-  if (!sample) { toast("Pega tu clave de Gemini en ⚙️ Ajustes"); settingsModal(); return; }
+  if (!sample) { toast("Activa la IA en Ajustes"); settingsModal(); return; }
   if (studioBusy) return; studioBusy = true; render();
   const out = () => $("#studioOut");
   try {
@@ -2776,7 +2776,7 @@ function viewTutor() {
   const chats = S.chats.filter(c => !f || c.subjectId === f);
   return `<div class="stack" style="gap:18px">
     <div class="row between"><div><h1>Tutor</h1></div>
-      <div class="row"><button class="btn" data-act="snap" data-s="${f}" ${sample ? "" : "disabled"} aria-label="Foto a un ejercicio">${ic("camera")}Foto</button><button class="btn btn-p" data-act="new-chat" data-s="${f}" ${sample ? "" : "disabled"}>Nuevo chat</button></div></div>
+      <div class="row"><button class="btn" data-act="snap" data-s="${f}" aria-label="Foto a un ejercicio">${ic("camera")}Foto</button><button class="btn btn-p" data-act="new-chat" data-s="${f}">Nuevo chat</button></div></div>
     ${!sample ? `<p class="ai-off">IA apagada. <button class="btn btn-sm" data-act="open-settings">Activar</button></p>` : ""}
     <div class="chips"><button class="chip" data-tf="" aria-pressed="${!f}"><span>Todas</span></button>${state.subjects.map(x => `<button class="chip" style="--c:${x.color}" data-tf="${x.id}" aria-pressed="${x.id === f}">${E(x.emoji)}<span>${esc(sName(x))}</span></button>`).join("")}</div>
     <section class="card">${!storeReady ? `<p class="muted small">${E("⏳")} Cargando chats…</p>` : chats.length ? chats.map(chatRow).join("") : `<div class="empty"><span class="emo big">💬</span><p>Sin chats${f ? " en esta asignatura" : ""}. Abre uno y pregunta lo que quieras.</p></div>`}</section>
@@ -2868,7 +2868,7 @@ function actionBanner() {
   </section>`;
 }
 async function organizeWeek(note = "", keepSnap = false) {
-  if (!sample) { toast("Pega tu clave de Gemini en ⚙️ Ajustes"); settingsModal(); return; }
+  if (!sample) { toast("Activa la IA en Ajustes"); settingsModal(); return; }
   if (!state.subjects.length && !state.tasks.length) { toast("Añade antes tus asignaturas o tareas"); return; }
   const days = planDays();
   const dayInfo = days.map(k => {
@@ -2962,8 +2962,7 @@ function installCard() {
 }
 function scheduleWarn() {
   const tt = state.timetable || [];
-  if (!tt.length) return `<p class="small" style="padding:9px 12px;border-radius:12px;background:var(--marker-soft);border:1px solid rgba(255,74,61,.35)">⚠️ <b>No tienes clases ni planes fijos en tu horario.</b> Rocky no sabe cuándo estás ocupado y te podría poner estudio encima. Añádelos en 🗓️ Agenda › 🏫 Horario o díselo al asistente («los lunes tengo gym de 17 a 19:30»).</p>`;
-  if (!tt.some(c => c.type === "event")) return `<p class="tiny muted">💡 ¿Tienes gym, trabajo u otro plan fijo? Si no está en tu horario, Rocky no lo respeta. Díselo al asistente de la Agenda.</p>`;
+  if (!tt.length) return `<p class="small" style="padding:9px 12px;border-radius:12px;background:var(--marker-soft);border:1px solid rgba(255,74,61,.35)"><b>Sin horario.</b> Añade tus clases y planes fijos en Agenda › Horario para que no te ponga estudio encima.</p>`;
   return "";
 }
 
@@ -2983,16 +2982,16 @@ function examModal(sid, examId) {
   const docList = x => { const ds = docsOf(x.id).filter(d => d.chars || d.type === "image"); return ds.length ? ds.map(d => `<label class="mod" style="--c:${x.color}"><input type="checkbox" data-exdoc="${d.id}" ${!ex || examDocs(ex).includes(d.id) ? "checked" : ""}>${E(DOC_EMO[d.type] || "📄")}<span style="min-width:0;overflow-wrap:anywhere">${esc(d.title || "Sin título")}</span></label>`).join("") : `<p class="tiny muted">Esta asignatura todavía no tiene apuntes. Puedes crear el plan igual y subirlos después en 📄 Documentos.</p>`; };
   openModal(`<div class="sheet-h"><h2>${ex ? "Plan del examen" : "Nuevo examen"}</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
     <form id="exForm" class="stack" style="gap:12px">
-      <label class="field"><span>📚 Asignatura</span><select class="input" id="exSubj" ${ex ? "disabled" : ""}>${state.subjects.map(x => `<option value="${x.id}" ${x.id === s.id ? "selected" : ""}>${x.emoji} ${esc(sName(x))}</option>`).join("")}</select></label>
+      <label class="field"><span>Asignatura</span><select class="input" id="exSubj" ${ex ? "disabled" : ""}>${state.subjects.map(x => `<option value="${x.id}" ${x.id === s.id ? "selected" : ""}>${x.emoji} ${esc(sName(x))}</option>`).join("")}</select></label>
       <div class="grid" style="grid-template-columns:minmax(0,1fr) auto;gap:10px">
-        <label class="field"><span>📝 Qué examen</span><input class="input" id="exTitle" value="${esc(ex ? ex.title : "")}" placeholder="p. ej. Examen RA2" maxlength="80" required></label>
-        <label class="field"><span>📅 Fecha</span><input class="input" type="date" id="exDate" value="${ex ? ex.date : ""}" min="${dkey()}" required style="width:auto"></label>
+        <label class="field"><span>Qué examen</span><input class="input" id="exTitle" value="${esc(ex ? ex.title : "")}" placeholder="p. ej. Examen RA2" maxlength="80" required></label>
+        <label class="field"><span>Fecha</span><input class="input" type="date" id="exDate" value="${ex ? ex.date : ""}" min="${dkey()}" required style="width:auto"></label>
       </div>
       <div class="field"><span>Empezar a estudiar</span><div class="seg" role="group" aria-label="Cuándo empezar">${[[0, "Desde hoy"], [2, "2 días antes"], [3, "3 días antes"], [5, "5 días antes"], [7, "1 semana antes"]].map(([k, l]) => `<button type="button" data-exstart="${k}" aria-pressed="${k === startD}">${l}</button>`).join("")}</div></div>
       <label class="field"><span>Apartados que entran (opcional: si lo dejas vacío, las sesiones serán «Estudiar»)</span><textarea class="input" id="exTopics" rows="3" maxlength="600" placeholder="p. ej. Balance, PyG, principios contables">${esc((ex && ex.topics) || "")}</textarea></label>
       ${scheduleWarn()}
-      <div class="field"><span>📎 Apuntes de este examen</span><div class="mods" id="exDocs">${docList(s)}</div></div>
-      <div class="field"><span>⚡ Intensidad</span><div class="seg" role="group" aria-label="Intensidad">${Object.entries(EX_INT).map(([k, v]) => `<button type="button" data-exint="${k}" aria-pressed="${k === inten}">${v.n} · ${fmtMin(v.min)}/día</button>`).join("")}</div></div>
+      <div class="field"><span>Apuntes de este examen</span><div class="mods" id="exDocs">${docList(s)}</div></div>
+      <div class="field"><span>Intensidad</span><div class="seg" role="group" aria-label="Intensidad">${Object.entries(EX_INT).map(([k, v]) => `<button type="button" data-exint="${k}" aria-pressed="${k === inten}">${v.n} · ${fmtMin(v.min)}/día</button>`).join("")}</div></div>
       
       <div class="row" style="justify-content:flex-end"><button class="btn btn-g" type="button" id="exSave">Solo guardar</button><button class="btn btn-p" type="submit">${ex && ex.planned ? "🔄 Rehacer el plan" : "🥊 Crear plan de estudio"}</button></div>
     </form>`, root => {
@@ -3122,7 +3121,7 @@ function nowCard() {
 let assistantBusy = false;
 async function runAssistant(text) {
   text = String(text || "").trim(); if (!text) return;
-  if (!sample) { toast("Pega tu clave de Gemini en ⚙️ Ajustes"); settingsModal(); return; }
+  if (!sample) { toast("Activa la IA en Ajustes"); settingsModal(); return; }
   if (/^(organiza|organízame|planifica|planifícame|reorganiza|hazme (el|un) plan)/i.test(text) && text.length < 40) { organizeWeek(); return; }
   assistantBusy = true; render();
   const mon = mondayOf(new Date()); const ks = Array.from({ length: 14 }, (_, i) => dkey(addDays(mon, i)));
@@ -3355,8 +3354,8 @@ function tasksView() {
 function horarioView() {
   const st = state.settings;
   return `<div class="stack" style="gap:12px">
-    <section class="card"><div class="card-h"><div><h2>Tu horario de clases</h2><p class="small muted">Se repite cada semana. Rocky nunca pone estudio encima.</p></div><div class="row">${PRESET === "aif" ? `<button class="btn btn-sm" data-act="tt-esit">Mi horario de ESiT</button>` : ""}<button class="btn btn-m btn-sm" data-act="tt-photo">Leer de una foto</button><button class="btn btn-p btn-sm" data-act="new-class">Clase</button></div></div>
-      ${state.timetable.length ? DOWL.map((d, i) => { const cs = state.timetable.filter(c => c.dow === i).sort((a, b) => toMin(a.start) - toMin(b.start)); return cs.length ? `<h3 style="margin:12px 0 4px">${d}</h3>${cs.map(c => { const s = subj(c.subjectId); return `<div class="blk" style="--c:${c.type === "event" ? "#A4A8B6" : sColor(c.subjectId)}"><span class="emo">${c.type === "event" ? "📌" : s ? s.emoji : "🏫"}</span><div style="min-width:0"><div class="ttl">${esc(c.title || (s ? s.name : "Clase"))}</div><div class="tiny muted">${c.start}–${c.end}${c.room ? " · 📍 " + esc(c.room) : ""}</div></div><button class="icon-btn emo" style="width:34px;height:34px;font-size:15px" data-act="edit-class" data-id="${c.id}" aria-label="Editar">✏️</button></div>`; }).join("")}` : ""; }).join("") : `<div class="empty"><span class="emo big">🏫</span><p>Haz una foto o una captura a tu horario y toca <b>📸 Leer de una foto</b>: la IA te crea todas las clases. También puedes añadirlas a mano o decírselo al asistente («los lunes tengo Proceso integral de 8 a 10»).</p><div class="row" style="justify-content:center">${PRESET === "aif" ? `<button class="btn btn-p" data-act="tt-esit">Cargar mi horario de ESiT (1r AdFi)</button>` : ""}<button class="btn btn-m" data-act="tt-photo">Leer horario de una foto</button></div></div>`}
+    <section class="card"><div class="card-h"><div><h2>Tu horario de clases</h2><p class="small muted">Se repite cada semana. Rocky nunca pone estudio encima.</p></div><div class="row">${PRESET === "aif" ? `<button class="btn btn-sm" data-act="tt-esit">Horario tipo de AdFi</button>` : ""}<button class="btn btn-m btn-sm" data-act="tt-photo">Leer de una foto</button><button class="btn btn-p btn-sm" data-act="new-class">Clase</button></div></div>
+      ${state.timetable.length ? DOWL.map((d, i) => { const cs = state.timetable.filter(c => c.dow === i).sort((a, b) => toMin(a.start) - toMin(b.start)); return cs.length ? `<h3 style="margin:12px 0 4px">${d}</h3>${cs.map(c => { const s = subj(c.subjectId); return `<div class="blk" style="--c:${c.type === "event" ? "#A4A8B6" : sColor(c.subjectId)}"><span class="emo">${c.type === "event" ? "📌" : s ? s.emoji : "🏫"}</span><div style="min-width:0"><div class="ttl">${esc(c.title || (s ? s.name : "Clase"))}</div><div class="tiny muted">${c.start}–${c.end}${c.room ? " · 📍 " + esc(c.room) : ""}</div></div><button class="icon-btn emo" style="width:34px;height:34px;font-size:15px" data-act="edit-class" data-id="${c.id}" aria-label="Editar">✏️</button></div>`; }).join("")}` : ""; }).join("") : `<div class="empty"><span class="emo big">🏫</span><p>Haz una foto o una captura a tu horario y toca <b>📸 Leer de una foto</b>: la IA te crea todas las clases. También puedes añadirlas a mano o decírselo al asistente («los lunes tengo Proceso integral de 8 a 10»).</p><div class="row" style="justify-content:center">${PRESET === "aif" ? `<button class="btn btn-p" data-act="tt-esit">Cargar horario tipo de AdFi</button>` : ""}<button class="btn btn-m" data-act="tt-photo">Leer horario de una foto</button></div></div>`}
     </section>
     <section class="card"><div class="card-h"><h2>Cómo quieres estudiar</h2></div>
       <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:10px">
@@ -3395,7 +3394,7 @@ function bindPlan() {
 function blockModal(b, date, start) {
   const isNew = !b; b = b || { date: date || dkey(), start: start || state.settings.startTime || "17:00", min: 50, subjectId: (state.subjects[0] || {}).id || "", title: "", kind: "study" };
   let kind = b.kind || "study";
-  openModal(`<div class="sheet-h"><h2>${isNew ? "➕ Añadir a la agenda" : `${KIND[kind].e} ${kind === "event" ? "Evento" : "Bloque de estudio"}`}</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
+  openModal(`<div class="sheet-h"><h2>${isNew ? "Añadir a la agenda" : `${KIND[kind].e} ${kind === "event" ? "Evento" : "Bloque de estudio"}`}</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
     <form id="blkForm" class="stack" style="gap:12px">
       <div class="seg" role="group" aria-label="Tipo"><button type="button" data-kind="study" aria-pressed="${kind === "study"}">Estudio</button><button type="button" data-kind="event" aria-pressed="${kind === "event"}">Evento / plan</button></div>
       <label class="field"><span>Título</span><input class="input" id="bTitle" value="${esc(b.title)}" placeholder="${kind === "event" ? "p. ej. Fútbol, médico, trabajo…" : "p. ej. Ejercicios de amortización"}" maxlength="120"></label>
@@ -3419,7 +3418,7 @@ function blockModal(b, date, start) {
 }
 function classModal(c, dow) {
   const isNew = !c; c = c || { dow: dow ?? 0, start: "08:00", end: "10:00", subjectId: (state.subjects[0] || {}).id || "", title: "", room: "" };
-  openModal(`<div class="sheet-h"><h2>${isNew ? "➕ Nueva clase" : "🏫 Clase"}</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
+  openModal(`<div class="sheet-h"><h2>${isNew ? "Nueva clase" : "Clase"}</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
     <form id="clsForm" class="stack" style="gap:12px">
       <label class="field"><span>Asignatura</span><select class="input" id="cSubj"><option value="">Otra</option>${state.subjects.map(s => `<option value="${s.id}" ${s.id === c.subjectId ? "selected" : ""}>${s.emoji} ${esc(sName(s))}</option>`).join("")}</select></label>
       <label class="field"><span>Nombre (opcional)</span><input class="input" id="cTitle" value="${esc(c.title || "")}" placeholder="p. ej. Tutoría, Educación física…" maxlength="80"></label>
@@ -3440,7 +3439,7 @@ function classModal(c, dow) {
 }
 function taskModal(t, fresh) {
   const isNew = !t; t = t || { title: "", due: "", est: 45, subjectId: "", prio: 2, status: "todo", notes: "" };
-  openModal(`<div class="sheet-h"><h2>${fresh ? "✅ Detalles de la tarea" : isNew ? "➕ Nueva tarea" : "✅ Tarea"}</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
+  openModal(`<div class="sheet-h"><h2>${fresh ? "Detalles de la tarea" : isNew ? "Nueva tarea" : "✅ Tarea"}</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
     <form id="tskForm" class="stack" style="gap:12px">
       <label class="field"><span>Qué hay que hacer</span><input class="input" id="tTitle" value="${esc(t.title)}" maxlength="120" required></label>
       <label class="field"><span>Asignatura</span><select class="input" id="tSubj"><option value="">Ninguna</option>${state.subjects.map(s => `<option value="${s.id}" ${s.id === t.subjectId ? "selected" : ""}>${s.emoji} ${esc(sName(s))}</option>`).join("")}</select></label>
@@ -3465,7 +3464,7 @@ function focusBlock(id) {
   Object.assign(timer, { subjectId: b.subjectId || null, topicId: null, blockId: b.id, phase: "focus", remaining: null, startedAt: null, blockMin: Math.max(5, Math.min(120, b.min - (b.doneMin || 0))) }); saveTimer(); go("foco");
 }
 
-/* ===== Horario de ESiT · 1r CFGS AdFi (de la foto del alumno) ===== */
+/* ===== Horario tipo de 1º CFGS AdFi ===== */
 const TT_ESIT = [
   [0, "08:00", "09:00", "gdj"], [0, "09:00", "10:00", "cat"], [0, "10:00", "11:00", "gef"], [0, "11:30", "12:25", "pia"], [0, "12:25", "13:20", "ing"], [0, "13:20", "14:15", "cac"],
   [1, "08:00", "09:00", "ofi"], [1, "09:00", "10:00", "gdj"], [1, "10:00", "11:00", "cac"], [1, "11:30", "12:25", "dig"], [1, "12:25", "13:20", "cat"], [1, "13:20", "14:15", "ofi"],
@@ -3480,13 +3479,13 @@ function loadEsitTimetable() {
   const had = state.timetable.length;
   state.timetable = TT_ESIT.map(([dow, start, end, key, title]) => { const x = key ? byTpl(key) : null; return { id: uid(), dow, start, end, subjectId: x ? x.id : "", title: title || "", room: "" }; });
   if (toMin(state.settings.startTime) < toMin("15:30")) state.settings.startTime = "16:00";
-  lastAction = { title: `Horario de ESiT cargado: ${state.timetable.length} clases`, text: (had ? `He sustituido tu horario anterior (${had} clases). ` : "") + "Clases de 8:00 a 14:15 con el recreo de 11:00 a 11:30." + (added.length ? " También he añadido los módulos que te faltaban." : ""), list: added };
+  lastAction = { title: `Horario cargado: ${state.timetable.length} clases`, text: (had ? `He sustituido tu horario anterior (${had} clases). ` : "") + "Clases de 8:00 a 14:15 con el recreo de 11:00 a 11:30." + (added.length ? " También he añadido los módulos que te faltaban." : ""), list: added };
   ui.agTab = "horario"; commit(); if (S.view !== "plan") go("plan");
 }
 
 /* ===== Horario desde una foto ===== */
 async function readTimetablePhoto(file) {
-  if (!sample) { toast("Pega tu clave de Gemini en ⚙️ Ajustes"); settingsModal(); return; }
+  if (!sample) { toast("Activa la IA en Ajustes"); settingsModal(); return; }
   toast("Leyendo tu horario…"); agendaBusy = true; render();
   try {
     const prompt = `Esta imagen es el horario semanal de clases de un alumno (${state.profile.school || "estudiante"}). Léelo con cuidado y devuelve TODAS las clases de la semana.
@@ -3892,7 +3891,7 @@ function exampleState() {
 }
 
 /* ================= actualizaciones ================= */
-const APP_VERSION = "2026.11.13-1";
+const APP_VERSION = "2026.11.14-1";
 let updateReady = false;
 async function checkUpdate() {
   try {

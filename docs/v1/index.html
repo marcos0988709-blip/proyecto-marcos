@@ -510,8 +510,8 @@ const W_TXT = { 1: "baja", 2: "media", 3: "clave" };
 const DOC_EMO = { note: "📝", pdf: "📕", docx: "📘", image: "🖼️", text: "📄", file: "📎", web: "🔗", youtube: "▶️" };
 const DOC_LBL = { note: "Nota", pdf: "PDF", docx: "Word", image: "Imagen", text: "Texto", file: "Archivo", web: "Web", youtube: "YouTube" };
 const PRESET = (document.querySelector('meta[name="pupitre-preset"]') || {}).content || "aif";
-const SCHOOL = PRESET === "mecanica" ? "URV · 1º Grado en Ingeniería Mecánica" : "Escola Joan XXIII · 1r CFGS Administració i Finances";
-const PRESET_LABEL = PRESET === "mecanica" ? "⚙️ 1º Mecánica · URV" : "🏫 1º AdFi · Joan XXIII";
+const SCHOOL = PRESET === "mecanica" ? "URV · 1º Grado en Ingeniería Mecánica" : "1º CFGS Administración y Finanzas";
+const PRESET_LABEL = PRESET === "mecanica" ? "⚙️ 1º Mecánica · URV" : "1º AdFi";
 const PRESET_BTN = PRESET === "mecanica" ? "⚙️ Asignaturas de 1º Mecánica" : "🏫 Módulos de 1º AiF";
 
 const I = {
@@ -877,7 +877,7 @@ function viewOnboarding() {
         <label class="field"><span>¿Cómo te llamas?</span><input class="input" id="onbName" placeholder="Tu nombre" autocomplete="given-name" maxlength="40"></label>
         <div class="field"><span>¿Qué estudias?</span><div class="seg" role="group" aria-label="Curso"><button type="button" data-oc="aif" aria-pressed="true">${PRESET_LABEL}</button><button type="button" data-oc="otro" aria-pressed="false">✏️ Otro curso</button></div></div>
         <div class="field" id="ocAif"><span>${PRESET === "mecanica" ? "Tus asignaturas" : "Tus módulos"} de este curso (desmarca los que no tengas)</span><div class="mods">${tplPicker("onb", false)}</div></div>
-        <div class="field" id="ocOtro" hidden><span>Escribe tu curso (y el centro si quieres)</span><input class="input" id="onbCourse" placeholder="p. ej. 2º Bachillerato Ciencias · IES Bellvitge" maxlength="90"><span class="tiny muted">Después pegas tu clave de Gemini y la IA te crea las asignaturas con sus temas.</span></div>
+        <div class="field" id="ocOtro" hidden><span>Escribe tu curso (y el centro si quieres)</span><input class="input" id="onbCourse" placeholder="p. ej. 2º Bachillerato Ciencias" maxlength="90"><span class="tiny muted">Después pegas tu clave de Gemini y la IA te crea las asignaturas con sus temas.</span></div>
         <div class="row">
           <button class="btn btn-p btn-lg" type="submit">${E("🚀")} Crear mi curso</button>
           ${PRESET === "aif" ? `<button class="btn btn-lg" type="button" id="onbExample">${E("👀")} Ver ejemplo</button>` : ""}
@@ -1636,7 +1636,7 @@ function aiErr(e) {
 }
 const thinkingHtml = (t = "Pensando…") => `<span class="thinking"><i></i><i></i><i></i> ${t}</span>`;
 const COURSE_CTX = () => { const sc = state.profile.school || ""; return /administr/i.test(sc) || !sc
-  ? `Contexto del alumno: ${sc || "1º de CFGS Administración y Finanzas"} (Jesuïtes Bellvitge, L'Hospitalet de Llobregat, Cataluña). Usa la normativa española vigente (PGC 2007, IVA, Estatuto de los Trabajadores, Ley 39/2015) y el currículo del ciclo. Responde en español; si el alumno escribe en catalán, responde en catalán con la terminología catalana.`
+  ? `Contexto del alumno: ${sc || "1º de CFGS Administración y Finanzas"} en Cataluña. Usa la normativa española vigente (PGC 2007, IVA, Estatuto de los Trabajadores, Ley 39/2015) y el currículo del ciclo. Responde en español; si el alumno escribe en catalán, responde en catalán con la terminología catalana.`
   : `Contexto del alumno: estudia «${sc}» en España. Adapta el nivel, el temario y los ejemplos a ese curso y a su currículo oficial. Responde en español; si el alumno escribe en catalán, responde en catalán.`; };
 function subjContext(s) {
   const ex = s.exams.filter(e => daysUntil(e.date) >= 0).map(e => `${e.title} (${e.date}, en ${daysUntil(e.date)} días)`).join("; ") || "sin fecha";
@@ -2916,8 +2916,8 @@ function tasksView() {
 function horarioView() {
   const st = state.settings;
   return `<div class="stack" style="gap:12px">
-    <section class="card"><div class="card-h"><div><h2>${E("🏫")} Tu horario de clases</h2><p class="small muted">Se repite cada semana. Rocky nunca pone estudio encima.</p></div><div class="row">${PRESET === "aif" ? `<button class="btn btn-sm" data-act="tt-esit">${E("🏫")} Mi horario de ESiT</button>` : ""}<button class="btn btn-m btn-sm" data-act="tt-photo">${E("📸")} Leer de una foto</button><button class="btn btn-p btn-sm" data-act="new-class">${E("➕")} Clase</button></div></div>
-      ${state.timetable.length ? DOWL.map((d, i) => { const cs = state.timetable.filter(c => c.dow === i).sort((a, b) => toMin(a.start) - toMin(b.start)); return cs.length ? `<h3 style="margin:12px 0 4px">${d}</h3>${cs.map(c => { const s = subj(c.subjectId); return `<div class="blk" style="--c:${c.type === "event" ? "#A4A8B6" : sColor(c.subjectId)}"><span class="emo">${c.type === "event" ? "📌" : s ? s.emoji : "🏫"}</span><div style="min-width:0"><div class="ttl">${esc(c.title || (s ? s.name : "Clase"))}</div><div class="tiny muted">${c.start}–${c.end}${c.room ? " · 📍 " + esc(c.room) : ""}</div></div><button class="icon-btn emo" style="width:34px;height:34px;font-size:15px" data-act="edit-class" data-id="${c.id}" aria-label="Editar">✏️</button></div>`; }).join("")}` : ""; }).join("") : `<div class="empty"><span class="emo big">🏫</span><p>Haz una foto o una captura a tu horario y toca <b>📸 Leer de una foto</b>: la IA te crea todas las clases. También puedes añadirlas a mano o decírselo al asistente («los lunes tengo Proceso integral de 8 a 10»).</p><div class="row" style="justify-content:center">${PRESET === "aif" ? `<button class="btn btn-p" data-act="tt-esit">${E("🏫")} Cargar mi horario de ESiT (1r AdFi)</button>` : ""}<button class="btn btn-m" data-act="tt-photo">${E("📸")} Leer horario de una foto</button></div></div>`}
+    <section class="card"><div class="card-h"><div><h2>${E("🏫")} Tu horario de clases</h2><p class="small muted">Se repite cada semana. Rocky nunca pone estudio encima.</p></div><div class="row">${PRESET === "aif" ? `<button class="btn btn-sm" data-act="tt-esit">${E("🏫")} Horario tipo de AdFi</button>` : ""}<button class="btn btn-m btn-sm" data-act="tt-photo">${E("📸")} Leer de una foto</button><button class="btn btn-p btn-sm" data-act="new-class">${E("➕")} Clase</button></div></div>
+      ${state.timetable.length ? DOWL.map((d, i) => { const cs = state.timetable.filter(c => c.dow === i).sort((a, b) => toMin(a.start) - toMin(b.start)); return cs.length ? `<h3 style="margin:12px 0 4px">${d}</h3>${cs.map(c => { const s = subj(c.subjectId); return `<div class="blk" style="--c:${c.type === "event" ? "#A4A8B6" : sColor(c.subjectId)}"><span class="emo">${c.type === "event" ? "📌" : s ? s.emoji : "🏫"}</span><div style="min-width:0"><div class="ttl">${esc(c.title || (s ? s.name : "Clase"))}</div><div class="tiny muted">${c.start}–${c.end}${c.room ? " · 📍 " + esc(c.room) : ""}</div></div><button class="icon-btn emo" style="width:34px;height:34px;font-size:15px" data-act="edit-class" data-id="${c.id}" aria-label="Editar">✏️</button></div>`; }).join("")}` : ""; }).join("") : `<div class="empty"><span class="emo big">🏫</span><p>Haz una foto o una captura a tu horario y toca <b>📸 Leer de una foto</b>: la IA te crea todas las clases. También puedes añadirlas a mano o decírselo al asistente («los lunes tengo Proceso integral de 8 a 10»).</p><div class="row" style="justify-content:center">${PRESET === "aif" ? `<button class="btn btn-p" data-act="tt-esit">${E("🏫")} Cargar horario tipo de AdFi</button>` : ""}<button class="btn btn-m" data-act="tt-photo">${E("📸")} Leer horario de una foto</button></div></div>`}
     </section>
     <section class="card"><div class="card-h"><h2>${E("⚙️")} Cómo quieres estudiar</h2></div>
       <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:10px">
@@ -3026,7 +3026,7 @@ function focusBlock(id) {
   Object.assign(timer, { subjectId: b.subjectId || null, topicId: null, blockId: b.id, phase: "focus", remaining: null, startedAt: null, blockMin: Math.max(5, Math.min(120, b.min - (b.doneMin || 0))) }); saveTimer(); go("foco");
 }
 
-/* ===== Horario de ESiT · 1r CFGS AdFi (de la foto del alumno) ===== */
+/* ===== Horario tipo de 1º CFGS AdFi ===== */
 const TT_ESIT = [
   [0, "08:00", "09:00", "gdj"], [0, "09:00", "10:00", "cat"], [0, "10:00", "11:00", "gef"], [0, "11:30", "12:25", "pia"], [0, "12:25", "13:20", "ing"], [0, "13:20", "14:15", "cac"],
   [1, "08:00", "09:00", "ofi"], [1, "09:00", "10:00", "gdj"], [1, "10:00", "11:00", "cac"], [1, "11:30", "12:25", "dig"], [1, "12:25", "13:20", "cat"], [1, "13:20", "14:15", "ofi"],
@@ -3041,7 +3041,7 @@ function loadEsitTimetable() {
   const had = state.timetable.length;
   state.timetable = TT_ESIT.map(([dow, start, end, key, title]) => { const x = key ? byTpl(key) : null; return { id: uid(), dow, start, end, subjectId: x ? x.id : "", title: title || "", room: "" }; });
   if (toMin(state.settings.startTime) < toMin("15:30")) state.settings.startTime = "16:00";
-  lastAction = { title: `Horario de ESiT cargado: ${state.timetable.length} clases`, text: (had ? `He sustituido tu horario anterior (${had} clases). ` : "") + "Clases de 8:00 a 14:15 con el recreo de 11:00 a 11:30." + (added.length ? " También he añadido los módulos que te faltaban." : ""), list: added };
+  lastAction = { title: `Horario cargado: ${state.timetable.length} clases`, text: (had ? `He sustituido tu horario anterior (${had} clases). ` : "") + "Clases de 8:00 a 14:15 con el recreo de 11:00 a 11:30." + (added.length ? " También he añadido los módulos que te faltaban." : ""), list: added };
   ui.agTab = "horario"; commit(); if (S.view !== "plan") go("plan");
 }
 
