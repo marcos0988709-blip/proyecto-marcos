@@ -60,6 +60,8 @@ footer{font-size:.82rem;color:var(--muted);text-align:center}
     </div>
     <div class="prog"><div class="bar"><i id="barFill" style="width:0%"></i></div><span id="progTxt">0/7 publicados</span></div>
     <div class="how"><b>Cómo se usa:</b> 1) <b>Guardar vídeo</b> → Guardar en Fotos. 2) Abre TikTok o Instagram y sube el vídeo desde Fotos. 3) <b>Copiar texto</b> y pégalo, luego <b>Copiar hashtags</b>. 4) Pon tu música. 5) Marca <b>Publicado</b>. Hora: <b>de 19:00 a 21:00</b>.</div>
+    <button type="button" id="saveGuide">Guardar la guía (PDF) en mi iPhone</button>
+    <div class="msg" id="msg-guia" role="status"></div>
   </header>
   <main id="list" class="wrap" style="max-width:none"></main>
   <footer>Para hablar de un vídeo con Claude, di «el del día X».</footer>
@@ -114,6 +116,14 @@ async function saveVideo(n) {
   catch (e) { const c = e && e.code; say(n, c === "declined" ? "Cancelado." : c === "rate_limited" ? "Espera un momento y vuelve a tocar." : "No se pudo guardar aquí. Mantén pulsado el vídeo para guardarlo.", c !== "declined"); }
   btn.disabled = false; btn.textContent = old;
 }
+document.getElementById("saveGuide").addEventListener("click", async e => {
+  const btn = e.currentTarget; const say2 = (t, err) => { const m = document.getElementById("msg-guia"); m.textContent = t; m.classList.toggle("err", !!err); };
+  if (!downloads) { say2("Aquí no se puede guardar. Tienes la guía también en el chat con Claude.", true); return; }
+  btn.disabled = true; const old = btn.textContent; btn.textContent = "Preparando…";
+  try { const blob = await (await fetch("guia.pdf")).blob(); await downloads.save({ filename: "Rocky - Plan de publicacion.pdf", data: blob }); say2("Listo. En el menú, toca «Guardar en Archivos»."); }
+  catch (err) { const c = err && err.code; say2(c === "declined" ? "Cancelado." : c === "rate_limited" ? "Espera un momento y vuelve a tocar." : "No se pudo guardar aquí. Tienes la guía también en el chat.", c !== "declined"); }
+  btn.disabled = false; btn.textContent = old;
+});
 document.addEventListener("click", e => {
   const s = e.target.closest("[data-save]"); if (s) { saveVideo(+s.dataset.save); return; }
   const c = e.target.closest("[data-copy]"); if (c) { const d = DAYS.find(x => x.n === +c.dataset.n); copy(c, c.dataset.copy === "text" ? d.text : d.tags); }

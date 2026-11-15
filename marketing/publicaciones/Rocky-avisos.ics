@@ -1,0 +1,234 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Rocky//ES
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Rocky · Publicar
+BEGIN:VEVENT
+UID:pub1@rocky
+DTSTAMP:20261115T120000Z
+DTSTART:20261115T190000
+DTEND:20261115T191500
+SUMMARY:Rocky · Subir vídeo Día 1
+DESCRIPTION:POV · Examen mañana\n\nTEXTO:\nTodos hemos estado aquí a l
+ as 23:47. Comenta ROCKY y te aviso cuando salga la app que te dice qué 
+ estudiar primero.\n\n#estudiar #examenes #eso #bachillerato #fp #studyto
+ k #pov\n\nPágina: https://claude.ai/artifact/NFqFVRY8pzGiYbde1FTGBB
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Subir vídeo Día 1: POV · Examen mañana
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:pub2@rocky
+DTSTAMP:20261115T120000Z
+DTSTART:20261116T190000
+DTEND:20261116T191500
+SUMMARY:Rocky · Subir vídeo Día 2
+DESCRIPTION:POV · Control sorpresa\n\nTEXTO:\nEl grupo de clase a las 22
+ :10 cuando el profe dice «control sorpresa». Comenta ROCKY y te aviso 
+ cuando salga.\n\n#estudiar #examenes #eso #bachillerato #fp #studytok #p
+ ov\n\nPágina: https://claude.ai/artifact/NFqFVRY8pzGiYbde1FTGBB
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Subir vídeo Día 2: POV · Control sorpresa
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:pub3@rocky
+DTSTAMP:20261115T120000Z
+DTSTART:20261117T190000
+DTEND:20261117T191500
+SUMMARY:Rocky · Subir vídeo Día 3
+DESCRIPTION:POV · 3 exámenes en 5 días\n\nTEXTO:\nEtiqueta a quien ten
+ ga 3 exámenes esta semana. Comenta ROCKY y te aviso cuando salga la app
+  que te los reparte.\n\n#estudiar #examenes #eso #bachillerato #fp #stud
+ ytok #pov\n\nPágina: https://claude.ai/artifact/NFqFVRY8pzGiYbde1FTGBB
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Subir vídeo Día 3: POV · 3 exámenes en 5 días
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:pub4@rocky
+DTSTAMP:20261115T120000Z
+DTSTART:20261118T190000
+DTEND:20261118T191500
+SUMMARY:Rocky · Subir vídeo Día 4
+DESCRIPTION:POV · 2 horas «estudiando»\n\nTEXTO:\nSé sincero: ¿cuán
+ to tiempo de pantalla llevas hoy? Comenta ROCKY y te aviso cuando salga.
+ \n\n#estudiar #examenes #eso #bachillerato #fp #studytok #pov\n\nPágina
+ : https://claude.ai/artifact/NFqFVRY8pzGiYbde1FTGBB
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Subir vídeo Día 4: POV · 2 horas «estudiando»
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:pub5@rocky
+DTSTAMP:20261115T120000Z
+DTSTART:20261119T190000
+DTEND:20261119T191500
+SUMMARY:Rocky · Subir vídeo Día 5
+DESCRIPTION:POV · Un ejercicio imposible\n\nTEXTO:\nVisto por 12. Cero r
+ espuestas. Comenta ROCKY y te aviso cuando salga la app que te lo explic
+ a paso a paso.\n\n#estudiar #examenes #eso #bachillerato #fp #studytok #
+ pov\n\nPágina: https://claude.ai/artifact/NFqFVRY8pzGiYbde1FTGBB
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Subir vídeo Día 5: POV · Un ejercicio imposible
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:pub6@rocky
+DTSTAMP:20261115T120000Z
+DTSTART:20261120T190000
+DTEND:20261120T191500
+SUMMARY:Rocky · Subir vídeo Día 6
+DESCRIPTION:POV · Te dan la nota (un 9)\n\nTEXTO:\nHace 2 semanas no sab
+ ías ni por dónde empezar. Comenta ROCKY y te aviso cuando salga.\n\n#e
+ studiar #examenes #eso #bachillerato #fp #studytok #pov\n\nPágina: http
+ s://claude.ai/artifact/NFqFVRY8pzGiYbde1FTGBB
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Subir vídeo Día 6: POV · Te dan la nota (un 9)
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:pub7@rocky
+DTSTAMP:20261115T120000Z
+DTSTART:20261121T190000
+DTEND:20261121T191500
+SUMMARY:Rocky · Subir vídeo Día 7
+DESCRIPTION:3 trucos para estudiar la mitad\n\nTEXTO:\nGuárdalo para tu 
+ próximo examen. El 3 es el que más gente se salta. ¿Cuál usas tú? C
+ omenta ROCKY y te aviso cuando salga la app que los hace por ti.\n\n#tec
+ nicasdeestudio #estudiar #trucos #examenes #studytok #eso #bachillerato\
+ n\nPágina: https://claude.ai/artifact/NFqFVRY8pzGiYbde1FTGBB
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Subir vídeo Día 7: 3 trucos para estudiar la mitad
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:pub8@rocky
+DTSTAMP:20261115T120000Z
+DTSTART:20261122T190000
+DTEND:20261122T191500
+SUMMARY:Rocky · Subir vídeo Día 8
+DESCRIPTION:POV · Domingo 23:00 y el lunes se entrega\n\nTEXTO:\nEtiquet
+ a a quien hace los trabajos el domingo por la noche. Comenta ROCKY y te 
+ aviso cuando salga.\n\n#estudiar #examenes #eso #bachillerato #fp #study
+ tok #pov\n\nPágina: https://claude.ai/artifact/PcaundmHXuvErjKntvVNA1
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Subir vídeo Día 8: POV · Domingo 23:00 y el lunes se entre
+ ga
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:pub9@rocky
+DTSTAMP:20261115T120000Z
+DTSTART:20261123T190000
+DTEND:20261123T191500
+SUMMARY:Rocky · Subir vídeo Día 9
+DESCRIPTION:Así se ve un 10\n\nTEXTO:\nUn 10 se planea. Comenta ROCKY y 
+ te aviso cuando salga.\n\n#estudiar #motivacion #examenes #studytok #eso
+  #bachillerato #fp\n\nPágina: https://claude.ai/artifact/PcaundmHXuvErj
+ KntvVNA1
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Subir vídeo Día 9: Así se ve un 10
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:pub10@rocky
+DTSTAMP:20261115T120000Z
+DTSTART:20261124T190000
+DTEND:20261124T191500
+SUMMARY:Rocky · Subir vídeo Día 10
+DESCRIPTION:POV · ¿Has estudiado hoy?\n\nTEXTO:\nTodos le hemos dicho q
+ ue sí. Comenta ROCKY y te aviso cuando salga.\n\n#estudiar #examenes #e
+ so #bachillerato #fp #studytok #pov\n\nPágina: https://claude.ai/artifa
+ ct/PcaundmHXuvErjKntvVNA1
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Subir vídeo Día 10: POV · ¿Has estudiado hoy?
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:pub11@rocky
+DTSTAMP:20261115T120000Z
+DTSTART:20261125T190000
+DTEND:20261125T191500
+SUMMARY:Rocky · Subir vídeo Día 11
+DESCRIPTION:POV · Quedan 20 minutos\n\nTEXTO:\nNunca habías hecho un ex
+ amen con reloj\, ¿verdad? Comenta ROCKY y te aviso cuando salga la app 
+ con simulacros cronometrados.\n\n#estudiar #examenes #eso #bachillerato 
+ #fp #studytok #pov\n\nPágina: https://claude.ai/artifact/PcaundmHXuvErj
+ KntvVNA1
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Subir vídeo Día 11: POV · Quedan 20 minutos
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:pub12@rocky
+DTSTAMP:20261115T120000Z
+DTSTART:20261126T190000
+DTEND:20261126T191500
+SUMMARY:Rocky · Subir vídeo Día 12
+DESCRIPTION:POV · Lo has leído 3 veces\n\nTEXTO:\nLeer no es estudiar. 
+ Guárdalo y comenta ROCKY para que te avise cuando salga.\n\n#estudiar #
+ examenes #eso #bachillerato #fp #studytok #pov\n\nPágina: https://claud
+ e.ai/artifact/PcaundmHXuvErjKntvVNA1
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Subir vídeo Día 12: POV · Lo has leído 3 veces
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:pub13@rocky
+DTSTAMP:20261115T120000Z
+DTSTART:20261127T190000
+DTEND:20261127T191500
+SUMMARY:Rocky · Subir vídeo Día 13
+DESCRIPTION:POV · Tu amigo saca un 8\n\nTEXTO:\nEstudiar más no es estu
+ diar mejor. Comenta ROCKY y te aviso cuando salga.\n\n#estudiar #examene
+ s #eso #bachillerato #fp #studytok #pov\n\nPágina: https://claude.ai/ar
+ tifact/PcaundmHXuvErjKntvVNA1
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Subir vídeo Día 13: POV · Tu amigo saca un 8
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:pub14@rocky
+DTSTAMP:20261115T120000Z
+DTSTART:20261128T190000
+DTEND:20261128T191500
+SUMMARY:Rocky · Subir vídeo Día 14
+DESCRIPTION:POV · Te mandan un PDF de 80 páginas\n\nTEXTO:\n¿A quién 
+ le ha pasado esta semana? Comenta ROCKY y te aviso cuando salga la app q
+ ue te lo resume.\n\n#estudiar #examenes #eso #bachillerato #fp #studytok
+  #pov\n\nPágina: https://claude.ai/artifact/PcaundmHXuvErjKntvVNA1
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Subir vídeo Día 14: POV · Te mandan un PDF de 80 páginas
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+END:VCALENDAR
