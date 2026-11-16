@@ -152,7 +152,7 @@ boot(CSS, async () => {
     const bigL = li >= 0 && L.big ? L : null;
     big.textContent = bigL ? bigL.big : ''; big.style.opacity = bigL ? eOut(prog(since, .1, .4)) * (1 - prog(since, bigL.dur + .2, bigL.dur + .6)) : 0;
     big.style.transform = `translate(-50%,0) scale(${bigL ? .5 + .5 * eBack(prog(since, .1, .5)) : 1})`;
-    const flip = li >= 0 && !L.big && /flipa|shock/.test(L.act || ''); marks.style.opacity = flip ? (Math.floor(since * 6) % 2 ? 1 : .6) : 0; marks.style.left = '760px'; marks.style.top = '700px';
+    const flip = t < D.end && li >= 0 && !L.big && /flipa|shock/.test(L.act || ''); marks.style.opacity = flip ? (Math.floor(since * 6) % 2 ? 1 : .6) : 0; marks.style.left = '760px'; marks.style.top = '700px';
     const gol = D.lines.find(l => /gol/.test(l.act || '')); const gt = gol ? t - gol.start : -1;
     confs.forEach(c => { const tt = gt - c._d; c.style.opacity = gol && tt > 0 && tt < 4 && t < D.end + .2 ? 1 : 0; c.style.transform = `translate(${c._x + Math.sin(tt * 3 + c._r) * 40}px, ${-60 + tt * 520 * c._s}px) rotate(${tt * 300 * c._s}deg)`; });
     // final

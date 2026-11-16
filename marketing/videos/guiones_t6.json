@@ -1,0 +1,72 @@
+{"videos": [
+ {"id": "i11", "scene": "oscuro", "hook": "DEJA DE SUBRAYAR", "names": {"estudiante": "TÚ"},
+  "caption": "Subrayar no es estudiar 🖍️ Comenta ROCKY.",
+  "lines": [
+   {"who": "estudiante", "text": "Brother, deja de subrayarlo todo.", "act": "piensa"},
+   {"who": "estudiante", "text": "Si todo está en amarillo, nada es importante.", "act": "shock"},
+   {"who": "estudiante", "text": "Cierra el libro y pregúntate. Eso sí funciona.", "act": ""},
+   {"who": "estudiante", "text": "Rocky te hace las preguntas. Tú respondes.", "act": "movil"}]},
+ {"id": "i12", "scene": "cuarto", "hook": "¿POR QUÉ SE TE OLVIDA TODO?", "names": {"estudiante": "TÚ"},
+  "caption": "La curva del olvido es real 📉 Comenta ROCKY.",
+  "lines": [
+   {"who": "estudiante", "text": "¿Por qué se te olvida todo en una semana?", "act": "piensa"},
+   {"who": "estudiante", "text": "Porque en un día olvidas más de la mitad.", "act": "shock", "big": "-50 %"},
+   {"who": "estudiante", "text": "Si repasas justo antes de olvidar, se queda.", "act": ""},
+   {"who": "estudiante", "text": "Rocky te avisa cuándo. Tú solo repasas.", "act": "movil"}]},
+ {"id": "i13", "scene": "oscuro", "hook": "EL ERROR DE TODOS", "names": {"estudiante": "TÚ"},
+  "caption": "Todos lo hacemos 😩 Comenta ROCKY.",
+  "lines": [
+   {"who": "estudiante", "text": "El error que hace todo el mundo:", "act": "piensa"},
+   {"who": "estudiante", "text": "Empezar por el tema uno. Siempre.", "act": "triste"},
+   {"who": "estudiante", "text": "Y el que más cae se queda sin estudiar.", "act": "shock"},
+   {"who": "estudiante", "text": "Con Rocky empiezas por el que más nota da.", "act": "movil flipa"}]},
+ {"id": "i14", "scene": "cuarto", "hook": "2 MINUTOS QUE CAMBIAN TU NOTA", "names": {"estudiante": "TÚ"},
+  "caption": "Pruébalo hoy ⏱️ Comenta ROCKY.",
+  "lines": [
+   {"who": "estudiante", "text": "Dos minutos que te cambian la nota.", "act": "piensa", "big": "2 MIN"},
+   {"who": "estudiante", "text": "Cierra el libro. Explica el tema en voz alta.", "act": ""},
+   {"who": "estudiante", "text": "Lo que no sabes explicar, no te lo sabes.", "act": "shock"},
+   {"who": "estudiante", "text": "Rocky te dice qué te falta. Así de fácil.", "act": "movil"}]},
+ {"id": "i15", "scene": "oscuro", "hook": "NO ES CULPA TUYA", "names": {"estudiante": "TÚ"},
+  "caption": "Nadie nos enseñó a estudiar 🤷 Comenta ROCKY.",
+  "lines": [
+   {"who": "estudiante", "text": "No es culpa tuya.", "act": "piensa"},
+   {"who": "estudiante", "text": "Nadie te ha enseñado a estudiar. Solo a memorizar.", "act": "triste"},
+   {"who": "estudiante", "text": "Plan, preguntas y repaso. Eso es estudiar.", "act": ""},
+   {"who": "estudiante", "text": "Rocky lo hace contigo. Paso a paso.", "act": "movil flipa", "big": "ROCKY"}]},
+ {"id": "i16", "scene": "cuarto", "hook": "LO QUE HACEN LOS DE 10", "names": {"estudiante": "TÚ"},
+  "caption": "Los de 10 no son genios 🧠 Comenta ROCKY.",
+  "lines": [
+   {"who": "estudiante", "text": "Los que sacan dieces no son genios.", "act": "piensa", "big": "10"},
+   {"who": "estudiante", "text": "Empiezan antes. Y estudian un poco cada día.", "act": ""},
+   {"who": "estudiante", "text": "Nada de darse un atracón la noche antes.", "act": "shock"},
+   {"who": "estudiante", "text": "Rocky te lo reparte para que hagas lo mismo.", "act": "movil"}]},
+ {"id": "i17", "scene": "oscuro", "hook": "EL PEOR MOMENTO PARA ESTUDIAR", "names": {"estudiante": "TÚ"},
+  "caption": "¿A qué hora estudias tú? 🕚 Comenta ROCKY.",
+  "lines": [
+   {"who": "estudiante", "text": "¿El peor momento para estudiar?", "act": "piensa"},
+   {"who": "estudiante", "text": "A las doce de la noche, con sueño, el día antes.", "act": "triste"},
+   {"who": "estudiante", "text": "Mejor media hora por la tarde, varios días.", "act": ""},
+   {"who": "estudiante", "text": "Rocky te recuerda tu hora. Y te pone el plan.", "act": "movil"}]},
+ {"id": "i18", "scene": "cuarto", "hook": "MIRA ESTO ANTES DEL EXAMEN", "names": {"estudiante": "TÚ"},
+  "caption": "Guárdalo para tu próximo examen 📌 Comenta ROCKY.",
+  "lines": [
+   {"who": "estudiante", "text": "Mira esto antes de tu próximo examen.", "act": "shock"},
+   {"who": "estudiante", "text": "Uno: duerme. Dos: repasa solo lo que fallas.", "act": ""},
+   {"who": "estudiante", "text": "Tres: haz un simulacro con reloj.", "act": "piensa", "big": "1 · 2 · 3"},
+   {"who": "estudiante", "text": "Las tres cosas las tienes en Rocky.", "act": "movil"}]},
+ {"id": "i19", "scene": "oscuro", "hook": "¿Y SI TE LO EXPLICA OTRO?", "names": {"estudiante": "TÚ"},
+  "caption": "Cuando el libro no lo explica bien 📸 Comenta ROCKY.",
+  "lines": [
+   {"who": "estudiante", "text": "Hay temas que el libro explica fatal.", "act": "triste"},
+   {"who": "estudiante", "text": "Y en internet, peor.", "act": "shock"},
+   {"who": "estudiante", "text": "Haz una foto con Rocky y pídele que te lo explique fácil.", "act": "movil"},
+   {"who": "estudiante", "text": "Con ejemplos. Como si tuvieras doce años.", "act": "flipa"}]},
+ {"id": "i20", "scene": "cuarto", "hook": "¿VALE LA PENA?", "names": {"estudiante": "TÚ"},
+  "caption": "Tú decides 👇 Comenta ROCKY.",
+  "lines": [
+   {"who": "estudiante", "text": "¿Vale la pena otra app para estudiar?", "act": "piensa"},
+   {"who": "estudiante", "text": "Si te dice qué estudiar, cuándo y cuánto...", "act": ""},
+   {"who": "estudiante", "text": "Y te explica lo que no entiendes... sí.", "act": "movil"},
+   {"who": "estudiante", "text": "Se llama Rocky. Comenta ROCKY y te aviso.", "cap": "Se llama {g}Rocky.{/g} Comenta ROCKY y te aviso.", "act": "flipa", "big": "ROCKY"}]}
+]}
