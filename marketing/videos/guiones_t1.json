@@ -1,0 +1,72 @@
+{"videos": [
+ {"id": "f01", "scene": "vestuario", "hook": "EL FENÓMENO DESCUBRE ROCKY", "names": {"fenomeno": "EL FENÓMENO"},
+  "caption": "El Fenómeno ha fichado por Rocky 😳 Comenta ROCKY y te aviso.",
+  "lines": [
+   {"who": "fenomeno", "text": "¿Qué es esto...? ¿Rocky?", "act": "movil piensa"},
+   {"who": "fenomeno", "text": "Te dice qué estudiar primero. Y cuánto rato.", "act": "movil"},
+   {"who": "fenomeno", "text": "Hay apps más grandes... pero esta viene FUERTE.", "cap": "Hay apps más grandes... pero esta viene {g}FUERTE.{/g}", "act": "flipa", "big": "FUERTE"},
+   {"who": "fenomeno", "text": "Ojo con esta, que va a romper la liga.", "act": ""}]},
+ {"id": "f02", "scene": "campo", "hook": "EL FENÓMENO TIENE EXAMEN", "names": {"fenomeno": "EL FENÓMENO"},
+  "caption": "Ni el Fenómeno se libra de los exámenes 😭 Comenta ROCKY.",
+  "lines": [
+   {"who": "fenomeno", "text": "Mañana tengo examen de mates.", "act": "triste"},
+   {"who": "fenomeno", "text": "Yo regateo a cinco defensas... pero las fracciones me regatean a mí.", "act": "triste"},
+   {"who": "fenomeno", "text": "Me han pasado esto. Rocky.", "act": "movil"},
+   {"who": "fenomeno", "text": "Me dice qué cae y me hace un plan. ¡GOLAZO!", "cap": "Me dice qué cae y me hace un plan. {g}¡GOLAZO!{/g}", "act": "flipa gol", "big": "GOLAZO"}]},
+ {"id": "f03", "scene": "vestuario", "hook": "EL FENÓMENO VS EL TEMARIO", "names": {"fenomeno": "EL FENÓMENO"},
+  "caption": "Entrenar se le da bien. Estudiar… ahora también 💪 Comenta ROCKY.",
+  "lines": [
+   {"who": "fenomeno", "text": "Cien páginas para el lunes. Imposible.", "act": "shock"},
+   {"who": "fenomeno", "text": "Pero en el fútbol no entrenas todo a la vez.", "act": "piensa"},
+   {"who": "fenomeno", "text": "Rocky me lo parte en trozos. Un poco cada día.", "act": "movil"},
+   {"who": "fenomeno", "text": "Así se gana la liga. Y el examen.", "act": ""}]},
+ {"id": "f04", "scene": "campo", "hook": "EL SECRETO DEL FENÓMENO", "names": {"fenomeno": "EL FENÓMENO"},
+  "caption": "El secreto no es estudiar más 🤫 Comenta ROCKY.",
+  "lines": [
+   {"who": "fenomeno", "text": "¿Sabes por qué meto tantos goles?", "act": "piensa"},
+   {"who": "fenomeno", "text": "Porque no chuto a lo loco. Apunto.", "act": ""},
+   {"who": "fenomeno", "text": "Estudiar igual: lo que más cae, primero.", "act": ""},
+   {"who": "fenomeno", "text": "Y eso te lo dice Rocky. Directo a la escuadra.", "act": "movil gol", "big": "GOL"}]},
+ {"id": "f05", "scene": "cuarto", "hook": "EL FENÓMENO A LAS 2 AM", "names": {"fenomeno": "EL FENÓMENO"},
+  "caption": "Nunca estudies a las 2 de la mañana. Hazle caso al Fenómeno 😴 Comenta ROCKY.",
+  "lines": [
+   {"who": "fenomeno", "text": "Son las dos de la mañana y sigo estudiando.", "act": "triste"},
+   {"who": "fenomeno", "text": "Mañana juego... y examino. Fatal.", "act": "triste"},
+   {"who": "fenomeno", "text": "La próxima vez, Rocky me avisa antes. Con tiempo.", "act": "movil"},
+   {"who": "fenomeno", "text": "Hasta los cracks descansan.", "act": ""}]},
+ {"id": "f06", "scene": "vestuario", "hook": "EL FENÓMENO HACE TRAMPA?", "names": {"fenomeno": "EL FENÓMENO"},
+  "caption": "No es trampa si es legal 😏 Comenta ROCKY.",
+  "lines": [
+   {"who": "fenomeno", "text": "Mis compañeros dicen que hago trampa.", "act": "piensa"},
+   {"who": "fenomeno", "text": "Saco un ocho estudiando la mitad.", "act": "flipa", "big": "8"},
+   {"who": "fenomeno", "text": "No es trampa. Es Rocky: repaso lo que fallo y ya.", "act": "movil"},
+   {"who": "fenomeno", "text": "Jugar con cabeza, hermano.", "act": ""}]},
+ {"id": "f07", "scene": "campo", "hook": "EL FENÓMENO ENSEÑA SU NOTA", "names": {"fenomeno": "EL FENÓMENO"},
+  "caption": "Tres... dos... uno... 🔥 Comenta ROCKY.",
+  "lines": [
+   {"who": "fenomeno", "text": "Me han dado la nota del examen de historia.", "act": "shock"},
+   {"who": "fenomeno", "text": "Tres... dos... uno...", "act": "piensa", "gap": 0.5},
+   {"who": "fenomeno", "text": "¡UN NUEVE! ¡GOOOL!", "say": "¡Un nueve! ¡Gol!", "cap": "{g}¡UN NUEVE!{/g} ¡GOOOL!", "act": "flipa gol", "big": "9"},
+   {"who": "fenomeno", "text": "Gracias, Rocky. Te debo una camiseta.", "act": "movil"}]},
+ {"id": "f08", "scene": "vestuario", "hook": "EL FENÓMENO Y EL MÓVIL", "names": {"fenomeno": "EL FENÓMENO"},
+  "caption": "El móvil también hace faltas 📵 Comenta ROCKY.",
+  "lines": [
+   {"who": "fenomeno", "text": "Me siento a estudiar y... notificación.", "act": "movil"},
+   {"who": "fenomeno", "text": "Dos horas después: cero páginas.", "act": "triste"},
+   {"who": "fenomeno", "text": "Ahora pongo el modo zen de Rocky. Móvil fuera.", "act": "movil"},
+   {"who": "fenomeno", "text": "Veinticinco minutos a tope. Como una final.", "act": "flipa", "big": "25 MIN"}]},
+ {"id": "f09", "scene": "campo", "hook": "EL FENÓMENO NO ENTIENDE NADA", "names": {"fenomeno": "EL FENÓMENO"},
+  "caption": "Foto al ejercicio y listo 📸 Comenta ROCKY.",
+  "lines": [
+   {"who": "fenomeno", "text": "Este ejercicio no lo entiende ni el entrenador.", "act": "shock"},
+   {"who": "fenomeno", "text": "Le hago una foto con Rocky...", "act": "movil"},
+   {"who": "fenomeno", "text": "Y me lo explica paso a paso. Como una jugada.", "act": "movil"},
+   {"who": "fenomeno", "text": "Ahora lo entiendo hasta yo.", "act": "flipa"}]},
+ {"id": "f10", "scene": "vestuario", "hook": "EL FENÓMENO FICHA POR ROCKY", "names": {"fenomeno": "EL FENÓMENO"},
+  "caption": "Fichaje del año 🖊️ Comenta ROCKY y te aviso.",
+  "lines": [
+   {"who": "fenomeno", "text": "Me han ofrecido de todo. Millones.", "act": "piensa"},
+   {"who": "fenomeno", "text": "Pero yo ficho por la app que me sube las notas.", "act": ""},
+   {"who": "fenomeno", "text": "Rocky. Para ESO, Bachillerato y FP.", "cap": "{g}Rocky.{/g} Para ESO, Bachillerato y FP.", "act": "movil flipa", "big": "ROCKY"},
+   {"who": "fenomeno", "text": "Comenta ROCKY. Nos vemos en el campo.", "act": ""}]}
+]}

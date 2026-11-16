@@ -1,12 +1,12 @@
 // node render.js <video> [fps] [desde] [hasta]  → out/<video>.mp4 (+ _sfx), fotograma a fotograma
 const { chromium } = require('playwright'); const { spawn, execFileSync } = require('child_process'); const fs = require('fs');
-const [name, fpsA, fromA, toA] = process.argv.slice(2); const fps = +fpsA || 30; const DIR = __dirname; fs.mkdirSync(DIR + '/out', { recursive: true });
+const [arg, fpsA, fromA, toA] = process.argv.slice(2); const [mod, vid] = arg.split(':'); const name = vid || mod; const PORT = process.env.PORT || '8790'; const fps = +fpsA || 30; const DIR = __dirname; fs.mkdirSync(DIR + '/out', { recursive: true });
 (async () => {
-  const srv = spawn('python3', ['-m', 'http.server', '8790', '--directory', DIR], { stdio: 'ignore' }); await new Promise(r => setTimeout(r, 800));
+  const srv = spawn('python3', ['-m', 'http.server', PORT, '--directory', DIR], { stdio: 'ignore' }); await new Promise(r => setTimeout(r, 800));
   const b = await chromium.launch({ proxy: { server: process.env.HTTPS_PROXY, bypass: 'localhost,127.0.0.1' }, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const ctx = await b.newContext({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: 1, ignoreHTTPSErrors: true });
   const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => m.type() === 'error' && errs.push(m.text()));
-  await p.goto(`http://localhost:8790/page.html?v=${name}`); await p.waitForFunction(() => window.ready, null, { timeout: 60000 }); await p.evaluate(() => window.ready);
+  await p.goto(`http://localhost:${PORT}/page.html?v=${mod}` + (vid ? `&id=${vid}` : '')); await p.waitForFunction(() => window.ready, null, { timeout: 60000 }); await p.evaluate(() => window.ready);
   const dur = await p.evaluate(() => window.DUR); const cues = await p.evaluate(() => window.CUES);
   const from = +fromA || 0, to = toA ? +toA : dur; const n = Math.round((to - from) * fps);
   const silent = `${DIR}/out/${name}_v.mp4`;

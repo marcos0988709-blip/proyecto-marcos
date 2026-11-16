@@ -1,0 +1,72 @@
+{"videos": [
+ {"id": "i01", "scene": "cuarto", "hook": "¿TE SUENA?", "names": {"estudiante": "TÚ"},
+  "caption": "¿Te suena? 👀 Comenta ROCKY y te aviso.",
+  "lines": [
+   {"who": "estudiante", "text": "Brother... examen mañana.", "act": "shock"},
+   {"who": "estudiante", "text": "Y el libro sigue en la mochila. Desde septiembre.", "act": "triste"},
+   {"who": "estudiante", "text": "Hay una app que te dice qué estudiar primero.", "act": "movil piensa"},
+   {"who": "estudiante", "text": "Se llama Rocky. Y no, no es broma.", "cap": "Se llama {g}Rocky.{/g} Y no, no es broma.", "act": "movil flipa", "big": "ROCKY"}]},
+ {"id": "i02", "scene": "oscuro", "hook": "NADIE TE LO DICE", "names": {"estudiante": "TÚ"},
+  "caption": "Nadie te lo dice, pero es así 🤫 Comenta ROCKY.",
+  "lines": [
+   {"who": "estudiante", "text": "Nadie te lo dice, pero...", "act": "piensa"},
+   {"who": "estudiante", "text": "El veinte por ciento del temario da el ochenta por ciento de la nota.", "cap": "El {g}20 %{/g} del temario da el {g}80 %{/g} de la nota.", "act": "flipa", "big": "80/20"},
+   {"who": "estudiante", "text": "El truco es saber cuál es ese veinte.", "act": ""},
+   {"who": "estudiante", "text": "Rocky te lo marca. Tú solo estudias eso primero.", "act": "movil"}]},
+ {"id": "i03", "scene": "cuarto", "hook": "LAS 3 DE LA MAÑANA", "names": {"estudiante": "TÚ"},
+  "caption": "Las 3 de la mañana y releyendo lo mismo 😵 Comenta ROCKY.",
+  "lines": [
+   {"who": "estudiante", "text": "Tres de la mañana. Cuarta vez que lees la misma página.", "act": "triste"},
+   {"who": "estudiante", "text": "Y no te acuerdas de nada.", "act": "triste"},
+   {"who": "estudiante", "text": "Leer no es estudiar. Preguntarte, sí.", "act": "piensa"},
+   {"who": "estudiante", "text": "Rocky te hace las preguntas. Tú solo respondes.", "act": "movil"}]},
+ {"id": "i04", "scene": "aula", "hook": "EL MÉTODO 1-3-7", "names": {"estudiante": "TÚ"},
+  "caption": "Guarda esto para el próximo examen 📌 Comenta ROCKY.",
+  "lines": [
+   {"who": "estudiante", "text": "¿Te suena estudiar y olvidarlo todo en dos días?", "act": "piensa"},
+   {"who": "estudiante", "text": "Repasa al día uno, al tres y al siete.", "act": "flipa", "big": "1 · 3 · 7"},
+   {"who": "estudiante", "text": "Así se queda. De verdad.", "act": ""},
+   {"who": "estudiante", "text": "Rocky te avisa cada día que toca. Tú no piensas.", "act": "movil"}]},
+ {"id": "i05", "scene": "cuarto", "hook": "ESTO ME PASÓ AYER", "names": {"estudiante": "TÚ"},
+  "caption": "Una foto y fuera dudas 📸 Comenta ROCKY.",
+  "lines": [
+   {"who": "estudiante", "text": "Brother, esto me pasó ayer.", "act": "piensa"},
+   {"who": "estudiante", "text": "Un ejercicio imposible. Grupo de clase: visto por doce.", "act": "triste"},
+   {"who": "estudiante", "text": "Le hice una foto con Rocky...", "act": "movil"},
+   {"who": "estudiante", "text": "Y me lo explicó paso a paso. Y me puso otro igual.", "act": "flipa"}]},
+ {"id": "i06", "scene": "oscuro", "hook": "NO ES QUE SEAS VAGO", "names": {"estudiante": "TÚ"},
+  "caption": "No eres vago, te falta un plan 🧠 Comenta ROCKY.",
+  "lines": [
+   {"who": "estudiante", "text": "No es que seas vago.", "act": "piensa"},
+   {"who": "estudiante", "text": "Es que no sabes por dónde empezar. Y eso agobia.", "act": "triste"},
+   {"who": "estudiante", "text": "Con un plan claro, te sientas y ya está.", "act": ""},
+   {"who": "estudiante", "text": "Rocky te lo da hecho. Cada día, lo de hoy.", "act": "movil flipa", "big": "HOY"}]},
+ {"id": "i07", "scene": "cuarto", "hook": "EL MÓVIL TE ROBA 2 HORAS", "names": {"estudiante": "TÚ"},
+  "caption": "¿Cuánto rato estudias de verdad? 📵 Comenta ROCKY.",
+  "lines": [
+   {"who": "estudiante", "text": "¿Sabes cuánto estudias de verdad?", "act": "piensa"},
+   {"who": "estudiante", "text": "Dices dos horas. Son doce minutos.", "act": "shock", "big": "12 MIN"},
+   {"who": "estudiante", "text": "El resto, el móvil.", "act": "movil triste"},
+   {"who": "estudiante", "text": "Rocky tiene modo zen. Y te enseña tu tiempo real.", "act": "movil"}]},
+ {"id": "i08", "scene": "aula", "hook": "EL QUE SACA UN 9", "names": {"estudiante": "TÚ"},
+  "caption": "No estudia más, estudia mejor 📈 Comenta ROCKY.",
+  "lines": [
+   {"who": "estudiante", "text": "El que saca un nueve no estudia más que tú.", "act": "piensa"},
+   {"who": "estudiante", "text": "Estudia lo que cae. Y repasa lo que falla.", "act": ""},
+   {"who": "estudiante", "text": "Ya está. Ese es el secreto.", "act": "flipa", "big": "9"},
+   {"who": "estudiante", "text": "Rocky hace eso por ti. Para ESO, Bachillerato y FP.", "act": "movil"}]},
+ {"id": "i09", "scene": "oscuro", "hook": "PDF DE 80 PÁGINAS", "names": {"estudiante": "TÚ"},
+  "caption": "80 páginas → 1 mapa mental 🗺️ Comenta ROCKY.",
+  "lines": [
+   {"who": "estudiante", "text": "Te mandan un PDF de ochenta páginas.", "act": "shock", "big": "80"},
+   {"who": "estudiante", "text": "Para el viernes.", "act": "triste"},
+   {"who": "estudiante", "text": "Lo metes en Rocky: apuntes cortos, mapa mental...", "act": "movil"},
+   {"who": "estudiante", "text": "Y hasta un pódcast para el bus.", "act": "flipa"}]},
+ {"id": "i10", "scene": "cuarto", "hook": "MI MEJOR NOTA", "names": {"estudiante": "TÚ"},
+  "caption": "De no saber por dónde empezar a esto 🔥 Comenta ROCKY.",
+  "lines": [
+   {"who": "estudiante", "text": "Hace un mes no sabía ni por dónde empezar.", "act": "triste"},
+   {"who": "estudiante", "text": "Hoy me han dado la nota.", "act": "piensa", "gap": 0.5},
+   {"who": "estudiante", "text": "Un ocho y medio.", "act": "flipa", "big": "8,5"},
+   {"who": "estudiante", "text": "No es magia. Es tener un plan. Comenta ROCKY.", "act": "movil"}]}
+]}

@@ -1,0 +1,73 @@
+{"videos": [
+ {"id": "n01", "scene": "cabina", "hook": "NARRANDO TU EXAMEN", "names": {"narrador": "EL NARRADOR"},
+  "caption": "Así se narra un examen bien preparado ⚽ Comenta ROCKY.",
+  "lines": [
+   {"who": "narrador", "text": "¡Arranca el examen, señoras y señores!", "act": "flipa"},
+   {"who": "narrador", "text": "Primera pregunta... la conoce. ¡La conoce!", "act": "shock"},
+   {"who": "narrador", "text": "Regatea al móvil, regatea al sueño...", "act": ""},
+   {"who": "narrador", "text": "¡GOOOL! ¡UN NUEVE!", "say": "¡Gol! ¡Un nueve!", "cap": "{g}¡GOOOL! ¡UN NUEVE!{/g}", "act": "flipa gol", "big": "9"},
+   {"who": "narrador", "text": "Lo preparó con Rocky.", "act": ""}]},
+ {"id": "n02", "scene": "cabina", "hook": "LA REMONTADA DEL TRIMESTRE", "names": {"narrador": "EL NARRADOR"},
+  "caption": "La remontada más épica del trimestre 🔥 Comenta ROCKY.",
+  "lines": [
+   {"who": "narrador", "text": "Iba perdiendo. Un cuatro en el primer examen.", "act": "triste"},
+   {"who": "narrador", "text": "Pero cambió la táctica: lo que más cae, primero.", "act": "piensa"},
+   {"who": "narrador", "text": "¡Y ahí va! ¡Se acerca al área!", "act": "shock"},
+   {"who": "narrador", "text": "¡GOOOL! ¡UN OCHO! ¡REMONTADA!", "say": "¡Gol! ¡Un ocho! ¡Remontada!", "cap": "{g}¡GOOOL! ¡UN OCHO!{/g}", "act": "flipa gol", "big": "4 → 8"}]},
+ {"id": "n03", "scene": "cabina", "hook": "FALTA DEL MÓVIL", "names": {"narrador": "EL NARRADOR"},
+  "caption": "Tarjeta roja al móvil 🟥 Comenta ROCKY.",
+  "lines": [
+   {"who": "narrador", "text": "Se sienta a estudiar... y entra el móvil por detrás.", "act": "shock"},
+   {"who": "narrador", "text": "¡Falta! ¡Eso es tarjeta roja!", "act": "flipa", "big": "ROJA"},
+   {"who": "narrador", "text": "Activa el modo zen de Rocky. El móvil, al banquillo.", "act": ""},
+   {"who": "narrador", "text": "Veinticinco minutos de juego limpio. ¡Qué partido!", "act": "flipa"}]},
+ {"id": "n04", "scene": "cabina", "hook": "MINUTO 90", "names": {"narrador": "EL NARRADOR"},
+  "caption": "Repasar el día antes no es una táctica 😬 Comenta ROCKY.",
+  "lines": [
+   {"who": "narrador", "text": "Minuto noventa. Examen mañana. Y no ha repasado nada.", "act": "triste"},
+   {"who": "narrador", "text": "Esto no pinta bien, amigos.", "act": "triste"},
+   {"who": "narrador", "text": "Los cracks repasan antes. Al día uno, tres y siete.", "act": "piensa", "big": "1 · 3 · 7"},
+   {"who": "narrador", "text": "Rocky avisa cuando toca. Sin sustos en el descuento.", "act": ""}]},
+ {"id": "n05", "scene": "campo", "hook": "LA JUGADA DEL AÑO", "names": {"narrador": "EL NARRADOR"},
+  "caption": "Foto, explicación y gol 📸⚽ Comenta ROCKY.",
+  "lines": [
+   {"who": "narrador", "text": "Ejercicio imposible. Nadie lo entiende.", "act": "shock"},
+   {"who": "narrador", "text": "Saca el móvil. Foto con Rocky...", "act": "movil"},
+   {"who": "narrador", "text": "Paso uno, paso dos, paso tres...", "act": "piensa"},
+   {"who": "narrador", "text": "¡GOLAZO! ¡Lo ha entendido!", "say": "¡Golazo! ¡Lo ha entendido!", "cap": "{g}¡GOLAZO!{/g} ¡Lo ha entendido!", "act": "flipa gol", "big": "GOLAZO"}]},
+ {"id": "n06", "scene": "cabina", "hook": "EL FICHAJE DEL VERANO", "names": {"narrador": "EL NARRADOR"},
+  "caption": "El fichaje que te sube la nota 🖊️ Comenta ROCKY.",
+  "lines": [
+   {"who": "narrador", "text": "Última hora: hay nuevo fichaje en tu móvil.", "act": "shock"},
+   {"who": "narrador", "text": "Te hace el plan, te pregunta antes del examen...", "act": ""},
+   {"who": "narrador", "text": "Y te explica lo que no entiendes.", "act": ""},
+   {"who": "narrador", "text": "¡Se llama Rocky! ¡Para ESO, Bachillerato y FP!", "cap": "¡Se llama {g}Rocky!{/g} Para ESO, Bachillerato y FP.", "act": "flipa", "big": "ROCKY"}]},
+ {"id": "n07", "scene": "cabina", "hook": "PRÓRROGA A LAS 3 AM", "names": {"narrador": "EL NARRADOR"},
+  "caption": "No hace falta prórroga si juegas bien la primera parte 😴 Comenta ROCKY.",
+  "lines": [
+   {"who": "narrador", "text": "Tres de la mañana. Seguimos en la prórroga.", "act": "triste"},
+   {"who": "narrador", "text": "El jugador está agotado. Ya no retiene nada.", "act": "triste"},
+   {"who": "narrador", "text": "Con un plan por días, esto se gana en la primera parte.", "act": "piensa"},
+   {"who": "narrador", "text": "Rocky lo reparte. Tú duermes.", "act": "flipa"}]},
+ {"id": "n08", "scene": "campo", "hook": "TRES PARTIDOS EN CINCO DÍAS", "names": {"narrador": "EL NARRADOR"},
+  "caption": "Tres exámenes en cinco días: así se gestiona 🧠 Comenta ROCKY.",
+  "lines": [
+   {"who": "narrador", "text": "Calendario infernal: tres exámenes en cinco días.", "act": "shock", "big": "3 EN 5"},
+   {"who": "narrador", "text": "Y el míster ha rotado la plantilla.", "act": "piensa"},
+   {"who": "narrador", "text": "Hoy mates, mañana historia, el jueves inglés.", "act": ""},
+   {"who": "narrador", "text": "Rocky lo organiza. ¡Tres victorias!", "act": "flipa gol"}]},
+ {"id": "n09", "scene": "cabina", "hook": "EL VAR REVISA TU ESTUDIO", "names": {"narrador": "EL NARRADOR"},
+  "caption": "El VAR no miente 📺 Comenta ROCKY.",
+  "lines": [
+   {"who": "narrador", "text": "Dice que ha estudiado dos horas. Vamos al VAR.", "act": "piensa"},
+   {"who": "narrador", "text": "Revisando... doce minutos. Y el resto, móvil.", "act": "shock", "big": "12 MIN"},
+   {"who": "narrador", "text": "Rocky te enseña tu tiempo real de estudio.", "act": ""},
+   {"who": "narrador", "text": "Sin trampas. Como el VAR.", "act": "flipa"}]},
+ {"id": "n10", "scene": "cabina", "hook": "FINAL DE TEMPORADA", "names": {"narrador": "EL NARRADOR"},
+  "caption": "La temporada se gana desde el primer día 🏆 Comenta ROCKY.",
+  "lines": [
+   {"who": "narrador", "text": "Final de temporada. Toca mirar las notas.", "act": "piensa"},
+   {"who": "narrador", "text": "Ni un suspenso. Racha de treinta días estudiando.", "act": "shock", "big": "30 DÍAS"},
+   {"who": "narrador", "text": "¡Campeón! ¡Campeón!", "act": "flipa gol"},
+   {"who": "narrador", "text": "Y todo empezó con Rocky. Comenta ROCKY.", "act": ""}]}
+]}
