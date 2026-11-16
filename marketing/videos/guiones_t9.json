@@ -1,0 +1,72 @@
+{"videos": [
+ {"id": "f21", "scene": "campo", "hook": "EL FENÓMENO Y LA SELECTIVIDAD", "names": {"fenomeno": "EL FENÓMENO"},
+  "caption": "Hasta los cracks se ponen nerviosos 😅 Comenta ROCKY.",
+  "lines": [
+   {"who": "fenomeno", "text": "Una final de Champions no me pone nervioso.", "act": ""},
+   {"who": "fenomeno", "text": "La selectividad... un poco.", "act": "triste"},
+   {"who": "fenomeno", "text": "Por eso empiezo meses antes. Con Rocky, poco a poco.", "act": "movil"},
+   {"who": "fenomeno", "text": "Cuando llegue, ya la habré jugado mil veces.", "act": "flipa"}]},
+ {"id": "f22", "scene": "vestuario", "hook": "EL FENÓMENO Y SU RUTINA", "names": {"fenomeno": "EL FENÓMENO"},
+  "caption": "La rutina de un crack 📅 Comenta ROCKY.",
+  "lines": [
+   {"who": "fenomeno", "text": "Mi rutina: entreno, como, y media hora de estudio.", "act": ""},
+   {"who": "fenomeno", "text": "Solo media hora. Pero todos los días.", "act": "piensa", "big": "30 MIN"},
+   {"who": "fenomeno", "text": "Rocky me dice qué toca. Yo no pienso.", "act": "movil"},
+   {"who": "fenomeno", "text": "Constancia, hermano. Eso gana ligas.", "act": "flipa"}]},
+ {"id": "f23", "scene": "campo", "hook": "EL FENÓMENO PIERDE LA RACHA", "names": {"fenomeno": "EL FENÓMENO"},
+  "caption": "Se puede perder una racha. Lo importante es volver 💪 Comenta ROCKY.",
+  "lines": [
+   {"who": "fenomeno", "text": "Doce días de racha... y ayer no estudié.", "act": "triste", "big": "12"},
+   {"who": "fenomeno", "text": "Me dolió más que perder un partido.", "act": "triste"},
+   {"who": "fenomeno", "text": "Pero Rocky me recolocó el plan. Sin drama.", "act": "movil"},
+   {"who": "fenomeno", "text": "Hoy empiezo otra. Los cracks vuelven.", "act": "flipa"}]},
+ {"id": "f24", "scene": "vestuario", "hook": "EL FENÓMENO Y LOS APUNTES", "names": {"fenomeno": "EL FENÓMENO"},
+  "caption": "De 40 páginas a una 🗺️ Comenta ROCKY.",
+  "lines": [
+   {"who": "fenomeno", "text": "Cuarenta páginas de apuntes. Ilegibles.", "act": "shock", "big": "40"},
+   {"who": "fenomeno", "text": "Se las paso a Rocky...", "act": "movil"},
+   {"who": "fenomeno", "text": "Y me hace un mapa mental. Una página.", "act": "flipa"},
+   {"who": "fenomeno", "text": "Como una pizarra táctica. Todo claro.", "act": ""}]},
+ {"id": "f25", "scene": "campo", "hook": "EL FENÓMENO SE DESPIDE", "names": {"fenomeno": "EL FENÓMENO"},
+  "caption": "¿Quieres más del Fenómeno? Comenta ROCKY 🙌",
+  "lines": [
+   {"who": "fenomeno", "text": "Bueno, cracks. Me voy a entrenar.", "act": ""},
+   {"who": "fenomeno", "text": "Pero antes: media hora de estudio. Como siempre.", "act": "movil"},
+   {"who": "fenomeno", "text": "Si quieres estudiar como yo...", "act": "piensa"},
+   {"who": "fenomeno", "text": "Comenta ROCKY. ¡Nos vemos en el campo!", "act": "flipa gol", "big": "ROCKY"}]},
+ {"id": "i21", "scene": "oscuro", "hook": "NO ESTUDIES ASÍ", "names": {"estudiante": "TÚ"},
+  "caption": "Hazme caso con esto 🙏 Comenta ROCKY.",
+  "lines": [
+   {"who": "estudiante", "text": "Por favor, no estudies así:", "act": "shock"},
+   {"who": "estudiante", "text": "Leer, leer y volver a leer.", "act": "triste"},
+   {"who": "estudiante", "text": "Te sientes listo... y en el examen, en blanco.", "act": "shock"},
+   {"who": "estudiante", "text": "Pregúntate. Rocky te hace los tests.", "act": "movil"}]},
+ {"id": "i22", "scene": "cuarto", "hook": "EL TRUCO DEL TEMPORIZADOR", "names": {"estudiante": "TÚ"},
+  "caption": "25 minutos que valen por 2 horas ⏲️ Comenta ROCKY.",
+  "lines": [
+   {"who": "estudiante", "text": "El truco más fácil para concentrarte:", "act": "piensa"},
+   {"who": "estudiante", "text": "Veinticinco minutos a tope. Cinco de descanso.", "act": "", "big": "25 + 5"},
+   {"who": "estudiante", "text": "Tu cerebro aguanta mejor. Y el móvil, lejos.", "act": ""},
+   {"who": "estudiante", "text": "Rocky te lleva el reloj. Y te dice cuánto llevas.", "act": "movil"}]},
+ {"id": "i23", "scene": "oscuro", "hook": "LA PREGUNTA QUE TE SALVA", "names": {"estudiante": "TÚ"},
+  "caption": "Hazte esta pregunta antes de estudiar 🤔 Comenta ROCKY.",
+  "lines": [
+   {"who": "estudiante", "text": "Antes de estudiar, pregúntate esto:", "act": "piensa"},
+   {"who": "estudiante", "text": "¿Qué es lo que más cae?", "act": "shock"},
+   {"who": "estudiante", "text": "Si no lo sabes, estás estudiando a ciegas.", "act": "triste"},
+   {"who": "estudiante", "text": "Rocky te lo dice. Antes de empezar.", "act": "movil flipa", "big": "ROCKY"}]},
+ {"id": "i24", "scene": "cuarto", "hook": "ASÍ RECUPERÉ MATES", "names": {"estudiante": "TÚ"},
+  "caption": "Si yo pude, tú también 📈 Comenta ROCKY.",
+  "lines": [
+   {"who": "estudiante", "text": "Iba con un tres en mates.", "act": "triste", "big": "3"},
+   {"who": "estudiante", "text": "Cada ejercicio que no entendía, foto a Rocky.", "act": "movil"},
+   {"who": "estudiante", "text": "Me lo explicaba, y me ponía otro igual.", "act": ""},
+   {"who": "estudiante", "text": "Recuperación: un seis y medio.", "act": "flipa gol", "big": "6,5"}]},
+ {"id": "i25", "scene": "oscuro", "hook": "ÚLTIMO CONSEJO", "names": {"estudiante": "TÚ"},
+  "caption": "Guárdalo y compártelo con quien lo necesite 📌 Comenta ROCKY.",
+  "lines": [
+   {"who": "estudiante", "text": "Si solo te quedas con una cosa, que sea esta:", "act": "piensa"},
+   {"who": "estudiante", "text": "Un poco cada día gana a mucho el último día.", "act": ""},
+   {"who": "estudiante", "text": "Siempre.", "act": "shock", "big": "SIEMPRE"},
+   {"who": "estudiante", "text": "Rocky te ayuda a hacerlo. Comenta ROCKY.", "act": "movil"}]}
+]}
