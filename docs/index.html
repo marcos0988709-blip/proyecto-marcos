@@ -405,9 +405,46 @@ details.set-adv summary{cursor:pointer;color:var(--muted);font-size:.86rem;font-
 .v-logo{position:absolute;right:14px;bottom:12px;width:30px;height:30px;opacity:.55}
 .v-play{position:absolute;inset:0;display:grid;place-items:center;opacity:0;transition:opacity .2s;pointer-events:none}
 .v-play svg{width:68px;height:68px;padding:18px;border-radius:50%;background:rgba(0,0,0,.6);color:var(--accent)}
-.v-stage.paused .v-play{opacity:1}.v-stage.paused .v-scene *{animation-play-state:paused}
+.v-stage.paused .v-play{opacity:1}.v-stage.paused .v-ill{animation-play-state:paused}
 .v-stage.loading::after{content:"Generando voz…";position:absolute;left:50%;bottom:16px;transform:translateX(-50%);font-size:.8rem;color:var(--muted);background:rgba(0,0,0,.6);padding:6px 12px;border-radius:99px}
-.v-cap{text-align:center;color:var(--muted);max-width:60ch;margin:0 auto;min-height:3em}
+.v-cap{text-align:center;color:var(--muted);max-width:60ch;margin:0 auto;min-height:3em;font-size:1rem;line-height:1.5}
+.v-cap .w{transition:color .15s}.v-cap .w.past{color:var(--ink)}.v-cap .w.on{color:#000;background:var(--accent);border-radius:5px;box-shadow:0 0 0 2px var(--accent)}
+.v-scene{animation:vSceneIn .55s cubic-bezier(.2,.8,.2,1) both,vKb var(--d,12s) .55s linear both}
+.v-scene{white-space:normal;overflow-wrap:anywhere}
+.v-scene.leave{animation:vSceneOut .45s ease-in both;pointer-events:none}
+@keyframes vSceneIn{from{opacity:0;translate:34px 0;filter:blur(8px)}}
+@keyframes vSceneOut{to{opacity:0;translate:-34px 0;filter:blur(8px)}}
+@keyframes vKb{from{scale:1}to{scale:1.045}}
+.v-stage.paused .v-scene{animation-play-state:running,paused}
+.v-ill{position:absolute;right:-4%;bottom:2%;font-size:clamp(6rem,34vw,11rem);line-height:1;opacity:.2;filter:saturate(1.3);pointer-events:none;animation:vFloat 6s ease-in-out infinite;z-index:0}
+@keyframes vFloat{50%{translate:0 -10px;rotate:-4deg}}
+.v-scene>:not(.v-ill){position:relative;z-index:1}
+.v-em{font-size:1.15rem;margin-right:6px}
+.rv{animation:vIn .55s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(.45s + var(--i,0) * .45s)}
+.v-stage.sync .v-scene .rv{animation:none;opacity:0;translate:0 16px;scale:.96;transition:opacity .45s,translate .5s cubic-bezier(.2,.9,.3,1.25),scale .5s cubic-bezier(.2,.9,.3,1.25)}
+.v-stage.sync .v-scene .rv.on{opacity:1;translate:0 0;scale:1}
+.v-stage.sync .v-bar:not(.on) em{width:0!important;animation:none}.v-stage.sync .v-bar em{animation:none;transition:width 1s cubic-bezier(.2,.8,.2,1) .15s}
+.v-stage.sync .v-big.rv,.v-stage.sync .v-formula.rv,.v-stage.sync .v-sub.rv{animation:none}
+.v-segs .v-seg.on{background:linear-gradient(90deg,var(--accent) var(--p,0%),rgba(255,255,255,.14) var(--p,0%))!important;animation:none!important}
+.v-concept{display:flex;flex-direction:column;gap:12px}
+.v-term{align-self:flex-start;font-family:Anton,var(--f-display);font-size:clamp(2rem,9vw,3.6rem);line-height:1;color:#000;background:var(--accent);padding:8px 16px;border-radius:14px;box-shadow:0 10px 40px -10px rgba(245,184,65,.7)}
+.v-def{font-size:clamp(1.1rem,4.6vw,1.6rem);font-weight:700;line-height:1.3;border-left:4px solid var(--accent);padding-left:14px}
+.v-flow{display:flex;flex-direction:column;gap:0;align-items:stretch}
+.v-flow .fx{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(245,184,65,.35);font-weight:800;font-size:clamp(1rem,4.2vw,1.35rem)}
+.v-flow .fx b{flex:none;width:30px;height:30px;border-radius:50%;background:var(--accent);color:#000;display:grid;place-items:center;font-family:var(--f-mono)}
+.v-flow .fa{align-self:center;color:var(--accent);font-size:1.3rem;line-height:1.2;font-weight:900}
+.v-map{display:flex;flex-direction:column;align-items:center;gap:14px}
+.v-mc{font-family:Anton,var(--f-display);font-size:clamp(1.4rem,6vw,2.2rem);background:var(--accent);color:#000;padding:10px 20px;border-radius:999px;text-align:center}
+.v-mr{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;border-top:3px solid rgba(245,184,65,.6);padding-top:14px}
+.v-mr span{padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid var(--line-strong);font-weight:800;font-size:clamp(.95rem,3.9vw,1.25rem);text-align:center}
+.v-ej{display:flex;flex-direction:column;gap:10px}
+.v-ej .q{font-weight:700;font-size:clamp(1rem,4.2vw,1.35rem);padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.06)}
+.v-ej .st{font:600 clamp(.95rem,3.9vw,1.2rem) var(--f-mono);color:var(--ink);padding-left:14px;border-left:3px solid rgba(255,255,255,.2)}
+.v-ej .res{font:800 clamp(1.2rem,5.4vw,1.9rem) var(--f-mono);color:#000;background:var(--accent);padding:10px 14px;border-radius:14px;align-self:flex-start}
+.v-quiz .qq{font-size:clamp(1.3rem,5.6vw,2rem);font-weight:900;line-height:1.2}
+.v-quiz .qh{color:var(--muted);font-weight:700;margin-top:6px}
+.v-quiz .qa{margin-top:12px;padding:12px 14px;border-radius:14px;background:rgba(61,220,151,.12);border:1px solid rgba(61,220,151,.5);font-weight:800;font-size:clamp(1.05rem,4.4vw,1.45rem)}
+.v-quote{font-family:Anton,var(--f-display);font-size:clamp(1.8rem,8vw,3rem);line-height:1.08;text-transform:uppercase;background:linear-gradient(180deg,#fff,#FFE59C);-webkit-background-clip:text;background-clip:text;color:transparent}
 /* Onboarding */
 .onb1{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px;padding-block:4px 24px}
 .onb1-t{font-size:clamp(2rem,8vw,2.8rem);line-height:1.02;margin:8px 0 4px}
@@ -541,7 +578,7 @@ hr.sep{border:0;border-top:1px solid var(--line);width:100%;margin:0}
   <nav class="bnav" id="bnav" aria-label="Navegación"></nav>
 </div>
 <div id="layer"></div>
-<input type="file" id="fileIn" multiple accept=".pdf,.docx,.txt,.md,.csv,.json,image/*" hidden>
+<input type="file" id="fileIn" multiple accept="application/pdf,.pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.txt,.md,.csv,.json,text/plain,image/*" hidden>
 <input type="file" id="camIn" accept="image/*" capture="environment" hidden>
 <input type="file" id="icsIn" accept=".ics,text/calendar" hidden>
 <input type="file" id="ttIn" accept="image/*" hidden>
@@ -664,7 +701,7 @@ const CURSO_MEC = [
 const TPL_SHORT = { pia: "PIAC", gdj: "GEGE", rrhh: "RRHH", ofi: "OFI", cac: "CAC", ing: "Inglés", gef: "GEFI", cat: "Catalán", opt: "Inglés opt.", ipo: "IPO", dig: "DIGI", sos: "SOS", mat: "Mates", fis: "Física", qui: "Química", dib: "Dibujo", ade: "Empresa" };
 CURSO_AIF.concat(CURSO_MEC).forEach(t => t.short = TPL_SHORT[t.key] || "");
 const CURSO = PRESET === "mecanica" ? CURSO_MEC : CURSO_AIF;
-const fromTpl = t => ({ id: uid(), tpl: t.key, emoji: t.emoji, name: t.name, short: t.short || "", kind: "asignatura", color: t.color, exams: [], topics: t.topics.map(([title, w]) => ({ id: uid(), title, w, done: false })) });
+const fromTpl = t => ({ id: uid(), tpl: t.key, emoji: t.emoji, name: t.name, short: t.short || "", kind: "asignatura", color: t.color, exams: [], topics: t.topics.map((_, i) => ({ id: uid(), title: `Tema ${i + 1}`, w: 2, done: false })) });
 const autoShort = n => { n = String(n || "").trim(); if (n.length <= 16) return n; const w = n.replace(/\(.*?\)/g, "").split(/\s+/).filter(x => x.length >= 4); return w.length >= 2 && w.length <= 5 ? w.map(x => x[0].toUpperCase()).join("") : n.split(" ").slice(0, 2).join(" "); };
 const sName = s => s ? (s.short || autoShort(s.name)) : "";
 const hasTpl = t => state && state.subjects.some(x => x.tpl === t.key || x.name === t.name);
@@ -689,6 +726,9 @@ function migrate(s) {
   if (!Array.isArray(s.habits)) s.habits = [];
   if (!Array.isArray(s.settings.hiddenNav)) s.settings.hiddenNav = [];
   if (!s.habitChecks || typeof s.habitChecks !== "object") s.habitChecks = {};
+  /* los temas ya no llevan nombre de serie: «Tema 1, 2, 3…» (el contenido lo pone el alumno con sus archivos) */
+  const presetTitles = new Set([...CURSO_AIF, ...CURSO_MEC].flatMap(c => (c.topics || []).map(([t]) => t)));
+  s.subjects.forEach(x => { (x.topics || []).forEach((t, i) => { if (presetTitles.has(t.title)) { t.title = `Tema ${i + 1}`; t.w = 2; } }); });
   s.subjects.forEach(x => { x.exams = x.exams || []; x.topics = x.topics || []; x.kind = x.kind || "asignatura"; if (x.short == null) { const t = [...CURSO_AIF, ...CURSO_MEC].find(c => c.key === x.tpl || c.name === x.name); x.short = t ? t.short : ""; } if (!x.emoji) { const t = CURSO.find(c => c.key === x.tpl || c.name === x.name); x.emoji = t ? t.emoji : (x.kind === "proyecto" ? "🚀" : "📘"); } });
   return s;
 }
@@ -797,22 +837,21 @@ async function geminiCallInner(input, opts = {}, json = false) {
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
         const r = await geminiOnce(chain[i], input, opts, json);
-        if (i > 0 && !opts._quiet) toast(`${first} iba saturado: he usado ${chain[i]}`);
         return r;
       } catch (e) {
         lastErr = e;
         if (e && e.code === "cancelled") throw e;
         if (e && e.text) throw e;
         if (e && e.code === "bad_model") break;
-        if (e && e.stalled) { if (opts.onStatus && i < chain.length - 1) opts.onStatus("Ese modelo no responde, probando otro…"); break; }
-        if (e && e.code === "timeout") { timeouts++; if (timeouts >= 2) throw e; if (opts.onStatus) opts.onStatus("Tarda mucho, probando un modelo más rápido…"); break; }
+        if (e && e.stalled) { if (opts.onStatus && i < chain.length - 1) opts.onStatus("Un momento…"); break; }
+        if (e && e.code === "timeout") { timeouts++; if (timeouts >= 2) throw e; if (opts.onStatus) opts.onStatus("Casi está…"); break; }
         if (!isBusy(e)) throw e;
         if (e.code === "rate_limited") break;
-        if (opts.onStatus) opts.onStatus(attempt === 0 ? "Gemini va saturado, reintentando…" : `Probando otro modelo…`);
+        if (opts.onStatus) opts.onStatus("Un momento…");
         await sleep(attempt === 0 ? 1500 : 500);
       }
     }
-    if (opts.onStatus && i < chain.length - 1) opts.onStatus(`Probando ${chain[i + 1]}…`);
+    if (opts.onStatus && i < chain.length - 1) opts.onStatus("Un momento más…");
   }
   if (lastErr && lastErr.code === "bad_model") throw lastErr;
   throw isBusy(lastErr) ? { code: lastErr.code === "rate_limited" ? "rate_limited" : "overloaded", message: "" } : lastErr;
@@ -856,7 +895,7 @@ async function geminiOnce(model, input, opts = {}, json = false) {
         if (j.promptFeedback && j.promptFeedback.blockReason) throw { code: "refused" };
         const parts = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts) || [];
         const delta = parts.map(p => p.thought ? "" : (p.text || "")).join("");
-        if (delta) { text += delta; AIB.chars += delta.length; if (AIB.status && !/saturado|modelo|rápido/.test(AIB.status)) AIB.status = ""; if (opts.onText) { try { opts.onText({ text, delta }); } catch (e) {} } }
+        if (delta) { text += delta; AIB.chars += delta.length; if (AIB.status && !/momento|Casi está/.test(AIB.status)) AIB.status = ""; if (opts.onText) { try { opts.onText({ text, delta }); } catch (e) {} } }
       }
     }
   } catch (e) { clearTimeout(to); done2(); if (e && e.code) throw { ...e, text }; if (e && e.name === "AbortError") throw { code: abortCode(), stalled, text: stalled ? "" : text }; throw { code: "network", text, message: String(e && e.message || e) }; }
@@ -1319,7 +1358,7 @@ function sessionReport(id) {
     <div class="row" style="gap:16px;flex-wrap:nowrap"><div class="score-ring">${ringSvg(sc / 100, 84, 9, col)}<b class="num">${sc}</b></div><div style="min-width:0"><b style="font-size:1.1rem">${verdict}</b><p class="small muted">Productividad ${sc}/100 · ${s ? E(s.emoji) + " " + esc(sName(s)) : "Sesión libre"}</p>${x.blockTitle ? `<p class="tiny muted">${esc(x.blockTitle)}</p>` : ""}</div></div>
     <div class="rep-grid"><div><b>${x.min}′</b><small>de foco</small></div><div><b>${x.leaves || 0}</b><small>salidas de la app</small></div><div><b>${fmtSecs(x.awayS || 0)}</b><small>fuera de la app</small></div><div><b>${fmtMin(minutesOn(dkey()))}</b><small>hoy en total</small></div></div>
     <div class="field"><span>¿Qué tal te has sentido?</span><div class="seg" role="group" aria-label="Sensación">${FEEL.map((f, i) => `<button type="button" data-feel="${i + 1}" aria-pressed="${x.feel === i + 1}">${f}</button>`).join("")}</div></div>
-    <div id="coachOut" class="coach">${x.coach ? `<div class="prose small"><b>🤖 Coach:</b> ${md(x.coach)}</div>` : sample ? thinkingHtml("El coach está mirando tu sesión…") : `<p class="small muted">🔑 Con tu clave de Gemini, el coach te comenta cada sesión.</p>`}</div>
+    <div id="coachOut" class="coach">${x.coach ? `<div class="prose small"><b>🤖 Coach:</b> ${md(x.coach)}</div>` : sample ? thinkingHtml("El coach está mirando tu sesión…") : `<p class="small muted">🔑 Activa la IA en Ajustes y el coach te comentará cada sesión.</p>`}</div>
     <div class="row" style="justify-content:flex-end">${s && sample ? `<button class="btn" type="button" data-repchat>Hablar con el coach</button>` : ""}<button class="btn btn-p" data-close>Seguir 💪</button></div>`, root => {
     $$("[data-feel]", root).forEach(b => b.onclick = () => { x.feel = +b.dataset.feel; commit(false); $$("[data-feel]", root).forEach(y => y.setAttribute("aria-pressed", y === b)); });
     const rc = $("[data-repchat]", root); if (rc) rc.onclick = () => { closeModal(); newChat(x.subjectId, [], `Acabo de hacer una sesión de ${x.min} min${x.blockTitle ? ` («${x.blockTitle}»)` : ""}. Productividad ${sc}/100 y me he ido de la app ${x.leaves || 0} veces. ¿Qué tal lo he hecho y qué hago en la siguiente sesión para rendir más?`); };
@@ -1374,7 +1413,7 @@ function examReport(id) {
   openModal(`<div class="sheet-h"><h2>Informe del examen</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
     <div class="row" style="gap:16px;flex-wrap:nowrap">${big}<div style="min-width:0"><b style="overflow-wrap:anywhere">${esc(e.title)}</b><p class="small muted">${E(s.emoji)} ${esc(sName(s))} · ${shortDate(parseD(e.date))}${r.feel ? " · " + FEEL[r.feel - 1] + " " + FEEL_TXT[r.feel - 1] : ""}</p></div></div>
     <div class="rep-grid"><div><b>${fmtMin(st.min)}</b><small>estudiado antes</small></div><div><b>${st.n}</b><small>sesiones en ${st.days} ${st.days === 1 ? "día" : "días"}</small></div><div><b>${st.planned ? `${st.done}/${st.planned}` : "—"}</b><small>sesiones del plan hechas</small></div><div><b>${st.score ?? "—"}</b><small>productividad media</small></div></div>
-    ${AI_NOTE}<div id="exCoach" class="coach">${r.coach ? `<div class="prose small">${md(r.coach)}</div>` : sample ? thinkingHtml("El coach está analizando tu examen…") : `<p class="small muted">🔑 Con tu clave de Gemini, el coach te analiza cada examen.</p>`}</div>
+    ${AI_NOTE}<div id="exCoach" class="coach">${r.coach ? `<div class="prose small">${md(r.coach)}</div>` : sample ? thinkingHtml("El coach está analizando tu examen…") : `<p class="small muted">🔑 Activa la IA en Ajustes y el coach te analizará cada examen.</p>`}</div>
     <div class="row" style="justify-content:flex-end">${sample ? `<button class="btn" type="button" data-exchat>Hablarlo con el coach</button>` : ""}<button class="btn btn-g" type="button" data-exedit>Cambiar nota</button><button class="btn btn-p" data-close>Cerrar</button></div>`, root => {
     $("[data-exedit]", root).onclick = () => { r.coach = ""; examReviewModal(id, true); };
     const ch = $("[data-exchat]", root); if (ch) ch.onclick = () => { closeModal(); newChat(s.id, examDocs(e), `Acabo de hacer el examen «${e.title}»${r.grade != null ? ` y he sacado un ${fmtGrade(r.grade)}` : ""}. Estudié ${fmtMin(st.min)} en ${st.n} sesiones${st.planned ? ` e hice ${st.done} de ${st.planned} sesiones del plan` : ""}.${r.note ? ` ${r.note}.` : ""} ¿Qué hago distinto para el próximo y qué temas debería reforzar?`); };
@@ -1543,7 +1582,7 @@ function aiSubjectsModal() {
         out.innerHTML = `<p class="small muted" style="margin:6px 0 10px">Desmarca las que no tengas. Luego podrás editar temas y añadir tus fechas de examen.</p><div class="mods">${list.map((x, i) => `<label class="mod" style="--c:${COLORS[(state.subjects.length + i) % COLORS.length]}"><input type="checkbox" checked data-ais="${i}">${E(x.emoji)}<span style="min-width:0"><b>${esc(sName(x))}</b><span class="tiny muted" style="display:block">${x.topics.length} temas</span></span></label>`).join("")}</div>
           <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn btn-p" id="aisAdd">Añadir seleccionadas</button></div>`;
         $("#aisAdd", root).onclick = () => {
-          let n = 0; list.forEach((x, i) => { const cb = $(`[data-ais="${i}"]`, root); if (!cb || !cb.checked) return; state.subjects.push({ id: uid(), name: x.name, emoji: x.emoji, kind: "asignatura", color: COLORS[state.subjects.length % COLORS.length], exams: [], topics: x.topics.map(t => ({ id: uid(), title: t.t, w: t.w, done: false })) }); n++; });
+          let n = 0; list.forEach((x, i) => { const cb = $(`[data-ais="${i}"]`, root); if (!cb || !cb.checked) return; state.subjects.push({ id: uid(), name: x.name, emoji: x.emoji, kind: "asignatura", color: COLORS[state.subjects.length % COLORS.length], exams: [], topics: x.topics.map((t, k) => ({ id: uid(), title: `Tema ${k + 1}`, w: 2, done: false })) }); n++; });
           state.profile.school = state.profile.school && !/administr/i.test(state.profile.school) ? state.profile.school : c;
           closeModal(); commit(); toast(`${n} asignaturas creadas. Mete tus fechas de examen.`);
         };
@@ -1569,7 +1608,7 @@ async function pdfText(f) {
   catch (e) { if (e && e.name === "PasswordException") throw { msg: "el PDF tiene contraseña" }; throw e && e.msg ? e : { msg: "el PDF está dañado o no se puede abrir" }; }
   const out = [];
   for (let i = 1; i <= pdf.numPages; i++) {
-    if (pdf.numPages > 3 && (i === 1 || i % 5 === 0)) toast(`Leyendo ${f.name}… página ${i} de ${pdf.numPages}`);
+    if (pdf.numPages > 8 && i % 10 === 0) toast(`Leyendo ${f.name}… ${Math.round(i / pdf.numPages * 100)} %`);
     try { const tc = await withTimeout((await pdf.getPage(i)).getTextContent(), 20000, "página lenta"); out.push(tc.items.map(it => it.str + (it.hasEOL ? "\n" : " ")).join("")); } catch (e) {}
   }
   try { pdf.destroy(); } catch (e) {}
@@ -1581,6 +1620,12 @@ async function pdfTextAI(f) {
   return (r.text || "").trim();
 }
 async function docxText(f) { await withTimeout(loadScript(MAMMOTH), 30000, "no se pudo cargar el lector de Word"); const r = await window.mammoth.extractRawText({ arrayBuffer: await f.arrayBuffer() }); return (r.value || "").trim(); }
+/* guardar un archivo: en iPhone/iPad las descargas desde la app instalada fallan, así que se usa «Compartir → Guardar en Archivos» */
+async function saveFile(blob, name) {
+  const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  try { const file = new File([blob], name, { type: blob.type }); if (isIOS && navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: name }); return true; } } catch (e) { if (e && e.name === "AbortError") return false; }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.parentNode.removeChild(a); setTimeout(() => URL.revokeObjectURL(a.href), 60000); return true;
+}
 let pickFor = null;
 function openFilePicker(sid) { pickFor = sid; const fi = $("#fileIn"); fi.value = ""; fi.click(); }
 $("#fileIn").addEventListener("change", e => { if (pickFor) handleFiles(e.target.files, pickFor); });
@@ -1609,7 +1654,7 @@ async function handleFiles(files, sid) {
       await sPut("docs", id, { subjectId: sid, title: f.name.replace(/\.[^.]+$/, "").slice(0, 120), type, fileId, size: f.size, chars: text.length, parts, createdAt: now, updatedAt: now });
       ok++;
       if (type === "image" && sample) await ocrDoc({ id, subjectId: sid, title: f.name.replace(/\.[^.]+$/, "").slice(0, 120), type, fileId, size: f.size, chars: 0, parts: 0, createdAt: now, updatedAt: now }, true);
-      if (type === "pdf" && !text) toast(`${f.name}: es un PDF escaneado sin texto${sample ? "" : ". Pon tu clave de Gemini en Ajustes y vuelve a subirlo para que la IA lo lea"}.`);
+      if (type === "pdf" && !text) toast(`${f.name}: es un PDF escaneado sin texto${sample ? "" : ". Activa la IA en Ajustes y vuelve a subirlo para que lo lea"}.`);
     } catch (e) { toast(e && e.code === "quota" ? "💾 El móvil no tiene más espacio para Rocky. Libera espacio o borra documentos viejos." : `❌ ${f.name}: ${(e && (e.msg || e.message)) || "no se pudo subir"}`); }
   }
   if (ok) toast(`${ok} ${ok === 1 ? "documento subido" : "documentos subidos"}`);
@@ -1710,14 +1755,15 @@ async function ocrDoc(d, quiet) {
 
 /* ---------- IA: helpers ---------- */
 function aiErr(e) {
-  const c = e && e.code;
-  if (c === "no_tts") return "Tu clave no tiene voces de IA disponibles."; if (c === "tts_failed") return "No se pudo generar la voz."; const extra = e && e.message && !["cancelled", "no_key"].includes(c) ? ` (${String(e.message).slice(0, 160)})` : "";
-  return ({ not_granted: "Has denegado el acceso a la IA. Actívalo en los permisos del artefacto.", rate_limited: "Has llegado al límite gratis de Gemini por ahora. Espera un minuto (o hasta mañana si es el límite diario).", prompt_too_large: "Demasiado texto a la vez. Quita algún documento del contexto.", invalid_json: "La respuesta no salió en el formato esperado. Dale otra vez.", cancelled: "Parado.", refused: "La IA no ha querido responder a eso. Reformula la pregunta.", images_unavailable: "No se pudo enviar la imagen.", no_key: "Falta tu clave de Gemini: pégala en Ajustes.", bad_key: "La clave de Gemini no es válida. Revísala en Ajustes.", bad_model: "Ese modelo de Gemini no está disponible con tu clave. Pulsa «Probar clave» en Ajustes.", network: "Sin conexión a internet. Prueba otra vez cuando tengas señal.", empty_completion: "La IA no ha devuelto nada. Prueba otra vez.", overloaded: "Gemini está saturado ahora mismo y he probado varios modelos sin suerte. Espera 1-2 minutos y vuelve a intentarlo.", timeout: "Gemini está tardando demasiado (puede que vaya saturado). Prueba otra vez en un momento o quita algún documento del contexto 📎.", upstream_error: "Gemini ha dado un error." }[c] || "No se pudo contactar con la IA. Prueba de nuevo en un momento.") + extra;
+  const c = e && e.code; if (e && e.message) console.warn("IA:", c, e.message);
+  return ({ no_tts: "La voz de IA no está disponible ahora mismo.", tts_failed: "No se pudo generar la voz. Prueba otra vez.", not_granted: "Has denegado el acceso a la IA. Actívalo en los permisos.", rate_limited: "Has usado mucho la IA en poco rato. Espera un minuto y vuelve a probar.", prompt_too_large: "Demasiado texto a la vez. Quita algún documento del contexto.", invalid_json: "No ha salido bien. Dale otra vez.", cancelled: "Parado.", refused: "No puedo responder a eso. Prueba a preguntarlo de otra forma.", images_unavailable: "No se pudo enviar la imagen.", no_key: "Activa la IA en Ajustes para usar esto.", bad_key: "La clave no es válida. Revísala en Ajustes.", bad_model: "No se pudo usar la IA con tu clave. Revísala en Ajustes.", network: "Sin conexión a internet. Prueba otra vez cuando tengas señal.", empty_completion: "No ha salido nada. Prueba otra vez.", overloaded: "Ahora mismo hay mucha gente usando la IA. Prueba otra vez en un momento.", timeout: "Está tardando más de la cuenta. Prueba otra vez en un momento.", upstream_error: "Algo ha fallado. Prueba otra vez." }[c] || "No se pudo conectar con la IA. Prueba de nuevo en un momento.");
 }
 const thinkingHtml = (t = "Pensando…") => `<span class="thinking"><i></i><i></i><i></i> ${t}</span>`;
-const COURSE_CTX = () => { const sc = state.profile.school || ""; return /administr/i.test(sc) || !sc
+const BRAND_CTX = " Eres Rocky, el asistente de estudio de la app Rocky. Si te preguntan qué IA eres, di solo que eres Rocky; nunca menciones el modelo ni la empresa que hay detrás.";
+const COURSE_CTX = () => BRAND_CTX0();
+const BRAND_CTX0 = () => { const sc = state.profile.school || ""; return (/administr/i.test(sc) || !sc
   ? `Contexto del alumno: ${sc || "1º de CFGS Administración y Finanzas"} en Cataluña. Usa la normativa española vigente (PGC 2007, IVA, Estatuto de los Trabajadores, Ley 39/2015) y el currículo del ciclo. Responde en español; si el alumno escribe en catalán, responde en catalán con la terminología catalana.`
-  : `Contexto del alumno: estudia «${sc}» en España. Adapta el nivel, el temario y los ejemplos a ese curso y a su currículo oficial. Responde en español; si el alumno escribe en catalán, responde en catalán.`; };
+  : `Contexto del alumno: estudia «${sc}» en España. Adapta el nivel, el temario y los ejemplos a ese curso y a su currículo oficial. Responde en español; si el alumno escribe en catalán, responde en catalán.`) + BRAND_CTX; };
 function subjContext(s) {
   const ex = s.exams.filter(e => daysUntil(e.date) >= 0).map(e => `${e.title} (${e.date}, en ${daysUntil(e.date)} días)`).join("; ") || "sin fecha";
   const tp = s.topics.map(t => `- ${t.title} [importancia ${W_TXT[t.w || 2]}${t.done ? ", ya dominado" : ""}]`).join("\n") || "(sin temas listados)";
@@ -2037,8 +2083,8 @@ function tabEstudiar(s) {
   let body = "";
   if (ui.studyTab === "resumen") {
     body = `<div class="row" style="margin-top:14px"><button class="btn btn-p" data-act="ai-summary" ${dis}>Generar esquema</button>${t.summary ? `<button class="btn btn-sm" data-act="summary-save">Guardar como nota</button><button class="btn btn-sm btn-g" data-act="copy-summary">Copiar</button><button class="btn btn-sm btn-g" data-act="pdf-summary">PDF</button>` : ""}</div>
-      <p class="tiny muted" style="margin-top:8px">Lo que más cae, fórmulas, esquema, preguntas típicas y errores frecuentes.</p>
-      <div id="sumOut" class="prose" style="margin-top:14px">${t.summary ? md(t.summary) : ""}</div>${t.summary ? AI_NOTE : ""}`;
+      <p class="tiny muted" style="margin-top:8px">Mapa visual del tema: lo que más cae, ramas, fórmulas, preguntas de examen y trampas.</p>
+      <div id="sumOut" class="${t.esq ? "" : "prose"}" style="margin-top:14px">${t.esq ? esqHtml(t.esq) : t.summary ? md(t.summary) : ""}</div>${t.summary ? AI_NOTE : ""}`;
   } else if (ui.studyTab === "test") {
     const q = t.quiz;
     body = `<div class="row" style="align-items:flex-end;margin-top:14px"><label class="field" style="flex:1;min-width:200px"><span>Tema</span><select class="input" id="quizTopic"><option value="">Todo el módulo</option>${s.topics.map(x => `<option value="${x.id}">${esc(x.title)}</option>`).join("")}</select></label>
@@ -2066,29 +2112,100 @@ function bindStudy(s) {
   if (fl && review && !review.flipped) { const flip = () => { fl.classList.add("flip"); setTimeout(() => { if (review) { review.flipped = true; render(); } }, 320); }; fl.onclick = flip; fl.onkeydown = e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); flip(); } }; }
 }
 async function studySource(s, budget) { const dc = await docsContext(studyCtx(s), budget); return `${COURSE_CTX()}\n${subjContext(s)}${dc.text ? `\n\nAPUNTES Y DOCUMENTOS DEL ALUMNO:\n${dc.text}` : "\n\n(Sin documentos: básate en los temas y en el temario estándar del módulo.)"}`; }
+/* ===== Esquema visual 80/20: mapa de ramas con colores, conceptos clave, fórmulas, preguntas y trampas ===== */
+const ESQ_COLORS = ["#E9A21F", "#3D7BE0", "#2A9D63", "#D9485F", "#8A5CD6", "#0E9AA7"];
+const ESQ_CSS = `.esq{--ink:#1b1a17;--mut:#6b6658;color:var(--ink);background:#FFFDF7;border-radius:18px;padding:18px 14px 20px;font-family:"Figtree",system-ui,sans-serif;line-height:1.45;box-shadow:0 18px 40px -22px rgba(0,0,0,.9)}
+.esq h3{margin:0;font-size:1rem;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);display:flex;align-items:center;gap:8px}
+.esq .e-sec{margin-top:22px;break-inside:avoid}
+.esq .e-hero{text-align:center;padding:4px 6px 0}
+.esq .e-title{font-family:"Caveat","Bradley Hand",cursive;font-size:2.4rem;line-height:1;margin:0}
+.esq .e-idea{display:inline-block;margin-top:10px;background:#F5B841;color:#1b1a17;font-weight:800;padding:8px 14px;border-radius:14px;box-shadow:3px 3px 0 var(--ink);font-size:.98rem}
+.esq .e-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:10px}
+.esq .e-key{background:#fff;border:2px solid var(--ink);border-radius:12px;padding:8px 10px;box-shadow:2px 2px 0 var(--ink)}
+.esq .e-key b{display:flex;gap:6px;align-items:baseline;font-size:.95rem}.esq .e-key i{font-style:normal;flex:none;display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#F5B841;font-size:.75rem;font-weight:900}
+.esq .e-key span{display:block;font-size:.82rem;color:var(--mut);margin-top:3px}
+.esq .e-map{margin-top:12px;position:relative}
+.esq .e-root{display:block;width:max-content;max-width:100%;margin:0 auto;background:var(--ink);color:#fff;font-weight:900;padding:10px 16px;border-radius:999px;text-align:center}
+.esq .e-trunk{position:relative;margin:0 0 0 16px;padding:14px 0 0 22px;border-left:3px solid var(--ink)}
+.esq .e-br{position:relative;margin-bottom:14px}
+.esq .e-br:last-child{margin-bottom:0}
+.esq .e-br::before{content:"";position:absolute;left:-22px;top:22px;width:22px;border-top:3px solid var(--ink)}
+.esq .e-br:last-child::after{content:"";position:absolute;left:-25px;top:25px;bottom:-4px;width:6px;background:#FFFDF7}
+.esq .e-bh{display:flex;align-items:center;gap:8px;background:var(--c);color:#fff;font-weight:900;padding:9px 12px;border-radius:12px;box-shadow:3px 3px 0 var(--ink)}
+.esq .e-bh .e-em{font-size:1.2rem}
+.esq .e-kids{margin:8px 0 0 14px;padding-left:14px;border-left:2px dashed var(--c);display:flex;flex-direction:column;gap:6px}
+.esq .e-kid{position:relative;background:#fff;border:2px solid var(--c);border-radius:10px;padding:6px 9px}
+.esq .e-kid::before{content:"";position:absolute;left:-16px;top:14px;width:14px;border-top:2px dashed var(--c)}
+.esq .e-kid b{font-size:.92rem}.esq .e-kid span{display:block;font-size:.82rem;color:var(--mut)}
+.esq .e-f{background:#fff;border:2px dashed #B88A1C;border-radius:12px;padding:10px 12px;margin-top:8px}
+.esq .e-f code{display:block;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.95rem;font-weight:700;color:#1b1a17;white-space:pre-wrap;background:none;padding:0}
+.esq .e-f span{display:block;font-size:.84rem;color:var(--mut);margin-top:4px}
+.esq table{border-collapse:collapse;width:100%;font-size:.86rem;background:#fff;margin-top:8px}
+.esq th,.esq td{border:2px solid var(--ink);padding:6px 8px;text-align:left;vertical-align:top}.esq th{background:#F5B841}
+.esq details{background:#fff;border:2px solid var(--ink);border-radius:12px;margin-top:8px;box-shadow:2px 2px 0 var(--ink)}
+.esq summary{cursor:pointer;padding:9px 12px;font-weight:800;list-style:none}.esq summary::-webkit-details-marker{display:none}
+.esq summary::before{content:"❓ "}.esq details[open] summary{border-bottom:2px dashed #ccc}
+.esq details p{margin:0;padding:9px 12px;color:#1f5f3d;font-weight:600}
+.esq .e-bad{background:#FFF0F0;border-left:5px solid #D9485F;border-radius:0 10px 10px 0;padding:8px 11px;margin-top:8px;font-weight:600}
+@media print{.esq{box-shadow:none}.esq details p{display:block}}`;
+document.head.insertAdjacentHTML("beforeend", `<style>${ESQ_CSS}</style>`);
+const ESQ_SCHEMA = `{"titulo":"tema en 2-6 palabras","idea":"la idea central en una frase","clave":[{"t":"concepto","d":"qué es, en una línea"}],"mapa":{"centro":"tema","ramas":[{"t":"rama","emoji":"un emoji","hijos":[{"t":"subidea","d":"detalle muy corto"}]}]},"formulas":[{"f":"fórmula en texto","que":"qué es cada letra"}],"comparar":{"cols":["",""],"filas":[["",""]]},"preguntas":[{"q":"pregunta típica","a":"clave de la respuesta"}],"errores":["trampa habitual"]}`;
+function esqClean(r) {
+  if (!r || typeof r !== "object") return null;
+  const L = (x, n) => (Array.isArray(x) ? x : []).filter(Boolean).slice(0, n);
+  const m = r.mapa || {};
+  const ramas = L(m.ramas, 6).filter(b => b && b.t).map(b => ({ t: strC(b.t, 70), emoji: (String(b.emoji || "").match(/\p{Extended_Pictographic}[️‍\p{Extended_Pictographic}]*/u) || [""])[0], hijos: L(b.hijos, 5).map(h => typeof h === "string" ? { t: strC(h, 90), d: "" } : { t: strC(h.t, 90), d: strC(h.d, 160) }).filter(h => h.t) }));
+  const cmp = r.comparar && Array.isArray(r.comparar.cols) && r.comparar.cols.length >= 2 ? { cols: L(r.comparar.cols, 4).map(c => strC(c, 50)), filas: L(r.comparar.filas, 7).filter(Array.isArray).map(f => f.slice(0, Math.min(4, r.comparar.cols.length)).map(c => strC(c, 140))) } : null;
+  const out = { titulo: strC(r.titulo, 90) || "Esquema", idea: strC(r.idea, 220), clave: L(r.clave, 8).map(k => typeof k === "string" ? { t: strC(k, 80), d: "" } : { t: strC(k.t, 80), d: strC(k.d, 160) }).filter(k => k.t),
+    mapa: { centro: strC(m.centro, 70) || strC(r.titulo, 70), ramas }, formulas: L(r.formulas, 6).map(f => typeof f === "string" ? { f: strC(f, 200), que: "" } : { f: strC(f.f, 200), que: strC(f.que, 260) }).filter(f => f.f),
+    comparar: cmp && cmp.filas.length ? cmp : null, preguntas: L(r.preguntas, 6).filter(q => q && q.q).map(q => ({ q: strC(q.q, 200), a: strC(q.a, 300) })), errores: L(r.errores, 4).map(e => strC(e, 220)) };
+  return !out.mapa.ramas.length && !out.clave.length ? null : out;
+}
+function esqHtml(e) {
+  const P = pInline;
+  return `<article class="esq">
+    <div class="e-hero"><h2 class="e-title">${P(e.titulo)}</h2>${e.idea ? `<div class="e-idea">💡 ${P(e.idea)}</div>` : ""}</div>
+    ${e.clave.length ? `<section class="e-sec"><h3>🎯 Lo que más cae</h3><div class="e-keys">${e.clave.map((k, i) => `<div class="e-key"><b><i>${i + 1}</i>${P(k.t)}</b>${k.d ? `<span>${P(k.d)}</span>` : ""}</div>`).join("")}</div></section>` : ""}
+    ${e.mapa.ramas.length ? `<section class="e-sec"><h3>🗺️ Mapa del tema</h3><div class="e-map"><span class="e-root">${P(e.mapa.centro)}</span><div class="e-trunk">${e.mapa.ramas.map((b, i) => `<div class="e-br" style="--c:${ESQ_COLORS[i % ESQ_COLORS.length]}"><div class="e-bh">${b.emoji ? `<span class="e-em">${b.emoji}</span>` : ""}${P(b.t)}</div>${b.hijos.length ? `<div class="e-kids">${b.hijos.map(h => `<div class="e-kid"><b>${P(h.t)}</b>${h.d ? `<span>${P(h.d)}</span>` : ""}</div>`).join("")}</div>` : ""}</div>`).join("")}</div></div></section>` : ""}
+    ${e.formulas.length ? `<section class="e-sec"><h3>📐 Fórmulas</h3>${e.formulas.map(f => `<div class="e-f"><code>${esc(delatex(f.f))}</code>${f.que ? `<span>${P(f.que)}</span>` : ""}</div>`).join("")}</section>` : ""}
+    ${e.comparar ? `<section class="e-sec"><h3>⚖️ Comparación</h3><div style="overflow-x:auto"><table><thead><tr>${e.comparar.cols.map(c => `<th>${P(c)}</th>`).join("")}</tr></thead><tbody>${e.comparar.filas.map(f => `<tr>${f.map(c => `<td>${P(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>` : ""}
+    ${e.preguntas.length ? `<section class="e-sec"><h3>📝 Preguntas de examen</h3><p style="margin:4px 0 0;font-size:.8rem;color:var(--mut)">Toca cada pregunta para ver la respuesta.</p>${e.preguntas.map(q => `<details><summary>${P(q.q)}</summary><p>✅ ${P(q.a)}</p></details>`).join("")}</section>` : ""}
+    ${e.errores.length ? `<section class="e-sec"><h3>⚠️ Trampas típicas</h3>${e.errores.map(x => `<div class="e-bad">${P(x)}</div>`).join("")}</section>` : ""}
+  </article>`;
+}
+function esqToMd(e) {
+  const L = [`# ${e.titulo}`]; if (e.idea) L.push("", `**${e.idea.replace(/\*\*/g, "")}**`);
+  if (e.clave.length) L.push("", "## 🎯 Lo que más cae", ...e.clave.map((k, i) => `${i + 1}. **${k.t}**${k.d ? `: ${k.d}` : ""}`));
+  if (e.mapa.ramas.length) { L.push("", "## 🗺️ Esquema"); e.mapa.ramas.forEach(b => { L.push(`- **${b.emoji ? b.emoji + " " : ""}${b.t}**`); b.hijos.forEach(h => L.push(`  - ${h.t}${h.d ? `: ${h.d}` : ""}`)); }); }
+  if (e.formulas.length) L.push("", "## 📐 Fórmulas", ...e.formulas.map(f => `- \`${f.f}\`${f.que ? ` — ${f.que}` : ""}`));
+  if (e.comparar) L.push("", "## ⚖️ Comparación", `| ${e.comparar.cols.join(" | ")} |`, `|${e.comparar.cols.map(() => "---").join("|")}|`, ...e.comparar.filas.map(f => `| ${f.join(" | ")} |`));
+  if (e.preguntas.length) L.push("", "## 📝 Preguntas de examen", ...e.preguntas.map(q => `- **${q.q}** → ${q.a}`));
+  if (e.errores.length) L.push("", "## ⚠️ Trampas típicas", ...e.errores.map(x => `- ${x}`));
+  return L.join("\n");
+}
 async function aiSummary() {
   const s = subj(S.param), t = tut(s.id); const out = $("#sumOut"); out.innerHTML = thinkingHtml("Destilando lo importante…");
-  aiCtl = new AbortController();
+  aiCtl = new AbortController(); const steps = ["Leyendo tus apuntes…", "Buscando lo que más cae…", "Dibujando el mapa del tema…", "Sacando fórmulas y preguntas…", "Casi está…"]; let k = 0;
+  const tick = setInterval(() => { if (out.querySelector(".thinking")) out.innerHTML = thinkingHtml(steps[Math.min(++k, steps.length - 1)]); }, 3500);
   try {
     const src = await studySource(s, 120000);
-    const prompt = `Actúa como un profesor experto que prepara a un alumno para sacar la máxima nota estudiando lo mínimo. Haz un ESQUEMA 80/20 en español y en Markdown, con estas secciones exactas:
-## 🎯 Lo que más cae
-Los 5-8 conceptos clave (el 20 % que da el 80 % de la nota), 1-2 líneas cada uno.
-## 📐 Fórmulas y datos que memorizar
-En tabla o lista (si aplica). Escribe cada fórmula en texto normal y explica qué es cada letra, p. ej. «Cuota = (Precio de compra − Valor residual) ÷ Vida útil». NUNCA uses LaTeX ni signos $.
-## 🗺️ Esquema
-Estructura jerárquica con viñetas anidadas cortas.
-## ❓ Preguntas típicas de examen
-4-6 preguntas con la clave de la respuesta en una línea.
-## ⚠️ Errores frecuentes
-3 trampas habituales.
-Sé concreto. Nada de introducciones.
+    const prompt = `Actúa como un profesor experto que prepara a un alumno para sacar la máxima nota estudiando lo mínimo (regla 80/20). Haz un ESQUEMA VISUAL del contenido, en español, basándote sobre todo en los apuntes del alumno si los hay.
+- "clave": los 5-8 conceptos que más caen, cada uno con una línea que lo explique.
+- "mapa": 3-6 ramas que cubran todo el tema en orden lógico, cada una con un emoji y 2-5 subideas muy cortas (con un detalle de pocas palabras).
+- "formulas": solo si el tema las tiene (si no, lista vacía). Escribe cada fórmula en texto normal, p. ej. «Cuota = (Precio − Valor residual) ÷ Vida útil», y explica qué es cada letra. NUNCA uses LaTeX ni signos $.
+- "comparar": una tabla solo si hay conceptos que se confunden (si no, null).
+- "preguntas": 4-6 preguntas típicas de examen con la clave de la respuesta.
+- "errores": 3 trampas habituales.
+Frases cortas, concretas, sin introducciones. Marca con **negrita** las palabras clave.
+
+Responde SOLO con JSON con esta forma: ${ESQ_SCHEMA}
 
 ${src}`;
-    const { text } = await sample(prompt, { modelTier: "default", signal: aiCtl.signal, onText: ({ text }) => { out.innerHTML = md(text); } });
-    t.summary = text; commit();
-  } catch (e) { out.innerHTML = e && e.text ? md(e.text) : `<p class="ai-off">⚠️ ${aiErr(e)}</p>`; }
-  aiCtl = null;
+    const r = await sample.json(prompt, { modelTier: "default", signal: aiCtl.signal, onStatus: st => { out.innerHTML = thinkingHtml(st); } });
+    const e = esqClean(r); if (!e) throw { code: "invalid_json" };
+    t.esq = e; t.summary = esqToMd(e); commit(); out.innerHTML = esqHtml(e);
+  } catch (e) { out.innerHTML = `<p class="ai-off">⚠️ ${aiErr(e)}</p>`; }
+  clearInterval(tick); aiCtl = null;
 }
 /* test sin IA: cada tarjeta es una pregunta y las respuestas de otras tarjetas hacen de opciones falsas */
 function cardsQuiz() {
@@ -2284,12 +2401,25 @@ function notesToMd(n) {
   if (n.recuerda.length) L.push("", "## Para recordar", ...n.recuerda.map((r, i) => `${i + 1}. ${r}`));
   return L.join("\n");
 }
-function printPaper(n, sub) {
-  const w = window.open("", "_blank");
-  if (!w) { toast("Permite las ventanas emergentes para sacar el PDF"); return; }
-  w.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>${esc(n.titulo)}</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Figtree:wght@400;600;700;800&family=JetBrains+Mono:wght@500&display=swap"><style>${PAPER_CSS}body{margin:0;background:#fff}@page{margin:12mm}.paper{box-shadow:none;-webkit-print-color-adjust:exact;print-color-adjust:exact}</style></head><body>${paperHtml(n, sub)}</body></html>`);
-  w.document.close(); setTimeout(() => { try { w.focus(); w.print(); } catch (e) {} }, 900);
+/* PDF en el móvil: se abre una vista dentro de la app y el botón llama a imprimir (en iPhone: Compartir → Guardar en Archivos) */
+function printView(html, title) {
+  closePrintView();
+  const v = document.createElement("div"); v.id = "printView";
+  v.innerHTML = `<div class="pv-bar"><button class="btn btn-sm btn-g" type="button" id="pvClose">${ic("back")} Volver</button><span class="grow"></span><button class="btn btn-sm btn-p" type="button" id="pvPrint">Guardar PDF</button></div>
+    <p class="pv-tip tiny muted">En iPhone: toca «Guardar PDF» → arriba, el botón de compartir → «Guardar en Archivos».</p><div class="pv-doc">${html}</div>`;
+  document.body.appendChild(v); document.body.classList.add("pv-on"); v._t = document.title; document.title = title || "Rocky";
+  $("#pvClose", v).onclick = closePrintView; $("#pvPrint", v).onclick = () => { $$("details", v).forEach(d => d.open = true); try { window.print(); } catch (e) { toast("Tu navegador no deja imprimir desde aquí."); } };
 }
+function closePrintView() { const v = $("#printView"); if (v) { document.title = v._t || document.title; v.parentNode.removeChild(v); } document.body.classList.remove("pv-on"); }
+document.head.insertAdjacentHTML("beforeend", `<style>
+#printView{position:fixed;inset:0;z-index:9999;overflow:auto;background:var(--paper);padding:calc(env(safe-area-inset-top) + 10px) 14px 40px;-webkit-overflow-scrolling:touch}
+#printView .pv-bar{display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:2;padding:6px 0;background:inherit}
+#printView .pv-tip{margin:4px 0 12px}#printView .pv-doc{max-width:820px;margin:0 auto}
+#printView .pv-md{background:#fff;color:#111;border-radius:14px;padding:20px 18px;line-height:1.6}
+#printView .pv-md h1{font-size:1.5rem;margin:0 0 6px}#printView .pv-md h2{border-bottom:2px solid #F5B841;padding-bottom:4px}#printView .pv-md table{border-collapse:collapse;width:100%}#printView .pv-md th,#printView .pv-md td{border:1px solid #ccc;padding:6px 8px;text-align:left}
+@media print{html,body.pv-on{background:#fff!important}body.pv-on>*:not(#printView){display:none!important}#printView .esq .e-sec{break-inside:auto}#printView .e-key,#printView .e-br,#printView details,#printView .e-f{break-inside:avoid}#printView{position:static;overflow:visible;padding:0;background:#fff}#printView .pv-bar,#printView .pv-tip{display:none}#printView .paper,#printView .esq{-webkit-print-color-adjust:exact;print-color-adjust:exact}@page{margin:10mm}}
+</style>`);
+function printPaper(n, sub) { printView(paperHtml(n, sub), n.titulo); }
 /* mapa mental: cada rama lleva su tarjeta */
 const mmCards = new Set();
 function mmToDeck(it) {
@@ -2346,11 +2476,12 @@ async function genStudio(kind, opts = {}) {
     const item = { subjectId: s.id, kind, createdAt: Date.now(), updatedAt: Date.now() };
     if (kind === "video") {
       const r = await sample.json(`Crea el guion de un VÍDEO RESUMEN animado de 2 a 4 minutos sobre este contenido. ${COURSE_CTX()}
-Entre 6 y 9 escenas. La primera es un gancho (una pregunta o un dato que enganche). La última, las 3 ideas clave para el examen.
+Entre 6 y 9 escenas, como un vídeo explicativo de calidad (estilo NotebookLM): cada escena enseña UNA idea con un visual claro que se va construyendo mientras la voz la explica. La primera es un gancho (una pregunta o un dato que enganche). Incluye al menos un ejemplo práctico resuelto y una pregunta para el alumno. La última, las 3 ideas clave para el examen.
 Cada escena tiene:
 - "titulo": máximo 7 palabras.
 - "etiqueta": 1-2 palabras (por ejemplo «Concepto», «Ejemplo», «Ojo al examen», «Truco»).
-- "narracion": 2-4 frases (30-60 palabras), tono cercano y con energía, como un buen youtuber educativo de España. Se lee en voz alta: sin emojis, símbolos ni Markdown, pero con tildes y buena ortografía.
+- "emoji": un emoji que ilustre la escena.
+- "narracion": 2-4 frases (30-60 palabras), tono cercano y con energía, como un buen youtuber educativo de España. Explica los elementos del visual EN EL MISMO ORDEN en que aparecen (van saliendo mientras hablas). Se lee en voz alta: sin emojis, símbolos ni Markdown, pero con tildes y buena ortografía.
 - "visual": UNO de estos objetos (varía los tipos entre escenas):
   {"tipo":"lista","items":["máximo 4, muy cortos"]}
   {"tipo":"pasos","items":["máximo 5 pasos cortos"]}
@@ -2358,11 +2489,18 @@ Cada escena tiene:
   {"tipo":"barras","items":[{"label":"…","valor":10}],"unidad":"%"}  (solo con números reales del contenido)
   {"tipo":"comparar","a":{"titulo":"…","puntos":["…"]},"b":{"titulo":"…","puntos":["…"]}}
   {"tipo":"formula","texto":"BAI = BAII − gastos financieros","nota":"corto"}
+  {"tipo":"concepto","termino":"palabra clave","definicion":"definición en una frase"}
+  {"tipo":"proceso","items":["paso 1","paso 2","paso 3"]}  (un proceso o secuencia con flechas)
+  {"tipo":"mapa","centro":"idea central","ramas":["4-6 partes cortas"]}
+  {"tipo":"ejemplo","enunciado":"caso práctico corto","pasos":["cálculo o razonamiento corto"],"resultado":"resultado final"}
+  {"tipo":"pregunta","texto":"pregunta al alumno","respuesta":"respuesta corta"}
+  {"tipo":"cita","texto":"la idea clave en una frase"}
+Usa al menos 5 tipos distintos y no repitas el mismo tipo en escenas seguidas.
 Escribe todo con tildes y ortografía correcta. Sé fiel al contenido del alumno.
 ${src}
 
-Responde SOLO con JSON: {"title":"título corto","scenes":[{"titulo":"…","etiqueta":"…","narracion":"…","visual":{…}}]}`);
-      const scenes = (r && Array.isArray(r.scenes) ? r.scenes : []).filter(x => x && x.narracion).slice(0, 12).map(x => ({ titulo: String(x.titulo || "").slice(0, 80), etiqueta: String(x.etiqueta || "").slice(0, 24), narracion: String(x.narracion).replace(/[*_#`]/g, "").slice(0, 600), visual: x.visual && typeof x.visual === "object" ? x.visual : { tipo: "lista", items: [] } }));
+Responde SOLO con JSON: {"title":"título corto","scenes":[{"titulo":"…","etiqueta":"…","emoji":"…","narracion":"…","visual":{…}}]}`);
+      const scenes = (r && Array.isArray(r.scenes) ? r.scenes : []).filter(x => x && x.narracion).slice(0, 12).map(x => ({ titulo: String(x.titulo || "").slice(0, 80), etiqueta: String(x.etiqueta || "").slice(0, 24), emoji: (String(x.emoji || "").match(/\p{Extended_Pictographic}[\uFE0F\u200D\p{Extended_Pictographic}]*/u) || [""])[0], narracion: String(x.narracion).replace(/[*_#`]/g, "").slice(0, 600), visual: x.visual && typeof x.visual === "object" ? x.visual : { tipo: "lista", items: [] } }));
       if (scenes.length < 3) throw { code: "invalid_json" };
       item.title = String((r && r.title) || "Vídeo: " + sName(s)).slice(0, 90); item.scenes = scenes;
     } else if (kind === "podcast") {
@@ -2424,20 +2562,30 @@ function podVoices() {
   const esES = es.filter(v => /es[-_]ES/i.test(v.lang)); const pool = esES.length ? esES.concat(es.filter(v => !esES.includes(v))) : es;
   const a = pool[0] || null; const b = pool.find(v => v !== a && v.name !== (a && a.name)) || a; return [a, b];
 }
+/* voces del móvil: se encolan varias frases seguidas (sin huecos) y se guardan las referencias; si no, el iPhone
+   pierde la frase al acabar y el pódcast se queda cortado al terminar de hablar uno */
 function podSpeak() {
-  if (!pod) return; const it = S.studio.find(x => x.id === pod.id); const line = it && it.lines[pod.i];
-  if (!line) { pod.playing = false; podUI(); return; }
-  const [va, vb] = podVoices(); const same = va === vb; const u = new SpeechSynthesisUtterance(line.t);
-  u.lang = "es-ES"; const v = line.s === "A" ? va : vb; if (v) u.voice = v;
-  u.pitch = same ? (line.s === "A" ? 1.12 : 0.85) : 1; u.rate = pod.rate;
-  const tok = pod.tok = Math.random();
-  u.onend = () => { if (pod && pod.playing && pod.tok === tok) { pod.i++; podSpeak(); } };
-  u.onerror = () => { if (pod && pod.tok === tok) { pod.playing = false; podUI(); } };
-  speechSynthesis.speak(u); podUI();
+  if (!pod) return; const it = S.studio.find(x => x.id === pod.id);
+  if (!it || !it.lines[pod.i]) { pod.playing = false; podUI(); return; }
+  const [va, vb] = podVoices(); const same = va === vb; const tok = pod.tok = Math.random();
+  const from = pod.i, to = Math.min(it.lines.length, from + 6); pod.us = [];
+  const advance = k => { if (!pod || pod.tok !== tok || pod._done === k) return; pod._done = k; if (k + 1 >= to) { pod.i = to; if (pod.playing) podSpeak(); } };
+  for (let k = from; k < to; k++) {
+    const line = it.lines[k]; const u = new SpeechSynthesisUtterance(line.t);
+    u.lang = "es-ES"; const v = line.s === "A" ? va : vb; if (v) u.voice = v;
+    u.pitch = same ? (line.s === "A" ? 1.12 : 0.85) : 1; u.rate = pod.rate;
+    u.onstart = () => { if (pod && pod.tok === tok) { pod.i = k; podUI(); } };
+    u.onend = () => advance(k);
+    u.onerror = e => { if (!pod || pod.tok !== tok) return; if (e && /interrupted|canceled/.test(e.error || "")) return; advance(k); };
+    pod.us.push(u); speechSynthesis.speak(u);
+  }
+  /* red de seguridad: si el navegador se olvida de avisar del final, se sigue igual */
+  clearInterval(pod.watch); const w = pod.watch = setInterval(() => { if (!pod || pod.tok !== tok) return clearInterval(w); if (pod.playing && !speechSynthesis.speaking && !speechSynthesis.pending) { clearInterval(w); advance(to - 1); } }, 1500);
+  podUI();
 }
 function podPlay(id, from) { if (!window.speechSynthesis) { toast("Este navegador no puede leer en voz alta"); return; } speechSynthesis.cancel(); pod = { id, i: from || 0, playing: true, rate: (pod && pod.rate) || 1, tok: 0 }; podSpeak(); }
-function podPause() { if (!pod) return; pod.playing = false; pod.tok = 0; speechSynthesis.cancel(); podUI(); }
-function podStop() { try { speechSynthesis.cancel(); } catch (e) {} pod = null; }
+function podPause() { if (!pod) return; pod.playing = false; pod.tok = 0; clearInterval(pod.watch); speechSynthesis.cancel(); podUI(); }
+function podStop() { if (pod) clearInterval(pod.watch); try { speechSynthesis.cancel(); } catch (e) {} pod = null; }
 function podUI() {
   const it = pod && S.studio.find(x => x.id === pod.id);
   const ai = podAI && podAI.id === S.param ? podAI : null; const at = ai ? ai.line : pod ? pod.i : -1; const playing = !!((ai && ai.playing) || (pod && pod.playing));
@@ -2489,12 +2637,36 @@ async function tts(text, voice) {
 }
 /* cada trozo de audio se guarda: la segunda vez suena al momento y sin gastar IA */
 const ttsMem = new Map(); const ttsPending = new Map();
-function ttsGet(key, text, voice) {
+/* a veces la voz de IA se corta a mitad (sobre todo al cambiar de persona): se mide la duración y, si es demasiado corta,
+   se repite; si sigue cortada, se genera frase a frase y se une todo en un solo audio */
+async function wavInfo(blob) { const v = new DataView(await blob.slice(0, 44).arrayBuffer()); const rate = v.getUint32(24, true) || 24000; return { rate, dur: (blob.size - 44) / (rate * 2) }; }
+async function concatWav(blobs, gap = 0.22) {
+  const datas = await Promise.all(blobs.map(async b => new Uint8Array((await b.arrayBuffer()).slice(44))));
+  const rate = (await wavInfo(blobs[0])).rate; const sil = new Uint8Array(Math.round(rate * gap) * 2);
+  const parts = []; datas.forEach((d, i) => { if (i) parts.push(sil); parts.push(d); });
+  const len = parts.reduce((a, d) => a + d.length, 0); const all = new Uint8Array(len); let o = 0; for (const d of parts) { all.set(d, o); o += d.length; }
+  let bin = ""; for (let i = 0; i < all.length; i += 0x8000) bin += String.fromCharCode.apply(null, all.subarray(i, i + 0x8000));
+  return pcmToWav(btoa(bin), rate);
+}
+const ttsTooShort = async (blob, spoken) => spoken > 40 && (await wavInfo(blob)).dur < spoken / 15 * 0.55;
+function ttsGet(key, text, voice, opt = {}) {
   if (ttsMem.has(key)) return Promise.resolve(ttsMem.get(key));
   if (ttsPending.has(key)) return ttsPending.get(key);
   const pr = (async () => {
     let blob = null; try { blob = await idbGet("files", "tts:" + key); } catch (e) {}
-    if (!blob) { blob = await tts(text, voice); try { await idbPut("files", "tts:" + key, blob); } catch (e) {} }
+    if (blob && opt.spoken && await ttsTooShort(blob, opt.spoken)) blob = null;
+    if (!blob) {
+      blob = await tts(text, voice);
+      if (opt.spoken && await ttsTooShort(blob, opt.spoken)) {
+        const again = await tts(text, voice).catch(() => null);
+        if (again && !(await ttsTooShort(again, opt.spoken))) blob = again;
+        else if (opt.lines && opt.lines.length > 1) {
+          const bits = []; for (const l of opt.lines) bits.push(await tts(opt.prefix + l.text, l.voice));
+          blob = await concatWav(bits);
+        }
+      }
+      try { await idbPut("files", "tts:" + key, blob); } catch (e) {}
+    }
     ttsMem.set(key, blob); return blob;
   })();
   ttsPending.set(key, pr); pr.finally(() => ttsPending.delete(key)).catch(() => {});
@@ -2502,8 +2674,18 @@ function ttsGet(key, text, voice) {
 }
 async function ttsForget(id) { for (const k of [...ttsMem.keys()]) if (k.startsWith(id + ":")) ttsMem.delete(k); try { const keys = await tx("files", "readonly", o => o.getAllKeys()); for (const k of keys || []) if (String(k).startsWith("tts:" + id + ":")) await idbDel("files", k); } catch (e) {} }
 const useAIVoice = () => !!sample && lsGet("rk.voice") !== "movil";
-let mediaAudio = null;
-function stopMediaAudio() { if (mediaAudio) { mediaAudio.onended = mediaAudio.ontimeupdate = null; try { mediaAudio.pause(); } catch (e) {} URL.revokeObjectURL(mediaAudio.src); mediaAudio = null; } }
+let mediaAudio = null, AUD = null;
+function audEl() { if (!AUD) { AUD = new Audio(); AUD.setAttribute("playsinline", ""); AUD.preload = "auto"; } return AUD; }
+function unlockAudio() {
+  const a = audEl(); if (a._unlocked) return;
+  try { a.src = URL.createObjectURL(pcmToWav(btoa("\0".repeat(2400)), 24000)); const p = a.play(); if (p) p.then(() => { a._unlocked = true; }).catch(() => {}); } catch (e) {}
+}
+function playBlob(blob, rate = 1) {
+  const a = audEl(); a.onended = a.ontimeupdate = null; const old = a.src;
+  a.src = URL.createObjectURL(blob); if (old && old.startsWith("blob:")) URL.revokeObjectURL(old);
+  a.defaultPlaybackRate = a.playbackRate = rate; mediaAudio = a; return a;
+}
+function stopMediaAudio() { if (mediaAudio) { mediaAudio.onended = mediaAudio.ontimeupdate = null; try { mediaAudio.pause(); } catch (e) {} mediaAudio = null; } }
 
 /* --- Pódcast con voces de IA: se genera por trozos y se va escuchando mientras se prepara el siguiente --- */
 const POD_PROMPT = "Lee esta conversación de un pódcast educativo en español de España. Laura y Dani son dos profes jóvenes que charlan con naturalidad, ritmo y buen humor, sin sonar a robot:\n";
@@ -2513,16 +2695,18 @@ function podChunks(lines) {
   return out;
 }
 const podLinesText = (it, c) => POD_PROMPT + it.lines.slice(c.from, c.to + 1).map(l => `${l.s === "A" ? "Laura" : "Dani"}: ${l.t}`).join("\n");
+const podTTS = (it, c, k) => ttsGet(`${it.id}:p${k}`, podLinesText(it, c), { Laura: VOICES.Laura, Dani: VOICES.Dani },
+  { spoken: it.lines.slice(c.from, c.to + 1).reduce((a, l) => a + l.t.length, 0), prefix: "Dilo con naturalidad, como en un pódcast educativo: ", lines: it.lines.slice(c.from, c.to + 1).map(l => ({ text: l.t, voice: l.s === "A" ? VOICES.Laura : VOICES.Dani })) });
 let podAI = null;
 async function podAIPlay(it, ci) {
-  podStop(); stopMediaAudio(); const ch = podChunks(it.lines); if (ci >= ch.length) { podAI = null; podUI(); return; }
+  podStop(); stopMediaAudio(); unlockAudio(); const ch = podChunks(it.lines); if (ci >= ch.length) { podAI = null; podUI(); return; }
   const tok = Math.random(); podAI = { id: it.id, c: ci, playing: true, loading: true, tok, line: ch[ci].from }; podUI();
   let blob;
-  try { blob = await ttsGet(`${it.id}:p${ci}`, podLinesText(it, ch[ci]), { Laura: VOICES.Laura, Dani: VOICES.Dani }); }
+  try { blob = await podTTS(it, ch[ci], ci); }
   catch (e) { if (!podAI || podAI.tok !== tok) return; podAI = null; toast(aiErr(e) + " Sigo con las voces del móvil."); podPlay(it.id, ch[ci].from); return; }
   if (!podAI || podAI.tok !== tok) return;
-  if (ch[ci + 1]) ttsGet(`${it.id}:p${ci + 1}`, podLinesText(it, ch[ci + 1]), { Laura: VOICES.Laura, Dani: VOICES.Dani }).catch(() => {});
-  const a = mediaAudio = new Audio(URL.createObjectURL(blob)); a.playbackRate = (pod && pod.rate) || +(lsGet("rk.podRate") || 1);
+  if (ch[ci + 1]) podTTS(it, ch[ci + 1], ci + 1).catch(() => {});
+  const a = playBlob(blob, (pod && pod.rate) || +(lsGet("rk.podRate") || 1));
   const c = ch[ci]; const lens = it.lines.slice(c.from, c.to + 1).map(l => l.t.length); const tot = lens.reduce((x, y) => x + y, 0);
   a.ontimeupdate = () => { if (!a.duration) return; let acc = 0, k = 0; const f = a.currentTime / a.duration * tot; while (k < lens.length - 1 && acc + lens[k] < f) acc += lens[k++]; if (podAI && podAI.line !== c.from + k) { podAI.line = c.from + k; podUI(); } };
   a.onended = () => { if (podAI && podAI.tok === tok) podAIPlay(it, ci + 1); };
@@ -2534,47 +2718,86 @@ function podAIResume(it) { if (podAI && mediaAudio && !podAI.loading) { mediaAud
 function podAIFromLine(it, line) { const ch = podChunks(it.lines); podAIPlay(it, Math.max(0, ch.findIndex(c => line >= c.from && line <= c.to))); }
 
 /* --- Vídeo resumen: escenas animadas + narración con voz de IA --- */
+/* cada elemento que aparece lleva .rv: al reproducir, salen a la vez que la voz los va contando */
+const VID_TYPES = ["lista", "pasos", "dato", "barras", "comparar", "formula", "concepto", "proceso", "mapa", "ejemplo", "pregunta", "cita"];
 function vScene(sc, i, n) {
-  const v = sc.visual || {}; const items = (a, m) => (Array.isArray(a) ? a : []).slice(0, m);
+  const v = sc.visual || {}; const items = (a, m) => (Array.isArray(a) ? a : []).filter(x => x != null && x !== "").slice(0, m);
+  let k = 0; const R = (cls = "") => `class="rv ${cls}" style="--i:${k++}"`;
   let body = "";
   switch (v.tipo) {
-    case "dato": body = `<div class="v-big">${esc(v.valor || "")}</div>${v.texto ? `<div class="v-sub">${esc(v.texto)}</div>` : ""}`; break;
-    case "barras": { const it = items(v.items, 5).filter(x => x && isFinite(+x.valor)); const mx = Math.max(1, ...it.map(x => Math.abs(+x.valor))); body = `<div class="v-bars">${it.map((x, k) => `<div class="v-bar" style="--i:${k}"><span>${esc(x.label || "")}</span><i><em style="--w:${Math.round(Math.abs(+x.valor) / mx * 100)}%"></em></i><b>${esc(String(x.valor))}${esc(v.unidad || "")}</b></div>`).join("")}</div>`; break; }
-    case "pasos": body = `<ol class="v-steps">${items(v.items, 5).map((x, k) => `<li style="--i:${k}"><b>${k + 1}</b><span>${esc(x)}</span></li>`).join("")}</ol>`; break;
-    case "comparar": body = `<div class="v-cmp">${[v.a, v.b].filter(Boolean).map((c, k) => `<div style="--i:${k}"><h4>${esc(c.titulo || "")}</h4><ul>${items(c.puntos, 3).map(p => `<li>${esc(p)}</li>`).join("")}</ul></div>`).join(`<span class="v-vs">VS</span>`)}</div>`; break;
-    case "formula": body = `<div class="v-formula">${esc(v.texto || "")}</div>${v.nota ? `<div class="v-sub">${esc(v.nota)}</div>` : ""}`; break;
-    default: body = `<ul class="v-list">${items(v.items, 4).map((x, k) => `<li style="--i:${k}">${esc(x)}</li>`).join("")}</ul>`;
+    case "dato": body = `<div ${R("v-big")}>${esc(v.valor || "")}</div>${v.texto ? `<div ${R("v-sub")}>${esc(v.texto)}</div>` : ""}`; break;
+    case "barras": { const it = items(v.items, 5).filter(x => x && isFinite(+x.valor)); const mx = Math.max(1, ...it.map(x => Math.abs(+x.valor))); body = `<div class="v-bars">${it.map(x => `<div ${R("v-bar")}><span>${esc(x.label || "")}</span><i><em style="--w:${Math.round(Math.abs(+x.valor) / mx * 100)}%"></em></i><b>${esc(String(x.valor))}${esc(v.unidad || "")}</b></div>`).join("")}</div>`; break; }
+    case "pasos": body = `<ol class="v-steps">${items(v.items, 5).map((x, q) => `<li ${R()}><b>${q + 1}</b><span>${esc(x)}</span></li>`).join("")}</ol>`; break;
+    case "comparar": body = `<div class="v-cmp">${[v.a, v.b].filter(Boolean).map(c => `<div ${R()}><h4>${esc(c.titulo || "")}</h4><ul>${items(c.puntos, 3).map(p => `<li>${esc(p)}</li>`).join("")}</ul></div>`).join(`<span class="v-vs">VS</span>`)}</div>`; break;
+    case "formula": body = `<div ${R("v-formula")}>${esc(v.texto || "")}</div>${v.nota ? `<div ${R("v-sub")}>${esc(v.nota)}</div>` : ""}`; break;
+    case "concepto": body = `<div class="v-concept"><div ${R("v-term")}>${esc(v.termino || sc.titulo || "")}</div><div ${R("v-def")}>${esc(v.definicion || "")}</div></div>`; break;
+    case "proceso": body = `<div class="v-flow">${items(v.items, 5).map((x, q) => `${q ? `<span class="fa">↓</span>` : ""}<div ${R("fx")}><b>${q + 1}</b><span>${esc(x)}</span></div>`).join("")}</div>`; break;
+    case "mapa": body = `<div class="v-map"><div ${R("v-mc")}>${esc(v.centro || sc.titulo || "")}</div><div class="v-mr">${items(v.ramas, 6).map(x => `<span ${R()}>${esc(x)}</span>`).join("")}</div></div>`; break;
+    case "ejemplo": body = `<div class="v-ej">${v.enunciado ? `<div ${R("q")}>${esc(v.enunciado)}</div>` : ""}${items(v.pasos, 4).map(x => `<div ${R("st")}>${esc(x)}</div>`).join("")}${v.resultado ? `<div ${R("res")}>${esc(v.resultado)}</div>` : ""}</div>`; break;
+    case "pregunta": body = `<div class="v-quiz"><div ${R("qq")}>${esc(v.texto || "")}</div><div ${R("qh")}>🤔 Piénsalo un segundo…</div>${v.respuesta ? `<div ${R("qa")}>✅ ${esc(v.respuesta)}</div>` : ""}</div>`; break;
+    case "cita": body = `<div ${R("v-quote")}>“${esc(v.texto || "")}”</div>`; break;
+    default: body = `<ul class="v-list">${items(v.items, 4).map(x => `<li ${R()}>${esc(x)}</li>`).join("")}</ul>`;
   }
-  return `<div class="v-scene" data-tipo="${esc(v.tipo || "lista")}"><div class="v-top"><span class="v-k">${esc(sc.etiqueta || "")}</span><span class="v-n">${i + 1}/${n}</span></div><h3 class="v-t">${esc(sc.titulo || "")}</h3><div class="v-body">${body}</div></div>`;
+  return `<div class="v-scene" data-tipo="${esc(v.tipo || "lista")}">${sc.emoji ? `<span class="v-ill" aria-hidden="true">${sc.emoji}</span>` : ""}<div class="v-top"><span class="v-k">${sc.emoji ? `<span class="v-em">${sc.emoji}</span>` : ""}${esc(sc.etiqueta || "")}</span><span class="v-n">${i + 1}/${n}</span></div><h3 class="v-t">${esc(sc.titulo || "")}</h3><div class="v-body">${body}</div></div>`;
+}
+/* lo que ve el vídeo que se descarga (canvas): los tipos nuevos se dibujan con los de siempre */
+function visCompat(v) {
+  v = v || {}; const A = a => Array.isArray(a) ? a : [];
+  switch (v.tipo) {
+    case "concepto": return { tipo: "lista", items: [v.termino, v.definicion].filter(Boolean) };
+    case "proceso": return { tipo: "pasos", items: A(v.items) };
+    case "mapa": return { tipo: "lista", items: A(v.ramas).slice(0, 4) };
+    case "ejemplo": return { tipo: "pasos", items: [v.enunciado, ...A(v.pasos), v.resultado].filter(Boolean).slice(0, 5) };
+    case "pregunta": return { tipo: "lista", items: [v.texto, v.respuesta ? "✓ " + v.respuesta : ""].filter(Boolean) };
+    case "cita": return { tipo: "dato", valor: "", texto: v.texto || "" };
+    default: return v;
+  }
+}
+/* avance de la escena (0 → 1): va sacando los elementos y marca la palabra que suena */
+function vidSync(frac) {
+  const st = $("#vidStage"); if (!st) return; frac = Math.max(0, Math.min(1, frac || 0));
+  const rv = $$(".v-scene:not(.leave) .rv", st); const n = rv.length;
+  rv.forEach((el, k) => el.classList.toggle("on", frac >= .04 + k * (.72 / Math.max(1, n))));
+  const seg = $(".v-seg.on"); if (seg) seg.style.setProperty("--p", Math.round(frac * 100) + "%");
+  const ws = $$("#vidCap .w"); if (ws.length) { const tot = ws.reduce((a, w) => a + w.textContent.length + 1, 0); let acc = 0, cur = -1; ws.forEach((w, q) => { if (acc / tot <= frac) cur = q; acc += w.textContent.length + 1; }); ws.forEach((w, q) => { w.classList.toggle("on", q === cur); w.classList.toggle("past", q < cur); }); }
 }
 let vid = null;
 const VID_PROMPT = "Narra este fragmento de un vídeo educativo en español de España, con energía, cercanía y buen ritmo, como un buen youtuber de estudio:\n";
 function vidStage(it, i) {
   const st = $("#vidStage"); if (!st) return;
-  st.innerHTML = vScene(it.scenes[i], i, it.scenes.length) + `<svg class="v-logo" viewBox="0 0 120 120" aria-hidden="true"><use href="#rkMarkSym"/></svg>`;
+  const old = $(".v-scene", st); if (old) { old.classList.add("leave"); setTimeout(() => { if (old.parentNode) old.parentNode.removeChild(old); }, 460); }
+  $$(".v-scene.leave", st).forEach(x => { if (x !== old && x.parentNode) x.parentNode.removeChild(x); });
+  st.insertAdjacentHTML("beforeend", vScene(it.scenes[i], i, it.scenes.length)); if (!$(".v-logo", st)) st.insertAdjacentHTML("beforeend", `<svg class="v-logo" viewBox="0 0 120 120" aria-hidden="true"><use href="#rkMarkSym"/></svg>`);
+  st.classList.add("sync"); st.style.setProperty("--d", Math.max(5, (it.scenes[i].narracion || "").length * .065) + "s");
   $$(".v-seg", document).forEach((s, k) => { s.classList.toggle("done", k < i); s.classList.toggle("on", k === i); });
-  const cap = $("#vidCap"); if (cap) cap.textContent = it.scenes[i].narracion || "";
+  const cap = $("#vidCap"); if (cap) cap.innerHTML = String(it.scenes[i].narracion || "").split(/\s+/).filter(Boolean).map(w => `<span class="w">${esc(w)}</span>`).join(" ");
+  vidSync(0);
 }
 async function vidPlay(it, i) {
-  stopMediaAudio(); try { speechSynthesis.cancel(); } catch (e) {}
+  stopMediaAudio(); unlockAudio(); try { speechSynthesis.cancel(); } catch (e) {}
   if (i >= it.scenes.length) { vid = { id: it.id, i: it.scenes.length - 1, playing: false, ended: true }; vidUI(); return; }
   const tok = Math.random(); vid = { id: it.id, i, playing: true, loading: true, tok }; vidStage(it, i); vidUI();
   const next = () => { if (vid && vid.tok === tok && vid.playing) vidPlay(it, i + 1); };
   const sc = it.scenes[i];
   if (useAIVoice()) {
     try {
-      const blob = await ttsGet(`${it.id}:v${i}`, VID_PROMPT + sc.narracion, VOICES.narrador);
+      const blob = await ttsGet(`${it.id}:v${i}`, VID_PROMPT + sc.narracion, VOICES.narrador, { spoken: (sc.narracion || "").length });
       if (!vid || vid.tok !== tok) return;
       if (it.scenes[i + 1]) ttsGet(`${it.id}:v${i + 1}`, VID_PROMPT + it.scenes[i + 1].narracion, VOICES.narrador).catch(() => {});
-      const a = mediaAudio = new Audio(URL.createObjectURL(blob)); a.onended = () => setTimeout(next, 500);
+      const a = playBlob(blob); a.onended = () => { vidSync(1); setTimeout(next, 450); };
+      a.ontimeupdate = () => { if (a.duration) vidSync(a.currentTime / a.duration); };
+      a.onloadedmetadata = () => { const st = $("#vidStage"); if (st && a.duration) st.style.setProperty("--d", a.duration + "s"); };
       vid.loading = false; vidUI(); await a.play().catch(() => { vid.playing = false; vidUI(); }); return;
     } catch (e) { if (!vid || vid.tok !== tok) return; toast(aiErr(e) + " Uso la voz del móvil."); lsSet("rk.voice", "movil"); }
   }
   vid.loading = false; vidUI();
-  if (window.speechSynthesis) { const u = new SpeechSynthesisUtterance(sc.narracion || sc.titulo || ""); u.lang = "es-ES"; const [v] = podVoices(); if (v) u.voice = v; u.onend = () => setTimeout(next, 400); speechSynthesis.speak(u); }
+  if (window.speechSynthesis) { const u = vid.u = new SpeechSynthesisUtterance(sc.narracion || sc.titulo || ""); u.lang = "es-ES"; const [v] = podVoices(); if (v) u.voice = v; let gone = false; const go = () => { if (!gone) { gone = true; clearInterval(vid.sync); vidSync(1); setTimeout(next, 400); } }; u.onend = go;
+    const txt = sc.narracion || sc.titulo || ""; const est = Math.max(3, txt.length * .062); const t0 = Date.now(); let byWord = 0;
+    u.onboundary = e => { if (e && e.charIndex != null) byWord = e.charIndex / Math.max(1, txt.length); vidSync(byWord); };
+    clearInterval(vid.sync); const iv = vid.sync = setInterval(() => { if (!vid || vid.tok !== tok) return clearInterval(iv); if (!vid.playing) return; vidSync(Math.max(byWord, Math.min(.97, (Date.now() - t0) / 1000 / est))); }, 200); u.onerror = e => { if (!/interrupted|canceled/.test((e && e.error) || "")) go(); }; speechSynthesis.speak(u); }
   else setTimeout(next, Math.max(4000, (sc.narracion || "").length * 65));
 }
-function vidPause() { if (!vid) return; vid.playing = false; vid.tok = 0; if (mediaAudio) mediaAudio.pause(); try { speechSynthesis.cancel(); } catch (e) {} vidUI(); }
+function vidPause() { if (!vid) return; clearInterval(vid.sync); vid.playing = false; vid.tok = 0; if (mediaAudio) mediaAudio.pause(); try { speechSynthesis.cancel(); } catch (e) {} vidUI(); }
 function vidUI() {
   const b = $("#vidBtn"); if (b) b.innerHTML = vid && vid.playing ? ic("pause") : ic("play");
   const st = $("#vidStage"); if (st) { st.classList.toggle("loading", !!(vid && vid.loading)); st.classList.toggle("paused", !(vid && vid.playing)); }
@@ -2631,6 +2854,7 @@ function cvWrap(g, text, maxW) { const words = String(text || "").split(/\s+/); 
 function cvRound(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
 const ease = t => 1 - Math.pow(1 - Math.max(0, Math.min(1, t)), 3);
 function drawScene(g, W, H, sc, t, i, n, tot, dur = 6) {
+  sc = { ...sc, visual: visCompat(sc.visual) };
   const GOLD = "#F5B841", INK = "#FFFFFF", MUT = "#A4A8B6", P = 90;
   g.fillStyle = "#08080b"; g.fillRect(0, 0, W, H);
   let gr = g.createRadialGradient(W * .85, 0, 0, W * .85, 0, W * .9); gr.addColorStop(0, "rgba(245,184,65,.30)"); gr.addColorStop(1, "rgba(245,184,65,0)"); g.fillStyle = gr; g.fillRect(0, 0, W, H);
@@ -2750,8 +2974,8 @@ function viewStudio() {
     const i = vid && vid.id === it.id ? vid.i : 0; const playing = vid && vid.id === it.id && vid.playing;
     body = `<div class="vid">
       <div class="v-segs">${it.scenes.map((_, k) => `<i class="v-seg ${k < i ? "done" : k === i ? "on" : ""}"></i>`).join("")}</div>
-      <div class="v-stage ${playing ? "" : "paused"}" id="vidStage" data-act="vid-toggle">${vScene(it.scenes[i], i, it.scenes.length)}<svg class="v-logo" viewBox="0 0 120 120" aria-hidden="true"><use href="#rkMarkSym"/></svg><span class="v-play">${ic("play")}</span></div>
-      <p class="v-cap small" id="vidCap">${esc(it.scenes[i].narracion)}</p>
+      <div class="v-stage ${playing ? "sync" : "paused"}" id="vidStage" data-act="vid-toggle">${vScene(it.scenes[i], i, it.scenes.length)}<svg class="v-logo" viewBox="0 0 120 120" aria-hidden="true"><use href="#rkMarkSym"/></svg><span class="v-play">${ic("play")}</span></div>
+      <p class="v-cap" id="vidCap">${esc(it.scenes[i].narracion)}</p>
       <div class="row" style="justify-content:center"><button class="icon-btn" data-act="vid-prev" aria-label="Anterior">${ic("back")}</button><button class="big" id="vidBtn" data-act="vid-toggle" aria-label="Reproducir o pausar">${playing ? ic("pause") : ic("play")}</button><button class="icon-btn" data-act="vid-next" aria-label="Siguiente" style="transform:scaleX(-1)">${ic("back")}</button></div>
       <div class="row" style="justify-content:center">${voiceSw}<button class="btn btn-sm" id="vidDl" data-act="vid-dl">Descargar vídeo</button></div><div id="vidPrep" style="text-align:center"></div>
     </div>`;
@@ -3684,15 +3908,15 @@ function settingsModal() {
         ${has ? `<div class="set-row" id="aiRow"><span class="dot ok"></span><b>Activada</b><span class="grow"></span><button class="btn btn-sm btn-g" type="button" id="aiChange">Cambiar clave</button></div>` : ""}
         ${!has && ROCKY_SERVER ? `<p class="small"><span class="dot ok"></span> <b>Funciona con la IA gratis de Rocky.</b> <span class="muted">Si tienes clave propia, pégala y no tendrás límite diario.</span></p>` : ""}
         <div id="keyBox" ${has ? "hidden" : ""}>
-          <div class="row" style="flex-wrap:nowrap;gap:8px"><input class="input" id="stKey" type="password" autocomplete="off" placeholder="Pega tu clave de Gemini"><button class="btn btn-p" type="button" id="aiOn">Activar</button></div>
-          <p class="tiny muted" style="margin-top:8px">Es gratis: <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" style="color:var(--accent)">aistudio.google.com</a> → Create API key.</p>
+          <div class="row" style="flex-wrap:nowrap;gap:8px"><input class="input" id="stKey" type="password" autocomplete="off" placeholder="Pega tu clave de IA"><button class="btn btn-p" type="button" id="aiOn">Activar</button></div>
+          <p class="tiny muted" style="margin-top:8px">Es gratis: <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" style="color:var(--accent)">consigue tu clave aquí</a> (toca «Create API key» y cópiala).</p>
         </div>
         <div id="aiMsg" class="small"></div>
         <details class="set-adv"><summary>Avanzado</summary><div class="stack" style="gap:10px;margin-top:10px">
           <label class="field"><span>Velocidad</span><select class="input" id="stSpeed"><option value="fast" ${cfg.speed !== "smart" ? "selected" : ""}>Rápida</option><option value="smart" ${cfg.speed === "smart" ? "selected" : ""}>Más lista (tarda más)</option></select></label>
-          <label class="field"><span>Modelo</span><input class="input" id="stModel" list="modelList" value="${esc(cfg.model)}"><datalist id="modelList"></datalist></label>
+          <input type="hidden" id="stModel" value="${esc(cfg.model)}"><datalist id="modelList" hidden></datalist>
           ${has ? `<button class="btn btn-sm btn-g" type="button" id="aiDel" style="align-self:flex-start">Quitar clave</button>` : ""}
-          <p class="tiny muted">La clave solo se guarda en este dispositivo y solo se envía a Google.</p>
+          <p class="tiny muted">La clave solo se guarda en este dispositivo.</p>
         </div></details>
       </section>
       <form id="setForm" class="set-sec"><div class="set-h">Perfil</div>
@@ -3749,8 +3973,7 @@ async function exportAll() {
     const out = { app: "pupitre", v: 2, at: Date.now(), state, col: {}, files: [] };
     for (const c of ["docs", "doctext", "chats", "chatmsgs", "decks", "studio"]) out.col[c] = await idbAll(c);
     for (const d of out.col.docs) if (d.fileId) { const b = await idbGet("files", d.fileId); if (b) out.files.push({ id: d.fileId, type: b.type || "", data: await blobToB64(b) }); }
-    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(out)], { type: "application/json" })); a.download = `rocky-copia-${dkey()}.json`;
-    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+    saveFile(new Blob([JSON.stringify(out)], { type: "application/json" }), `rocky-copia-${dkey()}.json`);
     lsSet("rk.lastBackup", Date.now()); toast("Copia descargada. Comprueba que está en Archivos o Descargas.");
   } catch (e) { toast("No se pudo crear la copia"); }
 }
@@ -3894,9 +4117,7 @@ document.addEventListener("click", e => {
     case "pdf-summary": {
       const s3 = subj(S.param); const t3 = tut(s3 ? s3.id : "");
       if (!t3 || !t3.summary) { toast("Genera el esquema primero"); break; }
-      const html3 = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${s3 ? esc(s3.name) : "Esquema"} – 80/20</title><style>body{font-family:system-ui,sans-serif;max-width:820px;margin:32px auto;padding:16px 24px;line-height:1.65;color:#111}h2{border-bottom:2px solid #5b86ff;padding-bottom:4px;color:#2a3a7a}h3{color:#3a4a9a}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:6px 10px;text-align:left}@media print{body{margin:10px}}</style></head><body><h1>${s3 ? s3.emoji+" "+esc(s3.name) : "Esquema"} – Esquema 80/20</h1><p style="color:#888;font-size:.85em">Rocky · ${new Date().toLocaleDateString("es-ES")}</p>${md(t3.summary)}</body></html>`;
-      const w3 = window.open("","_blank","width=900,height=700");
-      if (w3) { w3.document.write(html3); w3.document.close(); setTimeout(() => w3.print(), 450); }
+      printView(t3.esq ? esqHtml(t3.esq) : `<div class="pv-md"><h1>${s3 ? esc(s3.name) : "Esquema"}</h1>${md(t3.summary)}</div>`, `${s3 ? sName(s3) : "Esquema"} – esquema`);
       break;
     }
     case "habit-toggle": {
@@ -3960,7 +4181,7 @@ function exampleState() {
 }
 
 /* ================= actualizaciones ================= */
-const APP_VERSION = "2026.11.14-3";
+const APP_VERSION = "2026.11.18-1";
 let updateReady = false;
 async function checkUpdate() {
   try {
