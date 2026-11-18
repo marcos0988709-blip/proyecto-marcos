@@ -1072,7 +1072,7 @@ function viewHoy() {
     ${dueTot ? `<button class="card row now-line" data-act="go-review" data-s="${(state.subjects.find(x => deckOf(x.id).some(isDue)) || {}).id}">${ic("spark", 'class="kpi-ic"')}<b style="flex:1;text-align:left">Repaso: ${dueTot} ${dueTot === 1 ? "tarjeta" : "tarjetas"}</b>${ic("play", 'width="16" height="16"')}</button>` : ""}
     <section class="card">
       <div class="card-h"><h2>Exámenes</h2><button class="btn btn-sm" data-act="new-exam">${ic("plus")}Nuevo</button></div>
-      ${exams.length ? exams.map(e => { const d = daysUntil(e.date); return `<div class="exam"><div class="cd ${urg(d)}"><b class="num">${d}</b><small>${d === 1 ? "día" : "días"}</small></div><div style="min-width:0;flex:1"><b style="overflow-wrap:anywhere">${esc(e.title)}</b><div class="small muted ell">${esc(sName(e.s))}</div></div>${planBtn(e)}</div>`; }).join("") : `<p class="small muted">Ninguno a la vista.</p>`}
+      ${exams.length ? exams.map(e => { const d = daysUntil(e.date); return `<div class="exam"><div class="cd ${urg(d)}"><b class="num">${d}</b><small>${d === 1 ? "día" : "días"}</small></div><div style="min-width:0;flex:1"><b style="overflow-wrap:anywhere">${esc(e.title)}</b><div class="small muted ell">${esc(sName(e.s))}</div></div>${gradePill(e.s, true)}${planBtn(e)}</div>`; }).join("") : `<p class="small muted">Ninguno a la vista.</p>`}
     </section>
     <section class="card">
       <div class="card-h"><h2>Agenda de hoy</h2><a class="btn btn-sm btn-g" href="#plan">Semana</a></div>
@@ -1463,7 +1463,7 @@ function viewAsig() {
   return `<div class="stack" style="gap:16px;--c:${s.color}">
     <a class="btn btn-sm btn-g" href="#asignaturas" style="align-self:flex-start">${ic("back")}Asignaturas</a>
     <div class="subj-head">
-      <div class="row" style="gap:14px;flex-wrap:nowrap;min-width:0"><span class="semo" style="--c:${s.color}">${E(s.emoji)}</span><div style="min-width:0"><span class="eyebrow">${s.kind === "proyecto" ? "Proyecto" : "Módulo"}</span><h1 style="overflow-wrap:anywhere;font-size:clamp(1.4rem,3.6vw,2rem)">${esc(s.name)}</h1><p class="muted small">${Math.round(p * 100)} % completado · ⏱️ ${fmtH(subjMinutes(s.id))} · ${fmtH(subjMinutes(s.id, 7))} esta semana</p></div></div>
+      <div class="row" style="gap:14px;flex-wrap:nowrap;min-width:0"><span class="semo" style="--c:${s.color}">${E(s.emoji)}</span><div style="min-width:0"><span class="eyebrow">${s.kind === "proyecto" ? "Proyecto" : "Módulo"}</span><h1 style="overflow-wrap:anywhere;font-size:clamp(1.4rem,3.6vw,2rem)">${esc(s.name)}</h1><p class="muted small">${Math.round(p * 100)} % completado · ⏱️ ${fmtH(subjMinutes(s.id))} · ${fmtH(subjMinutes(s.id, 7))} esta semana</p>${s.kind === "proyecto" ? "" : `<div style="margin-top:6px">${gradePill(s)}</div>`}</div></div>
       <div class="row"><button class="btn btn-sm" data-act="edit-subject" data-id="${s.id}">Editar</button><button class="btn btn-sm btn-p" data-act="focus-subj" data-s="${s.id}">${ic("play")}Estudiar</button></div>
     </div>
     <div class="bar" style="--c:${s.color};height:8px"><i style="width:${p * 100}%"></i></div>
@@ -1635,7 +1635,7 @@ $("#ttIn").addEventListener("change", e => { const f = e.target.files[0]; if (f)
 $("#camIn").addEventListener("change", e => { if (pickFor) handleFiles(e.target.files, pickFor); });
 async function handleFiles(files, sid) {
   const list = [...(files || [])]; if (!list.length) return;
-  let ok = 0;
+  let ok = 0; const newTexts = [];
   for (const f of list) {
     toast(`Procesando ${f.name}…`);
     try {
@@ -1653,12 +1653,14 @@ async function handleFiles(files, sid) {
       const id = uid(), now = Date.now();
       const parts = text ? await saveText(id, text) : 0;
       await sPut("docs", id, { subjectId: sid, title: f.name.replace(/\.[^.]+$/, "").slice(0, 120), type, fileId, size: f.size, chars: text.length, parts, createdAt: now, updatedAt: now });
+      if (text && text.replace(/\s/g, "").length > 300) newTexts.push({ title: f.name.replace(/\.[^.]+$/, ""), text });
       ok++;
       if (type === "image" && sample) await ocrDoc({ id, subjectId: sid, title: f.name.replace(/\.[^.]+$/, "").slice(0, 120), type, fileId, size: f.size, chars: 0, parts: 0, createdAt: now, updatedAt: now }, true);
       if (type === "pdf" && !text) toast(`${f.name}: es un PDF escaneado sin texto${sample ? "" : ". Activa la IA en Ajustes y vuelve a subirlo para que lo lea"}.`);
     } catch (e) { toast(e && e.code === "quota" ? "💾 El móvil no tiene más espacio para Rocky. Libera espacio o borra documentos viejos." : `❌ ${f.name}: ${(e && (e.msg || e.message)) || "no se pudo subir"}`); }
   }
   if (ok) toast(`${ok} ${ok === 1 ? "documento subido" : "documentos subidos"}`);
+  if (ok && sample && newTexts.length) autoCards(sid, newTexts);
 }
 async function newNote(sid, title = "Nota nueva", text = "") {
   const id = uid(), now = Date.now();
@@ -2105,7 +2107,9 @@ function bindStudy(s) {
   const cf = $("#cardForm"); cf && cf.addEventListener("submit", e => { e.preventDefault(); const q = $("#cardQ").value.trim(), a = $("#cardA").value.trim(); if (!q || !a) { toast("Escribe la pregunta y la respuesta"); return; } $("#cardQ").value = ""; $("#cardA").value = ""; saveDeck(s.id, deckOf(s.id).concat([{ id: uid(), q, a, box: 0, due: dkey() }])).then(() => { toast("Tarjeta añadida"); render(); }); });
   $$("[data-stab]").forEach(b => b.onclick = () => { ui.studyTab = b.dataset.stab; saveUi(); render(); });
   $$("[data-sctx]").forEach(b => b.onclick = () => { const set = new Set(studyCtx(s)); const id = b.dataset.sctx; set.has(id) ? set.delete(id) : set.add(id); ui.ctx[s.id] = [...set]; saveUi(); render(); });
-  $$(".opt[data-qi]").forEach(b => b.onclick = () => { const t = tut(s.id); const it = t.quiz.items[+b.dataset.qi]; if (it.picked != null) return; it.picked = +b.dataset.oi; commit(); });
+  $$(".opt[data-qi]").forEach(b => b.onclick = () => { const t = tut(s.id); const it = t.quiz.items[+b.dataset.qi]; if (it.picked != null) return; it.picked = +b.dataset.oi;
+    const its = t.quiz.items; if (its.every(x => x.picked != null) && !t.quiz.logged) { t.quiz.logged = true; t.quizzes = (t.quizzes || []).concat({ at: Date.now(), pct: its.filter(x => x.picked === x.answer).length / its.length }).slice(-20); }
+    commit(); });
   const t = tut(s.id);
   $$("[data-mq]").forEach(b => b.onclick = () => { const m = t.mock; if (!m || m.status !== "running") return; m.items[+b.dataset.mq].picked = +b.dataset.mo; commit(); });
   $$("[data-mopen]").forEach(el => el.addEventListener("input", () => { const m = t.mock; if (!m || m.status !== "running") return; m.open[+el.dataset.mopen].answer = el.value; clearTimeout(mockSaveT); mockSaveT = setTimeout(() => commit(false), 1200); }));
@@ -2251,6 +2255,24 @@ Responde SOLO con JSON: [{"q":"pregunta","a":"respuesta"}]`;
     await saveDeck(s.id, cards); toast(`${add.length} tarjetas nuevas listas para repasar`); render();
   } catch (e) { const o = $("#cardsOut"); if (o) o.innerHTML = `<p class="ai-off">⚠️ ${aiErr(e)}</p>`; }
 }
+/* al subir apuntes, Rocky saca solo las tarjetas de memoria de ese documento y las mete en el repaso diario */
+async function autoCards(sid, texts) {
+  const s = subj(sid); if (!s || !sample) return; const have = deckOf(sid); if (have.length >= 150) return;
+  try {
+    const src = texts.map(x => `### ${x.title}\n${x.text}`).join("\n\n").slice(0, 60000);
+    const arr = await sample.json(`Crea entre 8 y 15 tarjetas de memoria en español a partir de estos apuntes: lo que el alumno tiene que saberse de memoria para el examen (definiciones, fórmulas, plazos, porcentajes, clasificaciones, diferencias). Pregunta corta; respuesta concisa (máx. 35 palabras, puede usar **negrita**). Nada que no esté en los apuntes.${have.length ? `\nNo repitas estas: ${have.slice(-40).map(c => c.q).join(" | ").slice(0, 3000)}` : ""}
+${COURSE_CTX()}
+
+APUNTES:
+${src}
+
+Responde SOLO con JSON: [{"q":"pregunta","a":"respuesta"}]`, { modelTier: "default", _quiet: true });
+    const seen = new Set(have.map(c => String(c.q).trim().toLowerCase()));
+    const add = (Array.isArray(arr) ? arr : []).filter(x => x && x.q && x.a && !seen.has(String(x.q).trim().toLowerCase())).slice(0, 15).map(x => ({ id: uid(), q: String(x.q).slice(0, 300), a: String(x.a).slice(0, 500), box: 0, due: dkey(), auto: true }));
+    if (!add.length) return;
+    await saveDeck(sid, deckOf(sid).concat(add)); toast(`🃏 ${add.length} tarjetas nuevas de tus apuntes. Ya están en tu repaso de hoy.`); render();
+  } catch (e) { console.warn("autoCards", e); }
+}
 async function aiBreakdown() {
   const s = subj(S.param); if (!s || !sample) return;
   const box = $("#aiBreak"); box.innerHTML = `<div style="margin-top:12px">${thinkingHtml("Desglosando en temas…")}</div>`;
@@ -2271,6 +2293,43 @@ Responde SOLO con JSON: [{"title":"máx. 70 caracteres","w":1|2|3}]`;
   } catch (e) { box.innerHTML = `<p class="ai-off" style="margin-top:12px">⚠️ ${aiErr(e)}</p>`; }
 }
 
+/* ---------- Nota estimada: simulacros (lo que más pesa), tests, tarjetas aprendidas y temas dominados ---------- */
+function gradeEstimate(s) {
+  if (!s) return null; const t = (state.tutor || {})[s.id] || {}; const parts = []; let sum = 0, wsum = 0;
+  const add = (key, label, val, w, txt) => { parts.push({ key, label, val, w, txt }); sum += val * w; wsum += w; };
+  const mocks = (t.mocks || []).slice(-3);
+  if (mocks.length) { const ws = mocks.map((_, i) => i + 1); const v = mocks.reduce((a, m, i) => a + m.grade * ws[i], 0) / ws.reduce((a, b) => a + b, 0); add("mock", "Simulacros", v, .5, `${mocks.length} ${mocks.length === 1 ? "simulacro" : "simulacros"}`); }
+  const qz = (t.quizzes || []).slice(-5).map(q => q.pct); const cur = t.quiz && !t.quiz.logged && t.quiz.items ? t.quiz.items.filter(x => x.picked != null) : [];
+  if (cur.length >= 3) qz.push(cur.filter(x => x.picked === x.answer).length / cur.length);
+  if (qz.length) add("quiz", "Tests", qz.reduce((a, b) => a + b, 0) / qz.length * 10, .25, `${qz.length} ${qz.length === 1 ? "test" : "tests"}`);
+  const deck = deckOf(s.id); if (deck.length >= 5) add("cards", "Tarjetas", deck.reduce((a, c) => a + Math.min(5, c.box || 0), 0) / (deck.length * 5) * 10, .15, `${deck.filter(c => (c.box || 0) >= 3).length}/${deck.length} aprendidas`);
+  if (!parts.length) return null;
+  if (s.topics.length) add("topics", "Temas", progress(s) * 10, .1, `${s.topics.filter(x => x.done).length}/${s.topics.length} dominados`);
+  const nota = Math.max(0, Math.min(10, Math.round(sum / wsum * 2) / 2));
+  const conf = mocks.length >= 2 ? "alta" : (mocks.length || qz.length >= 2) ? "media" : "baja";
+  return { nota, conf, parts };
+}
+const fmtNota = n => String(n).replace(".", ",");
+const notaColor = n => n >= 7 ? "var(--ok)" : n >= 5 ? "var(--accent)" : "var(--bad)";
+function gradePill(s, small) {
+  const g = gradeEstimate(s); if (!g) return small ? "" : `<button class="pill" data-act="grade-info" data-id="${s.id}" style="cursor:pointer">🎯 Nota estimada: haz un test</button>`;
+  return `<button class="pill" data-act="grade-info" data-id="${s.id}" style="cursor:pointer;border-color:${notaColor(g.nota)};color:${notaColor(g.nota)}">🎯 ${small ? "" : "Nota estimada "}${fmtNota(g.nota)}</button>`;
+}
+function gradeModal(s) {
+  const g = gradeEstimate(s);
+  const tips = []; const t = (state.tutor || {})[s.id] || {};
+  if (!(t.mocks || []).length) tips.push(["⏱️", "Haz un simulacro: es lo que más afina la nota."]);
+  if (deckOf(s.id).filter(isDue).length) tips.push(["🃏", `Repasa tus ${deckOf(s.id).filter(isDue).length} tarjetas pendientes.`]);
+  if (!(t.quizzes || []).length) tips.push(["📝", "Haz un test rápido de 8 preguntas."]);
+  const weak = s.topics.filter(x => !x.done).slice(0, 2).map(x => x.title); if (weak.length) tips.push(["📋", `Domina ${weak.join(" y ")}.`]);
+  openModal(`<div class="sheet-h"><h2>🎯 Nota estimada</h2><button class="x-btn" data-close aria-label="Cerrar">${ic("x")}</button></div>
+    <p class="small muted" style="margin-top:-4px">${esc(sName(s))} · si el examen fuera hoy</p>
+    ${g ? `<div style="text-align:center;margin:14px 0 6px"><b style="font-family:Anton,var(--f-display);font-size:4.2rem;line-height:1;color:${notaColor(g.nota)}">${fmtNota(g.nota)}</b><div class="tiny muted">Fiabilidad ${g.conf}</div></div>
+      <div class="stack" style="gap:8px;margin-top:10px">${g.parts.map(x => `<div class="row" style="flex-wrap:nowrap;gap:10px"><span style="width:84px" class="small"><b>${x.label}</b></span><div class="bar" style="flex:1;height:8px;--c:${notaColor(x.val)}"><i style="width:${x.val * 10}%"></i></div><span class="small num" style="width:34px;text-align:right">${fmtNota(Math.round(x.val * 10) / 10)}</span></div><div class="tiny muted" style="margin:-6px 0 0 94px">${x.txt}</div>`).join("")}</div>`
+      : `<p style="margin:14px 0">Todavía no hay datos. Haz un <b>test rápido</b> o un <b>simulacro</b> en «Estudiar con IA» y Rocky te dirá qué nota sacarías.</p>`}
+    ${tips.length ? `<h3 style="margin:18px 0 8px;font-size:1rem">Para subirla</h3><div class="stack" style="gap:6px">${tips.slice(0, 3).map(([e, x]) => `<div class="small">${e} ${esc(x)}</div>`).join("")}</div>` : ""}
+    <button class="btn btn-p" style="width:100%;margin-top:16px" data-close data-act="go-study" data-id="${s.id}">Estudiar ahora</button>`);
+}
 /* ---------- Logros y niveles ---------- */
 function bestStreakCalc() { const m = byDay(); let best = 0, run = 0, prev = null; for (const k of Object.keys(m).sort()) { run = prev && dkey(addDays(parseD(prev), 1)) === k ? run + 1 : 1; best = Math.max(best, run); prev = k; } return best; }
 const totalFocus = () => state.sessions.reduce((a, x) => a + x.min, 0);
@@ -3861,6 +3920,26 @@ async function importICS(file) {
 }
 
 /* ---------- Progreso ---------- */
+/* imagen para historias: racha, horas, nivel y nota estimada; se comparte con la hoja del móvil */
+async function shareProgress() {
+  const W = 1080, H = 1920; const c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d");
+  try { await document.fonts.load("120px Anton"); await document.fonts.load("800 40px Figtree"); } catch (e) {}
+  const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, "#15151b"); bg.addColorStop(1, "#050507"); g.fillStyle = bg; g.fillRect(0, 0, W, H);
+  let gr = g.createRadialGradient(W * .85, 120, 0, W * .85, 120, 900); gr.addColorStop(0, "rgba(245,184,65,.35)"); gr.addColorStop(1, "rgba(245,184,65,0)"); g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  const GOLD = "#F5B841"; const L = levelInfo(); const st = streak(); const wk = weekMinutes();
+  const grades = state.subjects.map(x => ({ s: x, g: gradeEstimate(x) })).filter(x => x.g).sort((a, b) => b.g.nota - a.g.nota);
+  g.textAlign = "center"; g.fillStyle = GOLD; g.font = "120px Anton, Impact, sans-serif"; g.fillText("ROCKY", W / 2, 230);
+  g.fillStyle = "#A4A8B6"; g.font = "700 40px Figtree, sans-serif"; g.fillText("MI SEMANA DE ESTUDIO", W / 2, 300);
+  const big = (val, label, y) => { g.fillStyle = "#fff"; g.font = "260px Anton, Impact, sans-serif"; g.fillText(val, W / 2, y); g.fillStyle = GOLD; g.font = "800 50px Figtree, sans-serif"; g.fillText(label, W / 2, y + 80); };
+  big(String(st), st === 1 ? "🔥 DÍA SEGUIDO" : "🔥 DÍAS SEGUIDOS", 680);
+  const box = (x, y, w, h, val, label) => { g.fillStyle = "rgba(255,255,255,.06)"; g.strokeStyle = "rgba(245,184,65,.45)"; g.lineWidth = 3; g.beginPath(); if (g.roundRect) g.roundRect(x, y, w, h, 36); else g.rect(x, y, w, h); g.fill(); g.stroke(); g.fillStyle = "#fff"; g.font = "110px Anton, Impact, sans-serif"; g.fillText(val, x + w / 2, y + 140); g.fillStyle = "#A4A8B6"; g.font = "700 36px Figtree, sans-serif"; g.fillText(label, x + w / 2, y + 200); };
+  box(90, 900, 430, 250, fmtH(wk), "esta semana"); box(560, 900, 430, 250, "Nv " + L.lvl, L.title.replace(/^\S+\s/, ""));
+  if (grades.length) { const b = grades[0]; box(90, 1190, 900, 250, fmtNota(b.g.nota), "nota estimada · " + sName(b.s).slice(0, 26)); }
+  g.fillStyle = "#fff"; g.font = "800 46px Figtree, sans-serif"; g.fillText("Estudio con Rocky 📲", W / 2, 1640);
+  g.fillStyle = "#A4A8B6"; g.font = "600 34px Figtree, sans-serif"; g.fillText("La app que te dice qué estudiar primero", W / 2, 1700);
+  const blob = await new Promise(r => c.toBlob(r, "image/png"));
+  if (blob) { await saveFile(blob, "rocky-progreso.png"); toast("Súbela a tus historias 🔥"); }
+}
 function levelCard() {
   const L = levelInfo(); const frac = (L.xp - L.cur) / Math.max(1, L.next - L.cur); const got = state.badges || [];
   return `<section class="card"><div class="lvl"><div class="ring-l" style="background:conic-gradient(var(--marker) ${(frac * 360).toFixed(0)}deg,var(--line) 0);"><div style="width:62px;height:62px;border-radius:50%;background:var(--sheet);display:grid;place-items:center">${L.lvl}</div></div>
@@ -3878,7 +3957,7 @@ function viewProgreso() {
   const best = Object.entries(m).sort((a, b) => b[1] - a[1])[0];
   let bestStreak = 0, run = 0, prev = null; for (const k of Object.keys(m).sort()) { run = prev && dkey(addDays(parseD(prev), 1)) === k ? run + 1 : 1; bestStreak = Math.max(bestStreak, run); prev = k; }
   return `<div class="stack" style="gap:18px">
-    <div><h1>Progreso</h1></div>
+    <div class="row between"><h1>Progreso</h1><button class="btn btn-sm btn-p" data-act="share-progress">Compartir</button></div>
     ${levelCard()}
     ${prodCard()}
     <div class="stats">
@@ -4056,6 +4135,9 @@ document.addEventListener("click", e => {
     case "add-modules": modulesModal(); break;
     case "ai-subjects": aiSubjectsModal(); break;
     case "edit-subject": subjectModal(subj(id)); break;
+    case "grade-info": { const gs = subj(id); if (gs) gradeModal(gs); break; }
+    case "go-study": { ui.asigTab = "estudiar"; saveUi(); go("asig-" + id); break; }
+    case "share-progress": shareProgress(); break;
     case "toggle-topic": { const t = cur.topics.find(x => x.id === id); t.done = !t.done; commit(); if (t.done) toast("Tema dominado. ¡Bien!"); break; }
     case "cycle-w": { const t = cur.topics.find(x => x.id === id); t.w = ((t.w || 2) % 3) + 1; commit(); break; }
     case "del-topic": cur.topics = cur.topics.filter(x => x.id !== id); commit(); break;
@@ -4182,7 +4264,7 @@ function exampleState() {
 }
 
 /* ================= actualizaciones ================= */
-const APP_VERSION = "2026.11.18-1";
+const APP_VERSION = "2026.11.18-2";
 let updateReady = false;
 async function checkUpdate() {
   try {
